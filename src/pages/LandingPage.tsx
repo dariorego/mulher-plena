@@ -45,14 +45,27 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       {sections.map((section, index) => (
         <LandingSectionBlock 
           key={section.id} 
           section={section} 
           isEven={index % 2 === 0}
+          isFirst={index === 0}
+          isLast={index === sections.length - 1}
         />
       ))}
+      
+      {/* Login Button at bottom */}
+      <div className="py-12 text-center bg-white">
+        <Button 
+          asChild 
+          size="lg"
+          className="bg-primary hover:bg-primary/90 text-white font-semibold text-lg px-10 py-6 rounded-full"
+        >
+          <Link to="/login">Entrar na Plataforma</Link>
+        </Button>
+      </div>
     </div>
   );
 }
@@ -60,169 +73,188 @@ export default function LandingPage() {
 interface LandingSectionBlockProps {
   section: LandingSection;
   isEven: boolean;
+  isFirst: boolean;
+  isLast: boolean;
 }
 
-function LandingSectionBlock({ section, isEven }: LandingSectionBlockProps) {
+function LandingSectionBlock({ section, isEven, isFirst, isLast }: LandingSectionBlockProps) {
   const hasImage = !!section.image_url;
-  const hasContent = section.title || section.content;
+  const hasTitle = !!section.title;
+  const hasContent = !!section.content;
 
-  // Full-width image section (no text)
-  if (hasImage && !hasContent && !section.is_cta) {
+  // Hero Banner Section - Burgundy background with title left, image right
+  if (hasImage && hasTitle && (isFirst || section.order_index === 0)) {
     return (
-      <section className="relative w-full">
-        <img
-          src={section.image_url!}
-          alt={section.title || ""}
-          className="w-full h-[50vh] md:h-[70vh] object-cover"
-        />
-      </section>
+      <>
+        {/* Hero Banner */}
+        <section className="relative bg-gradient-to-br from-[#5C1A1A] via-[#722424] to-[#5C1A1A] overflow-hidden">
+          <div className="container mx-auto px-6 py-0">
+            <div className="flex flex-col md:flex-row items-center min-h-[300px] md:min-h-[400px]">
+              {/* Title on left */}
+              <div className="w-full md:w-1/2 py-12 md:py-16 text-center md:text-left">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-cinzel font-bold text-white leading-tight drop-shadow-lg">
+                  {section.title}
+                </h1>
+              </div>
+              
+              {/* Image on right */}
+              <div className="w-full md:w-1/2 flex justify-end">
+                <img
+                  src={section.image_url!}
+                  alt={section.title || ""}
+                  className="w-full md:w-auto h-[250px] md:h-[400px] object-cover object-top"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Content text below hero */}
+        {hasContent && (
+          <section className="py-8 md:py-12 bg-white">
+            <div className="container mx-auto px-6 max-w-4xl">
+              <div 
+                className="text-foreground prose prose-lg max-w-none leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: section.content! }}
+              />
+            </div>
+          </section>
+        )}
+      </>
     );
   }
 
-  // Hero-style section with image background and overlay
-  if (hasImage && hasContent && section.order_index === 0) {
+  // Banner section with image and title (secondary banners)
+  if (hasImage && hasTitle) {
     return (
-      <section className="relative min-h-screen flex items-center justify-center">
-        <img
-          src={section.image_url!}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-primary/60" />
-        <div className="relative z-10 text-center px-6 py-12 max-w-4xl">
-          {section.title && (
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-cinzel font-bold text-accent drop-shadow-lg">
-              {section.title}
-            </h1>
-          )}
-          {section.content && (
-            <div 
-              className="mt-6 text-lg md:text-xl text-white/90 prose prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: section.content }}
-            />
-          )}
-          {section.is_cta && section.cta_text && (
-            <Button 
-              asChild 
-              size="lg" 
-              className="mt-8 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6"
-            >
-              <Link to={section.cta_link || "/login"}>
-                {section.cta_text}
-              </Link>
-            </Button>
-          )}
+      <>
+        {/* Banner with burgundy background */}
+        <section className="relative bg-gradient-to-br from-[#5C1A1A] via-[#722424] to-[#5C1A1A] overflow-hidden">
+          <div className="container mx-auto px-6 py-0">
+            <div className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center min-h-[250px] md:min-h-[300px]`}>
+              {/* Title */}
+              <div className="w-full md:w-1/2 py-10 md:py-12 text-center md:text-left">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-cinzel font-bold text-white leading-tight drop-shadow-lg">
+                  {section.title}
+                </h2>
+              </div>
+              
+              {/* Image */}
+              <div className="w-full md:w-1/2 flex justify-center md:justify-end">
+                <img
+                  src={section.image_url!}
+                  alt={section.title || ""}
+                  className="w-auto h-[200px] md:h-[300px] object-cover object-center"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Content text below */}
+        {hasContent && (
+          <section className="py-8 md:py-10 bg-white">
+            <div className="container mx-auto px-6 max-w-4xl">
+              <div 
+                className="text-foreground prose prose-lg max-w-none leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: section.content! }}
+              />
+            </div>
+          </section>
+        )}
+      </>
+    );
+  }
+
+  // CTA Banner (last section style with multiple images)
+  if (section.is_cta && hasImage && hasTitle) {
+    return (
+      <section className="relative bg-gradient-to-br from-[#5C1A1A] via-[#722424] to-[#5C1A1A] overflow-hidden">
+        <div className="container mx-auto px-6 py-12 md:py-16">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            {/* Title on left */}
+            <div className="w-full md:w-1/2 text-center md:text-left">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-cinzel font-bold text-white leading-tight drop-shadow-lg">
+                {section.title}
+              </h2>
+              {section.cta_text && (
+                <Button 
+                  asChild 
+                  size="lg"
+                  className="mt-8 bg-white text-primary hover:bg-white/90 font-semibold text-lg px-8 py-6 rounded-full"
+                >
+                  <Link to={section.cta_link || "/login"}>
+                    {section.cta_text}
+                  </Link>
+                </Button>
+              )}
+            </div>
+            
+            {/* Image collage on right */}
+            <div className="w-full md:w-1/2 flex justify-center">
+              <img
+                src={section.image_url!}
+                alt=""
+                className="w-auto max-w-full h-auto max-h-[300px] object-contain"
+              />
+            </div>
+          </div>
         </div>
       </section>
     );
   }
 
-  // Split layout section (image + content side by side)
-  if (hasImage && hasContent) {
+  // Image-only section
+  if (hasImage && !hasTitle && !hasContent) {
     return (
-      <section className="py-16 md:py-24 bg-background">
-        <div className={`container mx-auto px-6 flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 md:gap-16`}>
-          <div className="w-full md:w-1/2">
+      <section className="relative bg-gradient-to-br from-[#5C1A1A] via-[#722424] to-[#5C1A1A] overflow-hidden">
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex justify-center">
             <img
               src={section.image_url!}
-              alt={section.title || ""}
-              className="w-full rounded-lg shadow-xl"
+              alt=""
+              className="w-auto max-w-full h-auto max-h-[400px] object-contain"
             />
           </div>
-          <div className="w-full md:w-1/2 space-y-4">
-            {section.title && (
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-cinzel font-bold text-primary">
-                {section.title}
-              </h2>
-            )}
-            {section.content && (
-              <div 
-                className="text-muted-foreground prose max-w-none"
-                dangerouslySetInnerHTML={{ __html: section.content }}
-              />
-            )}
-            {section.is_cta && section.cta_text && (
+        </div>
+      </section>
+    );
+  }
+
+  // Text-only section (white background)
+  if (!hasImage && (hasTitle || hasContent)) {
+    return (
+      <section className="py-8 md:py-12 bg-white">
+        <div className="container mx-auto px-6 max-w-4xl">
+          {hasTitle && (
+            <h2 className="text-2xl md:text-3xl font-cinzel font-bold text-primary mb-6 text-center">
+              {section.title}
+            </h2>
+          )}
+          {hasContent && (
+            <div 
+              className="text-foreground prose prose-lg max-w-none leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: section.content! }}
+            />
+          )}
+          {section.is_cta && section.cta_text && (
+            <div className="text-center mt-8">
               <Button 
                 asChild 
                 size="lg"
-                className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90"
+                className="bg-primary hover:bg-primary/90 text-white font-semibold text-lg px-8 py-6 rounded-full"
               >
                 <Link to={section.cta_link || "/login"}>
                   {section.cta_text}
                 </Link>
               </Button>
-            )}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // CTA Section with image background
-  if (hasImage && section.is_cta) {
-    return (
-      <section className="relative py-24 md:py-32">
-        <img
-          src={section.image_url!}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-primary/70" />
-        <div className="relative z-10 container mx-auto px-6 text-center">
-          {section.title && (
-            <h2 className="text-3xl md:text-4xl font-cinzel font-bold text-accent">
-              {section.title}
-            </h2>
-          )}
-          {section.content && (
-            <div 
-              className="mt-4 text-white/90 prose prose-invert max-w-2xl mx-auto"
-              dangerouslySetInnerHTML={{ __html: section.content }}
-            />
-          )}
-          {section.cta_text && (
-            <Button 
-              asChild 
-              size="lg"
-              className="mt-8 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8 py-6"
-            >
-              <Link to={section.cta_link || "/login"}>
-                {section.cta_text}
-              </Link>
-            </Button>
+            </div>
           )}
         </div>
       </section>
     );
   }
 
-  // Text-only section
-  return (
-    <section className="py-16 md:py-24 bg-background">
-      <div className="container mx-auto px-6 max-w-4xl text-center">
-        {section.title && (
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-cinzel font-bold text-primary">
-            {section.title}
-          </h2>
-        )}
-        {section.content && (
-          <div 
-            className="mt-6 text-muted-foreground prose max-w-none mx-auto"
-            dangerouslySetInnerHTML={{ __html: section.content }}
-          />
-        )}
-        {section.is_cta && section.cta_text && (
-          <Button 
-            asChild 
-            size="lg"
-            className="mt-8 bg-accent text-accent-foreground hover:bg-accent/90"
-          >
-            <Link to={section.cta_link || "/login"}>
-              {section.cta_text}
-            </Link>
-          </Button>
-        )}
-      </div>
-    </section>
-  );
+  // Fallback
+  return null;
 }
