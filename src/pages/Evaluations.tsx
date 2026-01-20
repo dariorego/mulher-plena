@@ -111,9 +111,9 @@ export default function Evaluations() {
               <DialogTitle>Avaliar: {activity?.title}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="p-3 bg-muted rounded-lg">
+              <div className="p-3 bg-muted rounded-lg max-h-48 overflow-auto">
                 <p className="text-sm font-medium mb-1">Resposta do aluno:</p>
-                <p className="text-sm">{submission?.content}</p>
+                <p className="text-sm break-all whitespace-pre-wrap">{submission?.content}</p>
               </div>
               <div className="space-y-2">
                 <Label>Nota (0-100)</Label>
