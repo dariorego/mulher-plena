@@ -16,6 +16,7 @@ import StationDetail from "./pages/StationDetail";
 import ActivityPage from "./pages/ActivityPage";
 import Achievements from "./pages/Achievements";
 import Evaluations from "./pages/Evaluations";
+import SubmissionView from "./pages/SubmissionView";
 import ManageContent from "./pages/ManageContent";
 import ManageLandingPage from "./pages/ManageLandingPage";
 import UsersPage from "./pages/UsersPage";
@@ -53,6 +54,7 @@ function AppRoutes() {
       <Route path="/atividade/:id" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
       <Route path="/conquistas" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
       <Route path="/avaliacoes" element={<ProtectedRoute><Evaluations /></ProtectedRoute>} />
+      <Route path="/submissao/:id" element={<ProtectedRoute><SubmissionView /></ProtectedRoute>} />
       <Route path="/gerenciar" element={<ProtectedRoute><ManageContent /></ProtectedRoute>} />
       <Route path="/gerenciar-landing" element={<ProtectedRoute><ManageLandingPage /></ProtectedRoute>} />
       <Route path="/usuarios" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
