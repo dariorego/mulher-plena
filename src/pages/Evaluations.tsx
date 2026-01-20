@@ -111,9 +111,17 @@ export default function Evaluations() {
               <DialogTitle>Avaliar: {activity?.title}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="p-3 bg-muted rounded-lg max-h-48 overflow-auto">
+              <div className="p-3 bg-muted rounded-lg max-h-64 overflow-auto">
                 <p className="text-sm font-medium mb-1">Resposta do aluno:</p>
-                <p className="text-sm break-all whitespace-pre-wrap">{submission?.content}</p>
+                {submission?.content?.startsWith('data:image') ? (
+                  <img 
+                    src={submission.content} 
+                    alt="Resposta do aluno" 
+                    className="max-w-full h-auto rounded-md"
+                  />
+                ) : (
+                  <p className="text-sm break-all whitespace-pre-wrap">{submission?.content}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Nota (0-100)</Label>
