@@ -12,6 +12,15 @@ const sizeLabels: Record<FontSizeLevel, string> = {
   '2xl': 'Extra Grande',
 };
 
+// Valores em rem para cada nível - escala mais perceptível
+const fontSizeValues: Record<FontSizeLevel, { size: string; lineHeight: string }> = {
+  sm: { size: '0.875rem', lineHeight: '1.5' },
+  md: { size: '1rem', lineHeight: '1.6' },
+  lg: { size: '1.25rem', lineHeight: '1.7' },
+  xl: { size: '1.5rem', lineHeight: '1.75' },
+  '2xl': { size: '1.75rem', lineHeight: '1.8' },
+};
+
 const sizeOrder: FontSizeLevel[] = ['sm', 'md', 'lg', 'xl', '2xl'];
 
 interface FontSizeContextType {
@@ -40,6 +49,11 @@ export function FontSizeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem(FONT_SIZE_KEY, size);
+    
+    // Aplicar variáveis CSS globais no :root
+    const values = fontSizeValues[size];
+    document.documentElement.style.setProperty('--app-font-size', values.size);
+    document.documentElement.style.setProperty('--app-line-height', values.lineHeight);
   }, [size]);
 
   const increase = () => {

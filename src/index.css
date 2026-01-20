@@ -259,10 +259,10 @@
     @apply bg-gradient-to-br from-card to-secondary/50;
   }
 
-  /* Font Size Adjustment Classes */
+  /* Font Size Adjustment Classes - Escala mais perceptível */
   .text-size-sm {
     font-size: 0.875rem !important;
-    line-height: 1.6 !important;
+    line-height: 1.5 !important;
   }
   
   .text-size-md {
@@ -271,18 +271,24 @@
   }
   
   .text-size-lg {
-    font-size: 1.125rem !important;
-    line-height: 1.7 !important;
-  }
-  
-  .text-size-xl {
     font-size: 1.25rem !important;
     line-height: 1.7 !important;
   }
   
+  .text-size-xl {
+    font-size: 1.5rem !important;
+    line-height: 1.75 !important;
+  }
+  
   .text-size-2xl {
-    font-size: 1.375rem !important;
+    font-size: 1.75rem !important;
     line-height: 1.8 !important;
+  }
+
+  /* Classe global para texto ajustável */
+  .text-adjustable {
+    font-size: var(--app-font-size, 1rem) !important;
+    line-height: var(--app-line-height, 1.6) !important;
   }
 }
 
