@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { CheckCircle, Clock, FileText } from 'lucide-react';
+import { CheckCircle, Clock, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export default function Evaluations() {
@@ -111,16 +112,23 @@ export default function Evaluations() {
               <DialogTitle>Avaliar: {activity?.title}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="p-3 bg-muted rounded-lg max-h-64 overflow-auto">
-                <p className="text-sm font-medium mb-1">Resposta do aluno:</p>
+              <div className="p-3 bg-muted rounded-lg max-h-48 overflow-auto">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Resposta do aluno:</p>
+                  <Link to={`/submissao/${selectedSubmission}`} target="_blank">
+                    <Button variant="ghost" size="sm">
+                      <ExternalLink className="h-4 w-4 mr-1" /> Ver completo
+                    </Button>
+                  </Link>
+                </div>
                 {submission?.content?.startsWith('data:image') ? (
                   <img 
                     src={submission.content} 
                     alt="Resposta do aluno" 
-                    className="max-w-full h-auto rounded-md"
+                    className="max-w-full h-auto rounded-md max-h-32 object-contain"
                   />
                 ) : (
-                  <p className="text-sm break-all whitespace-pre-wrap">{submission?.content}</p>
+                  <p className="text-sm break-all whitespace-pre-wrap line-clamp-6">{submission?.content}</p>
                 )}
               </div>
               <div className="space-y-2">
