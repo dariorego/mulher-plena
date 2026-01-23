@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { DataProvider } from "@/contexts/DataContext";
 import { FontSizeProvider } from "@/contexts/FontSizeContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -21,6 +22,7 @@ import ManageContent from "./pages/ManageContent";
 import ManageLandingPage from "./pages/ManageLandingPage";
 import UsersPage from "./pages/UsersPage";
 import LandingPage from "./pages/LandingPage";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +60,7 @@ function AppRoutes() {
       <Route path="/gerenciar" element={<ProtectedRoute><ManageContent /></ProtectedRoute>} />
       <Route path="/gerenciar-landing" element={<ProtectedRoute><ManageLandingPage /></ProtectedRoute>} />
       <Route path="/usuarios" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+      <Route path="/configuracoes" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -68,13 +71,15 @@ const App = () => (
     <AuthProvider>
       <DataProvider>
         <FontSizeProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </TooltipProvider>
+          <SettingsProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </TooltipProvider>
+          </SettingsProvider>
         </FontSizeProvider>
       </DataProvider>
     </AuthProvider>

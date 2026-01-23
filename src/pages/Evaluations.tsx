@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -9,18 +9,57 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { CheckCircle, Clock, ExternalLink } from 'lucide-react';
+import { CheckCircle, Clock, ExternalLink, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { ActivitySubmission } from '@/types';
 
 export default function Evaluations() {
   const { user } = useAuth();
-  const { activities, submissions, evaluateSubmission } = useData();
+  const { activities, stations, journeys, submissions, evaluateSubmission } = useData();
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
   const [score, setScore] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [profiles, setProfiles] = useState<Record<string, string>>({});
+
+  // Fetch profiles for participant names
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      if (submissions.length === 0) return;
+      
+      const userIds = [...new Set(submissions.map(s => s.user_id))];
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .in('id', userIds);
+      
+      if (data) {
+        const profileMap = data.reduce((acc, p) => {
+          acc[p.id] = p.name;
+          return acc;
+        }, {} as Record<string, string>);
+        setProfiles(profileMap);
+      }
+    };
+    fetchProfiles();
+  }, [submissions]);
 
   if (!user) return null;
+
+  // Helper to get submission context (participant, journey, station)
+  const getSubmissionContext = (submission: ActivitySubmission) => {
+    const activity = activities.find(a => a.id === submission.activity_id);
+    const station = activity ? stations.find(s => s.id === activity.station_id) : null;
+    const journey = station ? journeys.find(j => j.id === station.journey_id) : null;
+    
+    return {
+      participantName: profiles[submission.user_id] || 'Participante',
+      journeyTitle: journey?.title || '',
+      stationTitle: station?.title || '',
+      activityTitle: activity?.title || '',
+    };
+  };
 
   const pendingSubmissions = submissions.filter(s => !s.evaluated_at);
   const evaluatedSubmissions = submissions.filter(s => s.evaluated_at);
@@ -57,18 +96,29 @@ export default function Evaluations() {
               {pendingSubmissions.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">Nenhuma avaliação pendente</p>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {pendingSubmissions.map(sub => {
-                    const act = activities.find(a => a.id === sub.activity_id);
+                    const context = getSubmissionContext(sub);
                     return (
-                      <div key={sub.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div>
-                          <p className="font-medium">{act?.title}</p>
+                      <div key={sub.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border/50">
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-primary flex-shrink-0" />
+                            <p className="font-semibold text-foreground truncate">{context.participantName}</p>
+                          </div>
+                          {context.journeyTitle && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {context.journeyTitle} &gt; {context.stationTitle}
+                            </p>
+                          )}
+                          <p className="font-medium text-sm text-primary">{context.activityTitle}</p>
                           <p className="text-xs text-muted-foreground">
                             {new Date(sub.submitted_at).toLocaleDateString('pt-BR')}
                           </p>
                         </div>
-                        <Button size="sm" onClick={() => setSelectedSubmission(sub.id)}>Avaliar</Button>
+                        <Button size="sm" onClick={() => setSelectedSubmission(sub.id)} className="flex-shrink-0 ml-3">
+                          Avaliar
+                        </Button>
                       </div>
                     );
                   })}
@@ -87,16 +137,25 @@ export default function Evaluations() {
               {evaluatedSubmissions.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">Nenhuma avaliação realizada</p>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {evaluatedSubmissions.slice(-5).reverse().map(sub => {
-                    const act = activities.find(a => a.id === sub.activity_id);
+                    const context = getSubmissionContext(sub);
                     return (
-                      <div key={sub.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div>
-                          <p className="font-medium">{act?.title}</p>
+                      <div key={sub.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border/50">
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-primary flex-shrink-0" />
+                            <p className="font-semibold text-foreground truncate">{context.participantName}</p>
+                          </div>
+                          {context.journeyTitle && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {context.journeyTitle} &gt; {context.stationTitle}
+                            </p>
+                          )}
+                          <p className="font-medium text-sm">{context.activityTitle}</p>
                           <p className="text-xs text-muted-foreground">Nota: {sub.score}%</p>
                         </div>
-                        <Badge variant="secondary">Avaliado</Badge>
+                        <Badge variant="secondary" className="flex-shrink-0 ml-3">Avaliado</Badge>
                       </div>
                     );
                   })}
