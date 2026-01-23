@@ -76,9 +76,15 @@ const navItems: Record<string, NavEntry[]> = {
         { path: '/gerenciar-landing', label: 'Página Inicial', icon: Home },
       ],
     },
-    { path: '/usuarios', label: 'Usuários', icon: Users },
     { path: '/avaliacoes', label: 'Avaliações', icon: ClipboardCheck },
-    { path: '/configuracoes', label: 'Configurações', icon: Settings },
+    {
+      label: 'Administração',
+      icon: Settings,
+      items: [
+        { path: '/usuarios', label: 'Usuários', icon: Users },
+        { path: '/configuracoes', label: 'Configurações', icon: Settings },
+      ],
+    },
   ],
 };
 
