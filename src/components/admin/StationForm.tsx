@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Station } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload, X, Loader2, Music } from 'lucide-react';
+import { Upload, X, Loader2, Music, Image } from 'lucide-react';
+import { ImageLibrary } from './ImageLibrary';
 
 const stationSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -36,6 +37,8 @@ export function StationForm({ journeyId, station, onSubmit, onCancel }: StationF
   const [uploadingAudio, setUploadingAudio] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [description, setDescription] = useState(station?.description || '');
+  const [isTopLibraryOpen, setIsTopLibraryOpen] = useState(false);
+  const [isCardLibraryOpen, setIsCardLibraryOpen] = useState(false);
 
   const {
     register,
@@ -199,28 +202,50 @@ export function StationForm({ journeyId, station, onSubmit, onCancel }: StationF
               </Button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center h-24 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors">
-              {uploadingTop ? (
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              ) : (
-                <>
-                  <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                  <span className="text-sm text-muted-foreground">
-                    Clique para fazer upload
-                  </span>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleTopImageChange}
-                disabled={uploadingTop}
-              />
-            </label>
+            <div className="flex flex-col items-center gap-3">
+              <label className="flex flex-col items-center justify-center h-24 w-full cursor-pointer hover:bg-muted/50 rounded-lg transition-colors">
+                {uploadingTop ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                ) : (
+                  <>
+                    <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground">
+                      Clique para fazer upload
+                    </span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleTopImageChange}
+                  disabled={uploadingTop}
+                />
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsTopLibraryOpen(true)}
+              >
+                <Image className="h-4 w-4 mr-2" />
+                Escolher da Galeria
+              </Button>
+            </div>
           )}
         </div>
       </div>
+
+      {/* Top Image Library Modal */}
+      <ImageLibrary
+        open={isTopLibraryOpen}
+        onOpenChange={setIsTopLibraryOpen}
+        onSelect={(url) => {
+          setTopImageUrl(url);
+          setIsTopLibraryOpen(false);
+        }}
+        uploadBucket="station-images"
+      />
 
       {/* Card Image */}
       <div className="space-y-2">
@@ -244,28 +269,50 @@ export function StationForm({ journeyId, station, onSubmit, onCancel }: StationF
               </Button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center h-32 w-48 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors">
-              {uploadingCard ? (
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              ) : (
-                <>
-                  <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                  <span className="text-sm text-muted-foreground text-center">
-                    Clique para fazer upload
-                  </span>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleCardImageChange}
-                disabled={uploadingCard}
-              />
-            </label>
+            <div className="flex flex-col items-center gap-3">
+              <label className="flex flex-col items-center justify-center h-32 w-48 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors">
+                {uploadingCard ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                ) : (
+                  <>
+                    <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground text-center">
+                      Clique para fazer upload
+                    </span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleCardImageChange}
+                  disabled={uploadingCard}
+                />
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCardLibraryOpen(true)}
+              >
+                <Image className="h-4 w-4 mr-2" />
+                Escolher da Galeria
+              </Button>
+            </div>
           )}
         </div>
       </div>
+
+      {/* Card Image Library Modal */}
+      <ImageLibrary
+        open={isCardLibraryOpen}
+        onOpenChange={setIsCardLibraryOpen}
+        onSelect={(url) => {
+          setCardImageUrl(url);
+          setIsCardLibraryOpen(false);
+        }}
+        uploadBucket="station-images"
+      />
 
       {/* Video URL */}
       <div className="space-y-2">

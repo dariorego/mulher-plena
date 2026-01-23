@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { supabase } from '@/integrations/supabase/client';
 import { Journey } from '@/types';
-import { ImagePlus, Loader2, X } from 'lucide-react';
+import { ImagePlus, Loader2, X, Image } from 'lucide-react';
 import { toast } from 'sonner';
+import { ImageLibrary } from './ImageLibrary';
 
 const journeySchema = z.object({
   title: z.string().min(1, 'Título é obrigatório').max(100, 'Título deve ter no máximo 100 caracteres'),
@@ -30,6 +31,7 @@ export function JourneyForm({ journey, onSubmit, onCancel }: JourneyFormProps) {
   const [coverImage, setCoverImage] = useState<string | null>(journey?.cover_image || null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(journey?.cover_image || null);
   const [description, setDescription] = useState(journey?.description || '');
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
   const {
     register,
@@ -147,23 +149,46 @@ export function JourneyForm({ journey, onSubmit, onCancel }: JourneyFormProps) {
               </label>
             </div>
           ) : (
-            <label 
-              className="w-full border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors py-6"
-              style={{ aspectRatio: '1293/253' }}
-            >
-              <ImagePlus className="h-6 w-6 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground mt-1">Adicionar capa (1293x253)</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-                disabled={isUploading}
-              />
-            </label>
+            <div className="w-full flex flex-col items-center gap-3">
+              <label 
+                className="w-full border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors py-6"
+                style={{ aspectRatio: '1293/253' }}
+              >
+                <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground mt-1">Adicionar capa (1293x253)</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsLibraryOpen(true)}
+              >
+                <Image className="h-4 w-4 mr-2" />
+                Escolher da Galeria
+              </Button>
+            </div>
           )}
         </div>
       </div>
+
+      {/* Image Library Modal */}
+      <ImageLibrary
+        open={isLibraryOpen}
+        onOpenChange={setIsLibraryOpen}
+        onSelect={(url) => {
+          setCoverImage(url);
+          setPreviewUrl(url);
+          setIsLibraryOpen(false);
+        }}
+        uploadBucket="journey-covers"
+      />
 
       {/* Title and Order */}
       <div className="grid grid-cols-3 gap-4">

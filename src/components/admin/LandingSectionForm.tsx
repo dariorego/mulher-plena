@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, Image } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LandingSection } from "@/types";
+import { ImageLibrary } from "./ImageLibrary";
 
 interface LandingSectionFormProps {
   initialData?: Partial<LandingSection>;
@@ -31,6 +32,7 @@ export function LandingSectionForm({
   const [ctaLink, setCtaLink] = useState(initialData?.cta_link || "/login");
   const [isActive, setIsActive] = useState(initialData?.is_active ?? true);
   const [uploading, setUploading] = useState(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -101,18 +103,29 @@ export function LandingSectionForm({
               </Button>
             </div>
           ) : (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="w-40 h-24 rounded-lg border-2 border-dashed border-muted-foreground/25 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors"
-            >
-              {uploading ? (
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              ) : (
-                <>
-                  <Upload className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground mt-1">Upload</span>
-                </>
-              )}
+            <div className="flex items-start gap-3">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="w-40 h-24 rounded-lg border-2 border-dashed border-muted-foreground/25 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors"
+              >
+                {uploading ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                ) : (
+                  <>
+                    <Upload className="h-6 w-6 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground mt-1">Upload</span>
+                  </>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsLibraryOpen(true)}
+              >
+                <Image className="h-4 w-4 mr-2" />
+                Galeria
+              </Button>
             </div>
           )}
           <input
@@ -124,6 +137,17 @@ export function LandingSectionForm({
           />
         </div>
       </div>
+
+      {/* Image Library Modal */}
+      <ImageLibrary
+        open={isLibraryOpen}
+        onOpenChange={setIsLibraryOpen}
+        onSelect={(url) => {
+          setImageUrl(url);
+          setIsLibraryOpen(false);
+        }}
+        uploadBucket="landing-images"
+      />
 
       {/* Title */}
       <div className="space-y-2">
