@@ -1,153 +1,228 @@
 
 
-# Exclusao de Imagens da Galeria + Placeholder Padrao
+# Configuracoes e Melhorias na Tela de Avaliacoes
 
 ## Objetivo
-Adicionar a opcao de excluir imagens diretamente da galeria e mostrar um icone/placeholder padrao quando nao houver imagem selecionada nos formularios.
+1. Criar uma nova pagina de **Configuracoes** com opcao para exibir/ocultar Nota e Feedback
+2. Atualizar a tela de **Avaliacoes** para mostrar:
+   - Nome do participante
+   - Nome da Jornada
+   - Nome da Estacao
 
-## O que sera implementado
+## Visao Geral da Solucao
 
-### 1. Botao de Excluir na Galeria de Imagens
+### 1. Pagina de Configuracoes
+Uma nova pagina acessivel pelo menu do usuario (dropdown) onde administradores/professores poderao:
+- Ativar/desativar exibicao de **Nota** para participantes
+- Ativar/desativar exibicao de **Feedback** para participantes
 
-Cada imagem na galeria tera um botao de exclusao (X vermelho) que aparece ao passar o mouse. Ao clicar:
-- Mostra dialogo de confirmacao para evitar exclusoes acidentais
-- Remove a imagem do Supabase Storage
-- Atualiza a lista automaticamente
+### 2. Melhoria na Tela de Avaliacoes
+Adicionar informacoes contextuais em cada submissao:
+- **Nome do Participante** (buscado da tabela `profiles`)
+- **Nome da Jornada** (atraves da relacao Activity -> Station -> Journey)
+- **Nome da Estacao** (atraves da relacao Activity -> Station)
 
-### 2. Placeholder Padrao nos Formularios
+## Arquivos a Criar
 
-Quando nao houver imagem selecionada, os formularios mostrarao um icone de imagem padrao em vez de apenas a area tracejada de upload.
+### `src/pages/Settings.tsx`
+Nova pagina de configuracoes com:
+- Card para "Configuracoes de Avaliacao"
+- Switch para "Exibir Nota para Participantes"
+- Switch para "Exibir Feedback para Participantes"
+- Salvar no localStorage (key: `evaluation-settings`)
+
+### `src/contexts/SettingsContext.tsx`
+Novo contexto para gerenciar configuracoes globais:
+- Estado `showScoreToStudents` (boolean)
+- Estado `showFeedbackToStudents` (boolean)
+- Persistencia no localStorage
+- Funcoes para atualizar configuracoes
 
 ## Arquivos a Modificar
 
-### `src/components/admin/ImageLibrary.tsx`
+### `src/App.tsx`
+- Adicionar rota `/configuracoes` para a nova pagina Settings
+- Envolver app com `SettingsProvider`
 
-Adicionar:
-- Estado `deleting` para controlar loading da exclusao
-- Estado `imageToDelete` para armazenar imagem selecionada para exclusao
-- Botao de exclusao (X) em cada imagem no grid, visivel no hover
-- Dialog de confirmacao antes de excluir
-- Funcao `handleDelete` que:
-  - Extrai o nome do arquivo e bucket da URL
-  - Chama `supabase.storage.from(bucket).remove([fileName])`
-  - Atualiza a lista com `refresh()`
-  - Mostra toast de sucesso/erro
+### `src/components/layout/AppLayout.tsx`
+- Atualizar o link de "Configuracoes" no dropdown do usuario para navegar para `/configuracoes`
+- Adicionar item de navegacao "Configuracoes" para admin/professor
 
-### `src/hooks/useStorageImages.ts`
+### `src/pages/Evaluations.tsx`
+- Buscar dados de perfis (profiles) para obter nomes dos participantes
+- Mapear submissoes para incluir informacoes de Jornada e Estacao
+- Atualizar UI para exibir:
+  - Nome do participante
+  - Jornada > Estacao (breadcrumb)
+  - Data de submissao
 
-Adicionar:
-- Funcao `deleteImage` que recebe URL e bucket
-- Extrai o path do arquivo da URL
-- Remove do Supabase Storage
+### `src/pages/ActivityPage.tsx`
+- Consumir `SettingsContext`
+- Condicionar exibicao de nota/feedback baseado nas configuracoes
 
-## Fluxo Visual
+## Fluxo de Dados
 
 ```text
-┌────────────────────────────────────────────────────────┐
-│                  Galeria de Imagens                    │
-├────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │   [X]        │  │              │  │              │ │
-│  │              │  │              │  │              │ │
-│  │   imagem1    │  │   imagem2    │  │   imagem3    │ │
-│  │              │  │              │  │              │ │
-│  └──────────────┘  └──────────────┘  └──────────────┘ │
-│                                                        │
-│  O botao [X] aparece ao passar o mouse sobre a imagem  │
-└────────────────────────────────────────────────────────┘
+                    Configuracoes
                          │
-                         ▼ (ao clicar em [X])
-┌────────────────────────────────────────────────────────┐
-│              Confirmar Exclusao                        │
-├────────────────────────────────────────────────────────┤
-│  Tem certeza que deseja excluir esta imagem?           │
-│                                                        │
-│  Esta acao nao pode ser desfeita. A imagem sera        │
-│  removida permanentemente do armazenamento.            │
-│                                                        │
-│                          [Cancelar]  [Excluir]         │
-└────────────────────────────────────────────────────────┘
+                         ▼
+    ┌─────────────────────────────────────┐
+    │     SettingsContext (localStorage)   │
+    │  - showScoreToStudents: boolean      │
+    │  - showFeedbackToStudents: boolean   │
+    └─────────────────────────────────────┘
+                    │
+        ┌───────────┴───────────┐
+        ▼                       ▼
+   ActivityPage            Evaluations
+   (participante)          (corretor)
+   - Ve nota/feedback      - Sempre ve tudo
+     se habilitado         - Pode lancar nota/feedback
+```
+
+## Interface da Pagina de Configuracoes
+
+```text
+┌─────────────────────────────────────────────────────┐
+│                  Configuracoes                       │
+│       Gerencie as configuracoes do sistema          │
+├─────────────────────────────────────────────────────┤
+│                                                      │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  Configuracoes de Avaliacao                   │  │
+│  ├───────────────────────────────────────────────┤  │
+│  │                                               │  │
+│  │  Exibir Nota para Participantes      [━━━○]  │  │
+│  │  Quando ativado, os participantes              │
+│  │  poderao ver suas notas                       │  │
+│  │                                               │  │
+│  │  ─────────────────────────────────────────    │  │
+│  │                                               │  │
+│  │  Exibir Feedback para Participantes  [━━━○]  │  │
+│  │  Quando ativado, os participantes              │
+│  │  poderao ver o feedback do corretor           │  │
+│  │                                               │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                      │
+└─────────────────────────────────────────────────────┘
+```
+
+## Interface Atualizada de Avaliacoes
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│  ⏱ Pendentes (8)                                       │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐ │
+│  │  Maria Silva                                        │ │
+│  │  Jornada 1 > Estacao de Boas-vindas                │ │
+│  │  Afirmacao de Potencial                 [Avaliar]  │ │
+│  │  12/01/2026                                         │ │
+│  └────────────────────────────────────────────────────┘ │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐ │
+│  │  Ana Oliveira                                       │ │
+│  │  Jornada 2 > Reflexoes                             │ │
+│  │  Mapa do Eu Feminino                    [Avaliar]  │ │
+│  │  12/01/2026                                         │ │
+│  └────────────────────────────────────────────────────┘ │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ## Detalhes Tecnicos
 
-### Funcao de Exclusao no Hook
+### SettingsContext
 
 ```typescript
-const deleteImage = async (imageUrl: string, bucket: string) => {
-  // Extrai o path do arquivo da URL publica
-  // Ex: https://xxx.supabase.co/storage/v1/object/public/bucket/file.jpg
-  // -> file.jpg
-  const urlParts = imageUrl.split('/');
-  const fileName = urlParts[urlParts.length - 1];
-  
-  const { error } = await supabase.storage
-    .from(bucket)
-    .remove([fileName]);
+interface SettingsContextType {
+  showScoreToStudents: boolean;
+  showFeedbackToStudents: boolean;
+  updateSettings: (settings: Partial<EvaluationSettings>) => void;
+}
+
+// Persistencia em localStorage
+const SETTINGS_KEY = 'evaluation-settings';
+```
+
+### Busca de Perfis em Evaluations
+
+```typescript
+// Buscar perfis para obter nomes dos participantes
+const [profiles, setProfiles] = useState<Record<string, string>>({});
+
+useEffect(() => {
+  const fetchProfiles = async () => {
+    const userIds = [...new Set(submissions.map(s => s.user_id))];
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, name')
+      .in('id', userIds);
     
-  if (error) throw error;
+    if (data) {
+      const profileMap = data.reduce((acc, p) => {
+        acc[p.id] = p.name;
+        return acc;
+      }, {} as Record<string, string>);
+      setProfiles(profileMap);
+    }
+  };
+  fetchProfiles();
+}, [submissions]);
+```
+
+### Mapeamento de Jornada/Estacao
+
+```typescript
+// Para cada submissao, encontrar a hierarquia completa
+const getSubmissionContext = (submission: ActivitySubmission) => {
+  const activity = activities.find(a => a.id === submission.activity_id);
+  const station = stations.find(s => s.id === activity?.station_id);
+  const journey = journeys.find(j => j.id === station?.journey_id);
+  
+  return {
+    participantName: profiles[submission.user_id] || 'Participante',
+    journeyTitle: journey?.title || '',
+    stationTitle: station?.title || '',
+    activityTitle: activity?.title || '',
+  };
 };
 ```
 
-### Dialog de Confirmacao
+### Condicional de Exibicao no ActivityPage
 
-Usar o componente `AlertDialog` ja existente no projeto para confirmar a exclusao:
+```typescript
+const { showScoreToStudents, showFeedbackToStudents } = useSettings();
 
-```tsx
-<AlertDialog open={!!imageToDelete} onOpenChange={() => setImageToDelete(null)}>
-  <AlertDialogContent>
-    <AlertDialogHeader>
-      <AlertDialogTitle>Confirmar Exclusao</AlertDialogTitle>
-      <AlertDialogDescription>
-        Tem certeza que deseja excluir esta imagem? 
-        Esta acao nao pode ser desfeita.
-      </AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter>
-      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-      <AlertDialogAction onClick={confirmDelete}>
-        Excluir
-      </AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
+// Na area de exibicao de resultado
+{showScoreToStudents && existingSubmission.score !== undefined && (
+  <p>Nota: {existingSubmission.score}%</p>
+)}
+
+{showFeedbackToStudents && existingSubmission.feedback && (
+  <div className="p-4 bg-accent/10 rounded-lg">
+    <p>Feedback da Mentora:</p>
+    <p>{existingSubmission.feedback}</p>
+  </div>
+)}
 ```
-
-### Botao de Exclusao no Grid
-
-```tsx
-<button
-  type="button"
-  onClick={(e) => {
-    e.stopPropagation(); // Evita selecionar a imagem
-    setImageToDelete(image);
-  }}
-  className="absolute top-1 right-1 bg-destructive text-destructive-foreground 
-             rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity
-             hover:bg-destructive/90"
->
-  <Trash2 className="h-3 w-3" />
-</button>
-```
-
-## Consideracoes de Seguranca
-
-- A exclusao e permanente (nao ha lixeira)
-- Dialog de confirmacao obrigatorio antes de excluir
-- Toast de feedback apos exclusao (sucesso ou erro)
-- Se a imagem excluida estava selecionada, limpa a selecao
 
 ## Resumo das Alteracoes
 
-| Arquivo | Tipo | Descricao |
+| Arquivo | Acao | Descricao |
 |---------|------|-----------|
-| `src/hooks/useStorageImages.ts` | Modificar | Adicionar funcao `deleteImage` |
-| `src/components/admin/ImageLibrary.tsx` | Modificar | Adicionar botao de exclusao, dialog de confirmacao e logica de delete |
+| `src/contexts/SettingsContext.tsx` | Criar | Contexto para configuracoes globais |
+| `src/pages/Settings.tsx` | Criar | Pagina de configuracoes |
+| `src/App.tsx` | Modificar | Adicionar rota e provider |
+| `src/components/layout/AppLayout.tsx` | Modificar | Atualizar navegacao |
+| `src/pages/Evaluations.tsx` | Modificar | Adicionar info de participante/jornada/estacao |
+| `src/pages/ActivityPage.tsx` | Modificar | Aplicar configuracoes de visibilidade |
 
 ## Beneficios
 
-- Gerenciamento completo das imagens diretamente na galeria
-- Limpeza de imagens nao utilizadas para economizar espaco
-- Interface intuitiva com confirmacao de seguranca
-- Feedback visual claro do estado da operacao
+- Controle granular sobre o que os participantes podem ver
+- Visao completa do contexto de cada submissao para os corretores
+- Configuracoes persistidas entre sessoes
+- Interface administrativa clara e intuitiva
 
