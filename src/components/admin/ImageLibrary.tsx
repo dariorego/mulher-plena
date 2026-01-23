@@ -5,12 +5,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useStorageImages } from '@/hooks/useStorageImages';
-import { Search, Upload, Loader2, ImageIcon, Check } from 'lucide-react';
+import { useStorageImages, StorageImage } from '@/hooks/useStorageImages';
+import { Search, Upload, Loader2, ImageIcon, Check, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -30,10 +40,12 @@ export function ImageLibrary({
   bucket,
   uploadBucket = 'landing-images'
 }: ImageLibraryProps) {
-  const { images, isLoading, refresh } = useStorageImages(bucket);
+  const { images, isLoading, refresh, deleteImage } = useStorageImages(bucket);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<StorageImage | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredImages = images.filter(img =>
@@ -45,6 +57,34 @@ export function ImageLibrary({
       onSelect(selectedUrl);
       setSelectedUrl(null);
       setSearchQuery('');
+    }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, image: StorageImage) => {
+    e.stopPropagation();
+    setImageToDelete(image);
+  };
+
+  const confirmDelete = async () => {
+    if (!imageToDelete) return;
+    
+    setDeleting(true);
+    try {
+      await deleteImage(imageToDelete.url, imageToDelete.bucket);
+      
+      // Clear selection if deleted image was selected
+      if (selectedUrl === imageToDelete.url) {
+        setSelectedUrl(null);
+      }
+      
+      toast.success('Imagem excluída com sucesso!');
+      refresh();
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast.error('Erro ao excluir imagem');
+    } finally {
+      setDeleting(false);
+      setImageToDelete(null);
     }
   };
 
@@ -140,34 +180,49 @@ export function ImageLibrary({
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 p-1">
                   {filteredImages.map((image) => (
-                    <button
+                    <div
                       key={image.url}
-                      type="button"
-                      onClick={() => setSelectedUrl(image.url)}
-                      className={cn(
-                        'relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:opacity-90',
-                        selectedUrl === image.url
-                          ? 'border-primary ring-2 ring-primary ring-offset-2'
-                          : 'border-transparent hover:border-muted-foreground/30'
-                      )}
+                      className="relative group"
                     >
-                      <img
-                        src={image.url}
-                        alt={image.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                      {selectedUrl === image.url && (
-                        <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                          <div className="bg-primary text-primary-foreground rounded-full p-1">
-                            <Check className="h-4 w-4" />
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUrl(image.url)}
+                        className={cn(
+                          'relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:opacity-90 w-full',
+                          selectedUrl === image.url
+                            ? 'border-primary ring-2 ring-primary ring-offset-2'
+                            : 'border-transparent hover:border-muted-foreground/30'
+                        )}
+                      >
+                        <img
+                          src={image.url}
+                          alt={image.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        {selectedUrl === image.url && (
+                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                            <div className="bg-primary text-primary-foreground rounded-full p-1">
+                              <Check className="h-4 w-4" />
+                            </div>
                           </div>
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                          <p className="text-xs text-white truncate">{image.name}</p>
                         </div>
-                      )}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                        <p className="text-xs text-white truncate">{image.name}</p>
-                      </div>
-                    </button>
+                      </button>
+                      {/* Delete button */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteClick(e, image)}
+                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground 
+                                   rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity
+                                   hover:bg-destructive/90 z-10"
+                        title="Excluir imagem"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -229,6 +284,45 @@ export function ImageLibrary({
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!imageToDelete} onOpenChange={() => setImageToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir esta imagem? 
+                Esta ação não pode ser desfeita. A imagem será removida permanentemente do armazenamento.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            {imageToDelete && (
+              <div className="flex justify-center py-2">
+                <img 
+                  src={imageToDelete.url} 
+                  alt={imageToDelete.name}
+                  className="max-h-32 rounded-lg object-cover"
+                />
+              </div>
+            )}
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Excluindo...
+                  </>
+                ) : (
+                  'Excluir'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );

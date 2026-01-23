@@ -104,5 +104,27 @@ export function useStorageImages(bucketFilter?: string) {
     fetchImages();
   }, [fetchImages]);
 
-  return { images, isLoading, error, refresh: fetchImages };
+  const deleteImage = async (imageUrl: string, bucket: string) => {
+    // Extract file path from public URL
+    // Ex: https://xxx.supabase.co/storage/v1/object/public/bucket/folder/file.jpg
+    const urlParts = imageUrl.split('/storage/v1/object/public/');
+    if (urlParts.length < 2) {
+      throw new Error('Invalid storage URL');
+    }
+    
+    const pathWithBucket = urlParts[1];
+    // Remove bucket name from the path
+    const bucketPrefix = bucket + '/';
+    const filePath = pathWithBucket.startsWith(bucketPrefix) 
+      ? pathWithBucket.slice(bucketPrefix.length) 
+      : pathWithBucket.split('/').slice(1).join('/');
+    
+    const { error } = await supabase.storage
+      .from(bucket)
+      .remove([filePath]);
+      
+    if (error) throw error;
+  };
+
+  return { images, isLoading, error, refresh: fetchImages, deleteImage };
 }
