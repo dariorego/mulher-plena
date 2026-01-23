@@ -48,6 +48,7 @@ const navItems = {
     { path: '/gerenciar-landing', label: 'Página Inicial', icon: Home },
     { path: '/usuarios', label: 'Usuários', icon: Users },
     { path: '/avaliacoes', label: 'Avaliações', icon: ClipboardCheck },
+    { path: '/configuracoes', label: 'Configurações', icon: Settings },
   ],
 };
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,7 +41,7 @@ export default function ActivityPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { activities, stations, journeys, submissions, quizQuestions, submitActivity, awardBadge, userBadges, updateActivity } = useData();
-
+  const { showScoreToStudents, showFeedbackToStudents } = useSettings();
   const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
   const [essayContent, setEssayContent] = useState('');
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -256,8 +257,8 @@ export default function ActivityPage() {
                 />
               </div>
               
-              {/* Feedback if exists */}
-              {existingSubmission.feedback && (
+              {/* Feedback if exists - conditional visibility for students */}
+              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -277,9 +278,9 @@ export default function ActivityPage() {
                   <h3 className="font-semibold text-green-800">Atividade já enviada</h3>
                   <p className="text-sm text-green-700">
                     Enviada em {new Date(existingSubmission.submitted_at).toLocaleDateString('pt-BR')}
-                    {existingSubmission.score !== undefined && ` • Nota: ${existingSubmission.score}%`}
+                    {(user.role !== 'aluno' || showScoreToStudents) && existingSubmission.score !== undefined && ` • Nota: ${existingSubmission.score}%`}
                   </p>
-                  {existingSubmission.feedback && (
+                  {(user.role !== 'aluno' || showFeedbackToStudents) && existingSubmission.feedback && (
                     <p className="text-sm mt-2 p-2 bg-white rounded border border-green-200">
                       <span className="font-medium">Feedback:</span> {existingSubmission.feedback}
                     </p>
