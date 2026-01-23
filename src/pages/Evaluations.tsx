@@ -41,7 +41,12 @@ export default function Evaluations() {
     const fetchProfiles = async () => {
       if (submissions.length === 0) return;
       
-      const userIds = [...new Set(submissions.map(s => s.user_id))];
+      // Include both participants and evaluators
+      const userIds = [...new Set([
+        ...submissions.map(s => s.user_id),
+        ...submissions.filter(s => s.evaluated_by).map(s => s.evaluated_by as string)
+      ])];
+      
       const { data } = await supabase
         .from('profiles')
         .select('id, name')
@@ -359,6 +364,7 @@ export default function Evaluations() {
                 <div className="space-y-3 max-h-[500px] overflow-y-auto">
                   {evaluatedSubmissions.slice().reverse().map(sub => {
                     const context = getSubmissionContext(sub);
+                    const evaluatorName = sub.evaluated_by ? profiles[sub.evaluated_by] : null;
                     return (
                       <div key={sub.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border/50">
                         <div className="space-y-1 min-w-0 flex-1">
@@ -372,7 +378,10 @@ export default function Evaluations() {
                             </p>
                           )}
                           <p className="font-medium text-sm">{context.activityTitle}</p>
-                          <p className="text-xs text-muted-foreground">Nota: {sub.score}%</p>
+                          <p className="text-xs text-muted-foreground">
+                            Nota: {sub.score}%
+                            {evaluatorName && ` • Avaliado por: ${evaluatorName}`}
+                          </p>
                         </div>
                         <Badge variant="secondary" className="flex-shrink-0 ml-3">Avaliado</Badge>
                       </div>
