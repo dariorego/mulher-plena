@@ -132,7 +132,7 @@ export default function ManageContent() {
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {journeys.map(journey => (
+                {[...journeys].sort((a, b) => a.order_index - b.order_index).map(journey => (
                   <JourneyCard
                     key={journey.id}
                     journey={journey}
