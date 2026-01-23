@@ -10,6 +10,10 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import {
   LayoutDashboard,
@@ -23,6 +27,8 @@ import {
   Menu,
   X,
   Home,
+  Pencil,
+  ChevronDown,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -30,7 +36,25 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
-const navItems = {
+interface NavItem {
+  path: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+interface NavGroup {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  items: NavItem[];
+}
+
+type NavEntry = NavItem | NavGroup;
+
+const isNavGroup = (entry: NavEntry): entry is NavGroup => {
+  return 'items' in entry;
+};
+
+const navItems: Record<string, NavEntry[]> = {
   aluno: [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/jornadas', label: 'Jornadas', icon: BookOpen },
@@ -43,9 +67,15 @@ const navItems = {
   ],
   admin: [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/jornadas', label: 'Jornadas', icon: BookOpen },
-    { path: '/gerenciar', label: 'Gerenciar Conteúdo', icon: GraduationCap },
-    { path: '/gerenciar-landing', label: 'Página Inicial', icon: Home },
+    {
+      label: 'Edição',
+      icon: Pencil,
+      items: [
+        { path: '/jornadas', label: 'Jornadas', icon: BookOpen },
+        { path: '/gerenciar', label: 'Gerenciar Conteúdo', icon: GraduationCap },
+        { path: '/gerenciar-landing', label: 'Página Inicial', icon: Home },
+      ],
+    },
     { path: '/usuarios', label: 'Usuários', icon: Users },
     { path: '/avaliacoes', label: 'Avaliações', icon: ClipboardCheck },
     { path: '/configuracoes', label: 'Configurações', icon: Settings },
@@ -57,6 +87,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
 
   if (!user) return null;
 
@@ -66,6 +97,22 @@ export function AppLayout({ children }: AppLayoutProps) {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const isPathActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
+
+  const isGroupActive = (group: NavGroup) => {
+    return group.items.some(item => isPathActive(item.path));
+  };
+
+  const toggleMobileGroup = (label: string) => {
+    setExpandedGroups(prev => 
+      prev.includes(label) 
+        ? prev.filter(l => l !== label)
+        : [...prev, label]
+    );
   };
 
   return (
@@ -92,11 +139,52 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            {userNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+            {userNavItems.map((entry, index) => {
+              if (isNavGroup(entry)) {
+                const Icon = entry.icon;
+                const groupActive = isGroupActive(entry);
+                return (
+                  <DropdownMenu key={entry.label}>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant={groupActive ? 'secondary' : 'ghost'}
+                        className={cn(
+                          'gap-2',
+                          groupActive && 'bg-primary/10 text-primary hover:bg-primary/20'
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {entry.label}
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {entry.items.map((item) => {
+                        const ItemIcon = item.icon;
+                        const isActive = isPathActive(item.path);
+                        return (
+                          <DropdownMenuItem
+                            key={item.path}
+                            onClick={() => navigate(item.path)}
+                            className={cn(
+                              'gap-2 cursor-pointer',
+                              isActive && 'bg-primary/10 text-primary'
+                            )}
+                          >
+                            <ItemIcon className="h-4 w-4" />
+                            {item.label}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              }
+              
+              const Icon = entry.icon;
+              const isActive = isPathActive(entry.path);
               return (
-                <Link key={item.path} to={item.path}>
+                <Link key={entry.path} to={entry.path}>
                   <Button
                     variant={isActive ? 'secondary' : 'ghost'}
                     className={cn(
@@ -105,7 +193,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     )}
                   >
                     <Icon className="h-4 w-4" />
-                    {item.label}
+                    {entry.label}
                   </Button>
                 </Link>
               );
@@ -131,7 +219,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <p className="text-xs text-primary capitalize mt-1">{user.role}</p>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate('/perfil')}>
+              <DropdownMenuItem onClick={() => navigate('/configuracoes')}>
                 <Settings className="mr-2 h-4 w-4" />
                 Configurações
               </DropdownMenuItem>
@@ -149,13 +237,63 @@ export function AppLayout({ children }: AppLayoutProps) {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="fixed inset-0 bg-foreground/20" onClick={() => setMobileMenuOpen(false)} />
-          <nav className="fixed left-0 top-16 bottom-0 w-64 bg-card border-r p-4 animate-slide-in">
+          <nav className="fixed left-0 top-16 bottom-0 w-64 bg-card border-r p-4 animate-slide-in overflow-y-auto">
             <div className="flex flex-col gap-1">
-              {userNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
+              {userNavItems.map((entry) => {
+                if (isNavGroup(entry)) {
+                  const Icon = entry.icon;
+                  const groupActive = isGroupActive(entry);
+                  const isExpanded = expandedGroups.includes(entry.label) || groupActive;
+                  
+                  return (
+                    <div key={entry.label} className="space-y-1">
+                      <Button
+                        variant={groupActive ? 'secondary' : 'ghost'}
+                        className={cn(
+                          'w-full justify-between gap-2',
+                          groupActive && 'bg-primary/10 text-primary'
+                        )}
+                        onClick={() => toggleMobileGroup(entry.label)}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" />
+                          {entry.label}
+                        </span>
+                        <ChevronDown className={cn(
+                          "h-4 w-4 transition-transform",
+                          isExpanded && "rotate-180"
+                        )} />
+                      </Button>
+                      {isExpanded && (
+                        <div className="ml-4 pl-2 border-l space-y-1">
+                          {entry.items.map((item) => {
+                            const ItemIcon = item.icon;
+                            const isActive = isPathActive(item.path);
+                            return (
+                              <Link key={item.path} to={item.path} onClick={() => setMobileMenuOpen(false)}>
+                                <Button
+                                  variant={isActive ? 'secondary' : 'ghost'}
+                                  className={cn(
+                                    'w-full justify-start gap-2',
+                                    isActive && 'bg-primary/10 text-primary'
+                                  )}
+                                >
+                                  <ItemIcon className="h-4 w-4" />
+                                  {item.label}
+                                </Button>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                
+                const Icon = entry.icon;
+                const isActive = isPathActive(entry.path);
                 return (
-                  <Link key={item.path} to={item.path} onClick={() => setMobileMenuOpen(false)}>
+                  <Link key={entry.path} to={entry.path} onClick={() => setMobileMenuOpen(false)}>
                     <Button
                       variant={isActive ? 'secondary' : 'ghost'}
                       className={cn(
@@ -164,7 +302,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                       )}
                     >
                       <Icon className="h-4 w-4" />
-                      {item.label}
+                      {entry.label}
                     </Button>
                   </Link>
                 );
