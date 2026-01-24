@@ -216,9 +216,10 @@ function AncestralTreeVisualization({
       ref={containerRef}
       className="relative"
       style={{
-        clipPath: 'polygon(50% 0%, 3% 100%, 97% 100%)',
+        clipPath: 'ellipse(50% 52% at 50% 50%)',
         background: 'linear-gradient(180deg, #2E7D32 0%, #1B5E20 40%, #0D4A0D 100%)',
-        padding: '20px 8px 30px 8px',
+        padding: '30px 15px 35px 15px',
+        borderRadius: '50%',
       }}
     >
       {/* Connection Lines */}
@@ -228,9 +229,9 @@ function AncestralTreeVisualization({
         ancestors={ancestors}
       />
 
-      <div className="relative flex flex-col items-center gap-3" style={{ zIndex: 2 }}>
+      <div className="relative flex flex-col items-center gap-4" style={{ zIndex: 2 }}>
         {/* Star decoration at top */}
-        <div className="text-amber-300 text-2xl mb-1">⭐</div>
+        <div className="text-amber-300 text-2xl">⭐</div>
 
         {/* Level 0 - Você (1) - Top of tree */}
         <div className="flex flex-col items-center">
@@ -495,47 +496,40 @@ export function FamilyTreeActivity({ description, onSubmit, isSubmitting, fontSi
         </div>
       </div>
 
-      {/* Main Content - Split Layout */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Left Side - Tree Visualization */}
-        <div className="order-2 lg:order-1">
-          <div className="sticky top-4">
-            <div 
-              className="rounded-2xl p-4 border border-green-200 overflow-hidden"
-              style={{
-                background: 'linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 50%, #A5D6A7 100%)'
-              }}
-            >
-              <h3 className="text-center text-sm font-semibold text-[#2E7D32] mb-3">
-                🌲 Sua Árvore de Ancestrais
-              </h3>
-              <AncestralTreeVisualization ancestors={ancestors} activeId={activeId} />
-              <TreeTrunk />
-            </div>
+      {/* Input Forms - Above */}
+      <div className="space-y-3">
+        <ScrollArea className="h-[320px] pr-4">
+          <div className="space-y-3">
+            {LEVELS_INPUT.map(({ level, title, count, color }) => (
+              <LevelInputSection
+                key={level}
+                level={level}
+                title={title}
+                count={count}
+                color={color}
+                ancestors={getAncestorsByLevel(level)}
+                onUpdate={updateAncestor}
+                onFocus={setActiveId}
+                isOpen={openLevels.includes(level)}
+                onToggle={() => toggleLevel(level)}
+              />
+            ))}
           </div>
-        </div>
-        
-        {/* Right Side - Input Forms */}
-        <div className="order-1 lg:order-2">
-          <ScrollArea className="h-[550px] pr-4">
-            <div className="space-y-3">
-              {LEVELS_INPUT.map(({ level, title, count, color }) => (
-                <LevelInputSection
-                  key={level}
-                  level={level}
-                  title={title}
-                  count={count}
-                  color={color}
-                  ancestors={getAncestorsByLevel(level)}
-                  onUpdate={updateAncestor}
-                  onFocus={setActiveId}
-                  isOpen={openLevels.includes(level)}
-                  onToggle={() => toggleLevel(level)}
-                />
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
+        </ScrollArea>
+      </div>
+
+      {/* Tree Visualization - Below */}
+      <div 
+        className="rounded-2xl p-6 border border-green-200 overflow-hidden"
+        style={{
+          background: 'linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 50%, #A5D6A7 100%)'
+        }}
+      >
+        <h3 className="text-center text-sm font-semibold text-[#2E7D32] mb-4">
+          🌲 Sua Árvore de Ancestrais
+        </h3>
+        <AncestralTreeVisualization ancestors={ancestors} activeId={activeId} />
+        <TreeTrunk />
       </div>
 
       {/* Progress and Submit */}
