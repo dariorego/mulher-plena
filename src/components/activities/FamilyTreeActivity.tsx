@@ -216,9 +216,9 @@ function AncestralTreeVisualization({
       ref={containerRef}
       className="relative"
       style={{
-        clipPath: 'ellipse(50% 52% at 50% 50%)',
+        clipPath: 'ellipse(52% 50% at 50% 50%)',
         background: 'linear-gradient(180deg, #2E7D32 0%, #1B5E20 40%, #0D4A0D 100%)',
-        padding: '30px 15px 35px 15px',
+        padding: '45px 30px 50px 30px',
         borderRadius: '50%',
       }}
     >
@@ -229,9 +229,9 @@ function AncestralTreeVisualization({
         ancestors={ancestors}
       />
 
-      <div className="relative flex flex-col items-center gap-4" style={{ zIndex: 2 }}>
+      <div className="relative flex flex-col items-center gap-3" style={{ zIndex: 2 }}>
         {/* Star decoration at top */}
-        <div className="text-amber-300 text-2xl">⭐</div>
+        <div className="text-amber-300 text-3xl -mt-2">⭐</div>
 
         {/* Level 0 - Você (1) - Top of tree */}
         <div className="flex flex-col items-center">
