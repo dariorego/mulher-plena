@@ -50,23 +50,25 @@ export function ActivityForm({ stationId, activity, onSubmit, onCancel }: Activi
     },
   });
 
-  const onFormSubmit = async (data: ActivityFormData) => {
-    setIsSubmitting(true);
-    try {
-      await onSubmit({
-        station_id: stationId,
-        title: data.title,
-        description: data.description,
-        type: activityType,
-        points: data.points,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const onFormSubmit = async () => {
+    const isValid = await handleSubmit(async (data: ActivityFormData) => {
+      setIsSubmitting(true);
+      try {
+        await onSubmit({
+          station_id: stationId,
+          title: data.title,
+          description: data.description,
+          type: activityType,
+          points: data.points,
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    })();
   };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+    <div className="space-y-4">
       {/* Title */}
       <div className="space-y-2">
         <Label htmlFor="activity-title">Título *</Label>
@@ -133,7 +135,7 @@ export function ActivityForm({ stationId, activity, onSubmit, onCancel }: Activi
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" size="sm" disabled={isSubmitting}>
+        <Button type="button" size="sm" disabled={isSubmitting} onClick={onFormSubmit}>
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -146,6 +148,6 @@ export function ActivityForm({ stationId, activity, onSubmit, onCancel }: Activi
           )}
         </Button>
       </div>
-    </form>
+    </div>
   );
 }
