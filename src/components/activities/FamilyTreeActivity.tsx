@@ -214,12 +214,11 @@ function AncestralTreeVisualization({
   return (
     <div 
       ref={containerRef}
-      className="relative"
+      className="relative overflow-visible"
       style={{
-        clipPath: 'ellipse(52% 50% at 50% 50%)',
         background: 'linear-gradient(180deg, #2E7D32 0%, #1B5E20 40%, #0D4A0D 100%)',
-        padding: '45px 30px 50px 30px',
-        borderRadius: '50%',
+        padding: '35px 20px 45px 20px',
+        borderRadius: '50% 50% 45% 45% / 40% 40% 50% 50%',
       }}
     >
       {/* Connection Lines */}
@@ -286,11 +285,11 @@ function AncestralTreeVisualization({
         </div>
 
         {/* Level 3 - Bisavós (8) - Base of tree (widest) */}
-        <div className="flex flex-col items-center mt-2">
+        <div className="flex flex-col items-center mt-1">
           <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-purple-500/80 mb-1">
             Bisavós
           </span>
-          <div className="flex justify-center gap-1 flex-wrap max-w-full">
+          <div className="flex justify-center gap-0.5 flex-wrap" style={{ maxWidth: '95%' }}>
             {getByLevel(3).map(ancestor => (
               <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
                 <TreeNode 
