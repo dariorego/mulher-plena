@@ -49,9 +49,9 @@ export default function Journeys() {
                     />
                   </div>
                   <CardContent className="pt-4">
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                      {plainDescription}
-                    </p>
+                    <h3 className="font-semibold text-lg line-clamp-2 mb-4">
+                      {journey.title}
+                    </h3>
                     
                     {user.role === 'aluno' && (
                       <div className="space-y-2">
