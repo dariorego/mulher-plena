@@ -304,8 +304,8 @@ export default function ActivityPage() {
             </div>
             
             <CardContent className="pt-8 space-y-6">
-              {/* Orientation Section - Skip for gamified, forum, Lista de Gratidão, and Manifesto which handle their own */}
-              {parsedDescription && activity.type !== 'gamified' && activity.type !== 'forum' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && (
+              {/* Orientation Section - Skip for gamified, forum, Lista de Gratidão, Árvore da Gratidão, and Manifesto which handle their own */}
+              {activity.description && activity.type !== 'gamified' && activity.type !== 'forum' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && (
                 <div className="space-y-6">
                   {/* Orientation Label with Font Size Control */}
                   <div className="flex items-center justify-between">
@@ -316,15 +316,15 @@ export default function ActivityPage() {
                     <FontSizeControl />
                   </div>
                   
-                  {/* Intro Text */}
-                  {parsedDescription.intro && (
+                  {/* Intro Text or Plain Description */}
+                  {parsedDescription?.intro && (
                     <p className={`text-foreground leading-relaxed ${fontSizeClass}`}>
                       {parsedDescription.intro}
                     </p>
                   )}
                   
-                  {/* Highlighted Question */}
-                  {parsedDescription.question && (
+                  {/* Highlighted Question (if markdown bold exists) */}
+                  {parsedDescription?.question && (
                     <div className="bg-accent/10 border-l-4 border-accent p-6 rounded-r-lg">
                       <p className={`text-primary font-medium italic leading-relaxed ${fontSizeClass}`}>
                         "{parsedDescription.question}"
@@ -333,25 +333,11 @@ export default function ActivityPage() {
                   )}
                   
                   {/* Outro Text */}
-                  {parsedDescription.outro && (
+                  {parsedDescription?.outro && (
                     <p className={`text-muted-foreground leading-relaxed ${fontSizeClass}`}>
                       {parsedDescription.outro}
                     </p>
                   )}
-                </div>
-              )}
-
-              {/* Plain description for non-parsed content - Skip for gamified, forum, Lista de Gratidão, and Manifesto */}
-              {activity.description && !parsedDescription?.question && activity.type !== 'gamified' && activity.type !== 'forum' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-primary uppercase tracking-wider">Orientação</span>
-                      <div className="flex-1 h-px bg-primary/20"></div>
-                    </div>
-                    <FontSizeControl />
-                  </div>
-                  <p className={`text-foreground leading-relaxed ${fontSizeClass}`}>{activity.description}</p>
                 </div>
               )}
 
