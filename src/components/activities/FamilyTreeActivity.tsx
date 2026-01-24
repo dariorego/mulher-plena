@@ -69,20 +69,24 @@ const LEVELS_INPUT = [
 function TreeNode({ 
   ancestor, 
   isHighlighted,
-  isRoot = false
+  isRoot = false,
+  isSmall = false
 }: { 
   ancestor: Ancestor; 
   isHighlighted: boolean;
   isRoot?: boolean;
+  isSmall?: boolean;
 }) {
   const isFilled = ancestor.name.trim() !== '';
   const displayName = isFilled ? ancestor.name : (ancestor.gender === 'F' ? 'Desconhecida' : ancestor.gender === 'M' ? 'Desconhecido' : '?');
+  const maxLen = isSmall ? 6 : 8;
   
   return (
     <div 
       className={`
-        relative px-2 py-1.5 text-center rounded-lg border-2 
-        transition-all duration-300 transform min-w-[55px] max-w-[70px]
+        relative px-1.5 py-1 text-center rounded-lg border-2 
+        transition-all duration-300 transform
+        ${isSmall ? 'min-w-[45px] max-w-[52px]' : 'min-w-[55px] max-w-[70px]'}
         ${isRoot 
           ? 'bg-gradient-to-br from-amber-100 to-amber-200 border-amber-500 shadow-lg min-w-[70px]' 
           : isFilled 
@@ -92,11 +96,11 @@ function TreeNode({
         ${isHighlighted ? 'ring-2 ring-amber-400 ring-offset-1 scale-110 z-10' : ''}
       `}
     >
-      <div className="text-[8px] text-[#5D4037] font-medium truncate mb-0.5 leading-tight">
+      <div className={`${isSmall ? 'text-[7px]' : 'text-[8px]'} text-[#5D4037] font-medium truncate mb-0.5 leading-tight`}>
         {ancestor.relation.split(' ')[0]}
       </div>
-      <div className={`text-[9px] font-semibold truncate ${isFilled || isRoot ? 'text-[#3E2723]' : 'text-gray-400 italic'}`}>
-        {displayName.length > 8 ? displayName.substring(0, 8) + '...' : displayName}
+      <div className={`${isSmall ? 'text-[8px]' : 'text-[9px]'} font-semibold truncate ${isFilled || isRoot ? 'text-[#3E2723]' : 'text-gray-400 italic'}`}>
+        {displayName.length > maxLen ? displayName.substring(0, maxLen) + '...' : displayName}
       </div>
       {isFilled && !isRoot && (
         <CheckCircle className="absolute -top-1 -right-1 h-3 w-3 text-green-500 bg-white rounded-full" />
@@ -217,8 +221,12 @@ function AncestralTreeVisualization({
       className="relative overflow-visible"
       style={{
         background: 'linear-gradient(180deg, #2E7D32 0%, #1B5E20 40%, #0D4A0D 100%)',
-        padding: '35px 20px 45px 20px',
-        borderRadius: '50% 50% 45% 45% / 40% 40% 50% 50%',
+        padding: '35px 15px 40px 15px',
+        borderRadius: '50% 50% 48% 48% / 35% 35% 55% 55%',
+        border: '4px solid #5D4037',
+        boxShadow: 'inset 0 0 30px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.2)',
+        outline: '3px solid #8D6E63',
+        outlineOffset: '2px',
       }}
     >
       {/* Connection Lines */}
@@ -289,12 +297,13 @@ function AncestralTreeVisualization({
           <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-purple-500/80 mb-1">
             Bisavós
           </span>
-          <div className="flex justify-center gap-0.5 flex-wrap" style={{ maxWidth: '95%' }}>
+          <div className="flex justify-center gap-0.5 flex-nowrap">
             {getByLevel(3).map(ancestor => (
               <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
                 <TreeNode 
                   ancestor={ancestor} 
                   isHighlighted={activeId === ancestor.id}
+                  isSmall={true}
                 />
               </div>
             ))}
@@ -497,24 +506,20 @@ export function FamilyTreeActivity({ description, onSubmit, isSubmitting, fontSi
 
       {/* Input Forms - Above */}
       <div className="space-y-3">
-        <ScrollArea className="h-[320px] pr-4">
-          <div className="space-y-3">
-            {LEVELS_INPUT.map(({ level, title, count, color }) => (
-              <LevelInputSection
-                key={level}
-                level={level}
-                title={title}
-                count={count}
-                color={color}
-                ancestors={getAncestorsByLevel(level)}
-                onUpdate={updateAncestor}
-                onFocus={setActiveId}
-                isOpen={openLevels.includes(level)}
-                onToggle={() => toggleLevel(level)}
-              />
-            ))}
-          </div>
-        </ScrollArea>
+        {LEVELS_INPUT.map(({ level, title, count, color }) => (
+          <LevelInputSection
+            key={level}
+            level={level}
+            title={title}
+            count={count}
+            color={color}
+            ancestors={getAncestorsByLevel(level)}
+            onUpdate={updateAncestor}
+            onFocus={setActiveId}
+            isOpen={openLevels.includes(level)}
+            onToggle={() => toggleLevel(level)}
+          />
+        ))}
       </div>
 
       {/* Tree Visualization - Below */}
