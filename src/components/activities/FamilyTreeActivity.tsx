@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FontSizeControl } from '@/components/ui/font-size-control';
-import { CheckCircle, TreeDeciduous, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckCircle, TreeDeciduous, Users, ChevronDown, ChevronUp, ZoomIn, ZoomOut } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -191,7 +191,7 @@ function ConnectionLinesSVG({
   );
 }
 
-// Tree visualization component - Inverted pine tree shape
+// Tree visualization component - Traditional tree shape (Você at bottom, Bisavós at top)
 function AncestralTreeVisualization({ 
   ancestors, 
   activeId 
@@ -202,6 +202,7 @@ function AncestralTreeVisualization({
   const containerRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
   const [, forceUpdate] = useState({});
+  const [zoom, setZoom] = useState(1);
 
   const getByLevel = (level: number) => ancestors.filter(a => a.level === level);
 
@@ -215,124 +216,154 @@ function AncestralTreeVisualization({
     nodeRefs.current.set(id, el);
   };
 
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 1.5));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.6));
+
   return (
-    <div 
-      ref={containerRef}
-      className="relative overflow-visible"
-      style={{
-        background: 'linear-gradient(180deg, #2E7D32 0%, #1B5E20 40%, #0D4A0D 100%)',
-        padding: '35px 15px 40px 15px',
-        borderRadius: '50% 50% 48% 48% / 35% 35% 55% 55%',
-        border: '4px solid #5D4037',
-        boxShadow: 'inset 0 0 30px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.2)',
-        outline: '3px solid #8D6E63',
-        outlineOffset: '2px',
-      }}
-    >
-      {/* Connection Lines */}
-      <ConnectionLinesSVG 
-        containerRef={containerRef}
-        nodeRefs={nodeRefs}
-        ancestors={ancestors}
-      />
+    <div className="relative">
+      {/* Zoom Controls */}
+      <div className="absolute top-2 right-2 z-20 flex gap-1">
+        <button
+          onClick={handleZoomOut}
+          className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-white transition-colors"
+          title="Diminuir zoom"
+        >
+          <ZoomOut className="h-4 w-4 text-[#5D4037]" />
+        </button>
+        <button
+          onClick={handleZoomIn}
+          className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-white transition-colors"
+          title="Aumentar zoom"
+        >
+          <ZoomIn className="h-4 w-4 text-[#5D4037]" />
+        </button>
+      </div>
 
-      <div className="relative flex flex-col items-center gap-3" style={{ zIndex: 2 }}>
-        {/* Star decoration at top */}
-        <div className="text-amber-300 text-3xl -mt-2">⭐</div>
+      <div 
+        className="transition-transform duration-300 origin-top"
+        style={{ transform: `scale(${zoom})` }}
+      >
+        {/* Tree Foliage - Cloud-like shape */}
+        <div 
+          ref={containerRef}
+          className="relative overflow-visible"
+          style={{
+            background: 'radial-gradient(ellipse at 50% 60%, #4CAF50 0%, #388E3C 40%, #2E7D32 70%, #1B5E20 100%)',
+            padding: '30px 20px 25px 20px',
+            borderRadius: '45% 45% 42% 42% / 50% 50% 45% 45%',
+            boxShadow: 'inset 0 -20px 40px rgba(0,0,0,0.15), 0 4px 15px rgba(0,0,0,0.2)',
+            minHeight: '320px',
+          }}
+        >
+          {/* Foliage bumps decoration */}
+          <div 
+            className="absolute -top-4 left-1/4 w-16 h-12 rounded-full"
+            style={{ background: 'radial-gradient(ellipse, #4CAF50 0%, #388E3C 100%)' }}
+          />
+          <div 
+            className="absolute -top-6 left-1/2 -translate-x-1/2 w-20 h-14 rounded-full"
+            style={{ background: 'radial-gradient(ellipse, #4CAF50 0%, #388E3C 100%)' }}
+          />
+          <div 
+            className="absolute -top-4 right-1/4 w-16 h-12 rounded-full"
+            style={{ background: 'radial-gradient(ellipse, #4CAF50 0%, #388E3C 100%)' }}
+          />
+          <div 
+            className="absolute top-2 -left-3 w-14 h-16 rounded-full"
+            style={{ background: 'radial-gradient(ellipse, #388E3C 0%, #2E7D32 100%)' }}
+          />
+          <div 
+            className="absolute top-2 -right-3 w-14 h-16 rounded-full"
+            style={{ background: 'radial-gradient(ellipse, #388E3C 0%, #2E7D32 100%)' }}
+          />
 
-        {/* Level 0 - Você (1) - Top of tree */}
-        <div className="flex flex-col items-center">
-          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-green-600/80 mb-1">
-            Você
-          </span>
-          <div className="flex justify-center">
-            {getByLevel(0).map(ancestor => (
-              <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
-                <TreeNode 
-                  ancestor={ancestor} 
-                  isHighlighted={activeId === ancestor.id}
-                  isRoot={true}
-                />
+          {/* Connection Lines */}
+          <ConnectionLinesSVG 
+            containerRef={containerRef}
+            nodeRefs={nodeRefs}
+            ancestors={ancestors}
+          />
+
+          <div className="relative flex flex-col items-center gap-4" style={{ zIndex: 2 }}>
+            {/* Level 3 - Bisavós (8) - TOP of tree */}
+            <div className="flex flex-col items-center">
+              <div className="flex justify-center gap-1 flex-wrap max-w-[380px]">
+                {getByLevel(3).map(ancestor => (
+                  <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
+                    <TreeNode 
+                      ancestor={ancestor} 
+                      isHighlighted={activeId === ancestor.id}
+                      isSmall={true}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Level 2 - Avós (4) */}
+            <div className="flex flex-col items-center">
+              <div className="flex justify-center gap-3">
+                {getByLevel(2).map(ancestor => (
+                  <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
+                    <TreeNode 
+                      ancestor={ancestor} 
+                      isHighlighted={activeId === ancestor.id}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Level 1 - Pais (2) */}
+            <div className="flex flex-col items-center">
+              <div className="flex justify-center gap-8">
+                {getByLevel(1).map(ancestor => (
+                  <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
+                    <TreeNode 
+                      ancestor={ancestor} 
+                      isHighlighted={activeId === ancestor.id}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Level 0 - Você (1) - BOTTOM of foliage */}
+            <div className="flex flex-col items-center mt-2">
+              <div className="flex justify-center">
+                {getByLevel(0).map(ancestor => (
+                  <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
+                    <TreeNode 
+                      ancestor={ancestor} 
+                      isHighlighted={activeId === ancestor.id}
+                      isRoot={true}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Level 1 - Pais (2) */}
-        <div className="flex flex-col items-center mt-2">
-          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-orange-500/80 mb-1">
-            Pais
-          </span>
-          <div className="flex justify-center gap-6">
-            {getByLevel(1).map(ancestor => (
-              <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
-                <TreeNode 
-                  ancestor={ancestor} 
-                  isHighlighted={activeId === ancestor.id}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Level 2 - Avós (4) */}
-        <div className="flex flex-col items-center mt-2">
-          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-blue-500/80 mb-1">
-            Avós
-          </span>
-          <div className="flex justify-center gap-2">
-            {getByLevel(2).map(ancestor => (
-              <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
-                <TreeNode 
-                  ancestor={ancestor} 
-                  isHighlighted={activeId === ancestor.id}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Level 3 - Bisavós (8) - Base of tree (widest) */}
-        <div className="flex flex-col items-center mt-1">
-          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-purple-500/80 mb-1">
-            Bisavós
-          </span>
-          <div className="flex justify-center gap-0.5 flex-nowrap">
-            {getByLevel(3).map(ancestor => (
-              <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
-                <TreeNode 
-                  ancestor={ancestor} 
-                  isHighlighted={activeId === ancestor.id}
-                  isSmall={true}
-                />
-              </div>
-            ))}
-          </div>
+        {/* Tree Trunk */}
+        <div className="flex flex-col items-center -mt-1">
+          <div 
+            className="w-16 h-20"
+            style={{
+              background: 'linear-gradient(90deg, #5D4037 0%, #795548 30%, #6D4C41 70%, #4E342E 100%)',
+              borderRadius: '0 0 8px 8px',
+              boxShadow: 'inset -8px 0 15px rgba(0,0,0,0.3), inset 8px 0 15px rgba(139,69,19,0.2)'
+            }}
+          />
+          {/* Ground shadow */}
+          <div 
+            className="w-32 h-4 -mt-1 rounded-[50%]"
+            style={{
+              background: 'radial-gradient(ellipse, rgba(0,0,0,0.2) 0%, transparent 70%)'
+            }}
+          />
         </div>
       </div>
-    </div>
-  );
-}
-
-// Tree trunk component
-function TreeTrunk() {
-  return (
-    <div className="flex flex-col items-center -mt-1">
-      {/* Trunk */}
-      <div 
-        className="w-10 h-10 rounded-b-lg"
-        style={{
-          background: 'linear-gradient(180deg, #5D4037 0%, #3E2723 100%)',
-          boxShadow: 'inset -3px 0 6px rgba(0,0,0,0.3)'
-        }}
-      />
-      {/* Ground/Base */}
-      <div 
-        className="w-28 h-3 -mt-1 rounded-full"
-        style={{
-          background: 'linear-gradient(180deg, #6D4C41 0%, #4E342E 100%)'
-        }}
-      />
     </div>
   );
 }
@@ -533,7 +564,6 @@ export function FamilyTreeActivity({ description, onSubmit, isSubmitting, fontSi
           🌲 Sua Árvore de Ancestrais
         </h3>
         <AncestralTreeVisualization ancestors={ancestors} activeId={activeId} />
-        <TreeTrunk />
       </div>
 
       {/* Progress and Submit */}
