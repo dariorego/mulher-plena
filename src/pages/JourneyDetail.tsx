@@ -34,7 +34,7 @@ const activityLabels = {
 export default function JourneyDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { journeys, stations, activities, submissions, getJourneyProgress, addStation, updateStation, deleteStation } = useData();
+  const { journeys, stations, activities, submissions, getJourneyProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity } = useData();
   const navigate = useNavigate();
 
   const [isStationFormOpen, setIsStationFormOpen] = useState(false);
@@ -287,8 +287,12 @@ export default function JourneyDetail() {
             <StationForm
               journeyId={journey.id}
               station={editingStation}
+              activities={activities}
               onSubmit={handleUpdateStation}
               onCancel={() => setEditingStation(null)}
+              onAddActivity={addActivity}
+              onUpdateActivity={updateActivity}
+              onDeleteActivity={deleteActivity}
             />
           )}
         </DialogContent>
