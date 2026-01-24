@@ -1,115 +1,128 @@
 
-# Plano: Criar Componente Árvore da Gratidão
+# Plano: Redesenhar Árvore da Gratidão com Visual de Árvore Real
 
 ## Resumo
-Implementar um componente visual interativo de árvore genealógica para a atividade "Árvore da Gratidão", permitindo que as participantes registrem 15 pessoas da família com seus respectivos aprendizados em uma estrutura hierárquica visual.
+Transformar a atividade "Árvore da Gratidão" em uma interface visual de árvore real, onde a participante preenche 15 caixas de texto separadas e os nomes aparecem dinamicamente na visualização da árvore.
 
-## Arquitetura da Solução
+## Nova Estrutura Visual
 
-### Estrutura da Árvore Genealógica (15 posições)
-A estrutura típica de uma árvore genealógica simples com 15 espaços:
+Baseado na imagem de referência, a árvore terá:
 
 ```text
-                    [Bisavó 1] [Bisavó 2] [Bisavó 3] [Bisavó 4]
-                         \       /             \       /
-                          [Avó 1]               [Avó 2]
-                              \                   /
-                         [Pai/Mãe 1]       [Pai/Mãe 2]
-                               \               /
-                                    [Você]
-                                       |
-                               [Filho/Outros]
+         ┌─────────────────────────────────────┐
+         │          COPA DA ÁRVORE             │
+         │  ┌───────┐         ┌───────┐        │
+         │  │ Avó 1 │         │ Avô 1 │        │  ← Nível 1 (2)
+         │  └───────┘         └───────┘        │
+         │  ┌───────┐         ┌───────┐        │
+         │  │ Avó 2 │         │ Avô 2 │        │  ← Nível 2 (2)
+         │  └───────┘         └───────┘        │
+         │ ┌───┐┌───┐┌───┐┌───┐                │
+         │ │Mãe││Pai││Tia││Tio│                │  ← Nível 3 (4)
+         │ └───┘└───┘└───┘└───┘                │
+         │┌───┐┌───┐┌───┐┌───┐┌───┐            │
+         ││Irm││EU ││Pri││Pri││Côn│            │  ← Nível 4 (5)
+         │└───┘└───┘└───┘└───┘└───┘            │
+         │    ┌───┐┌───┐                       │
+         │    │Fil││Fil│                       │  ← Nível 5 (2)
+         │    └───┘└───┘                       │
+         └─────────────────────────────────────┘
+                      ║║║║
+                      ║║║║  (Tronco)
+                   ═══════════
 ```
 
-Considerando 15 posições, proponho uma estrutura visual em camadas:
-- Nível 4 (topo): 4 espaços (Bisavós)
-- Nível 3: 4 espaços (Avós)
-- Nível 2: 4 espaços (Pais, Tios)
-- Nível 1: 2 espaços (Irmãos, Cônjuge)
-- Nível 0: 1 espaço (Você ou Filhos)
+### 15 Posições Organizadas:
+1. **Linha 1 (Avós Maternos):** 2 posições
+2. **Linha 2 (Avós Paternos):** 2 posições  
+3. **Linha 3 (Pais e Tios):** 4 posições
+4. **Linha 4 (Você, Irmãos, Primos, Cônjuge):** 5 posições
+5. **Linha 5 (Filhos):** 2 posições
 
-## Mudanças Propostas
+## Nova Experiência do Usuário
 
-### 1. Criar Componente `FamilyTreeActivity`
-**Novo arquivo**: `src/components/activities/FamilyTreeActivity.tsx`
+### Duas Áreas Separadas:
 
-- Estado para 15 entradas: cada entrada contém `name` (nome da pessoa) e `learning` (aprendizado)
-- Layout visual de árvore usando CSS Grid/Flexbox
-- Campos de entrada posicionados sobre a estrutura visual
-- Design responsivo adaptável a telas menores
-- Validação de preenchimento mínimo antes de enviar
+**1. Área de Entrada (Esquerda/Topo em mobile):**
+- 15 campos de texto simples com labels
+- Cada campo para digitar nome + aprendizado
+- Organizado em seções por nível familiar
 
-### 2. Atualizar `ActivityPage.tsx`
-- Adicionar função `isFamilyTreeActivity()` para detectar atividade pelo título "Árvore da Gratidão"
-- Importar e renderizar o componente `FamilyTreeActivity` quando apropriado
-- Integrar com sistema de submissão existente
+**2. Visualização da Árvore (Direita/Baixo em mobile):**
+- Visual de árvore com copa verde (SVG/CSS)
+- Tronco marrom
+- Os nomes aparecem em "quadros" na copa
+- Conforme digita, o nome aparece na árvore em tempo real
+- Quadros vazios ficam com "?" ou pontilhado
+- Quadros preenchidos mostram o nome com borda destacada
 
-### 3. Interface Visual
-O componente terá:
-- Background decorativo sugerindo galhos de árvore conectando os membros
-- 15 cards posicionados em formato de árvore genealógica
-- Cada card com dois campos:
-  - **Pessoa da Família**: Input para nome/parentesco
-  - **Aprendizado**: Textarea para registrar o aprendizado associado
-- Indicador de progresso mostrando quantos espaços foram preenchidos
-- Cores e estilo consistentes com o tema da aplicação (tons burgundy, dourado, creme)
+## Mudanças Técnicas
 
-## Detalhes Técnicos
+### Arquivo a Modificar:
+`src/components/activities/FamilyTreeActivity.tsx`
 
-### Estado do Componente
+### Principais Alterações:
+
+1. **Novo Layout Split:**
+   - Grid de 2 colunas em desktop
+   - Stack vertical em mobile
+
+2. **Componente TreeVisualization:**
+   - Copa da árvore com gradiente verde
+   - Slots posicionados para cada membro
+   - Animação suave ao preencher
+
+3. **Componente InputSection:**
+   - 15 inputs agrupados por nível
+   - Campo de nome
+   - Campo de aprendizado
+
+4. **Nova Estrutura de Dados:**
 ```typescript
-interface FamilyMember {
-  relation: string;  // Ex: "Avó Materna", "Pai"
-  name: string;      // Nome da pessoa
-  learning: string;  // Aprendizado associado
-}
-
-const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(
-  Array(15).fill({ relation: '', name: '', learning: '' })
-);
+const treePositions = [
+  { id: 0, label: 'Avó Materna', row: 1, col: 1 },
+  { id: 1, label: 'Avô Materno', row: 1, col: 2 },
+  { id: 2, label: 'Avó Paterna', row: 2, col: 1 },
+  { id: 3, label: 'Avô Paterno', row: 2, col: 2 },
+  // ... 11 mais posições
+];
 ```
 
-### Layout da Árvore (CSS)
-```text
-Linha 1: ████ ████ ████ ████  (4 cards - bisavós/ancestrais)
-Linha 2: ████   ████   ████  (4 cards - avós)  
-Linha 3:   ████     ████     (4 cards - pais/tios)
-Linha 4:     ████  ████      (2 cards - irmãos/cônjuge)
-Linha 5:       ████          (1 card - você/filhos)
-```
+5. **Estilo Visual da Árvore:**
+   - Copa: Formato oval/circular com gradiente verde
+   - Tronco: Retângulo marrom central
+   - Quadros: Cards com borda decorativa laranja/marrom
+   - Linhas conectoras entre níveis
 
-### Formatação para Submissão
-```typescript
-const formatFamilyTreeContent = () => {
-  return familyMembers
-    .filter(m => m.name.trim() || m.learning.trim())
-    .map((member, i) => 
-      `**${member.relation || `Membro ${i + 1}`}:** ${member.name}\n**Aprendizado:** ${member.learning}`
-    )
-    .join('\n\n---\n\n');
-};
-```
+## Design Visual
+
+### Cores (Baseado na Imagem):
+- Copa da árvore: `#7CB342` a `#558B2F` (gradiente verde)
+- Tronco: `#795548` (marrom)
+- Quadros dos membros: `#FFF3E0` com borda `#FF8A65`
+- Labels: Fundo `#A5D6A7` (verde claro)
+- Nomes preenchidos: Texto `#5D4037` (marrom escuro)
+
+### Responsividade:
+- **Desktop:** Árvore visual à direita, inputs à esquerda
+- **Tablet:** Árvore em cima, inputs embaixo
+- **Mobile:** Lista vertical com mini-preview da árvore
 
 ## Arquivos a Modificar
 
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
-| `src/components/activities/FamilyTreeActivity.tsx` | Criar | Novo componente de árvore genealógica |
-| `src/pages/ActivityPage.tsx` | Modificar | Integrar o novo componente |
+| `src/components/activities/FamilyTreeActivity.tsx` | Reescrever | Novo layout com visualização de árvore real |
 
-## Experiência do Usuário
+## Fluxo de Interação
 
-1. A participante acessa a atividade "Árvore da Gratidão"
-2. Vê a orientação explicando o exercício
-3. Visualiza a estrutura de árvore com 15 espaços vazios
-4. Para cada espaço, pode preencher:
-   - O parentesco/nome da pessoa
-   - O aprendizado associado a essa pessoa
-5. Indicador visual mostra progresso (ex: "5/15 preenchidos")
-6. Botão de enviar fica habilitado quando houver pelo menos 3 registros preenchidos
-7. Ao enviar, os dados são formatados e salvos como submissão
+1. Participante vê a árvore vazia com 15 quadros em "?"
+2. Na seção de inputs, ela preenche nome e aprendizado
+3. Conforme digita, o nome aparece no quadro correspondente na árvore
+4. Quadros preenchidos ganham destaque visual (borda, cor)
+5. Indicador mostra progresso (X/15 preenchidos)
+6. Mínimo de 3 para habilitar envio
 
-## Considerações de Responsividade
-- Em telas grandes: layout em formato de árvore completo
-- Em telas médias: árvore mais compacta
-- Em telas pequenas: lista vertical com indicação de níveis genealógicos
+## Resultado Final
+
+Uma experiência visual interativa onde a participante "constrói" sua árvore genealógica visualmente, vendo os nomes aparecerem na estrutura da árvore conforme preenche os campos.
