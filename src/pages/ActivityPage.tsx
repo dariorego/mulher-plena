@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { VisionBoardCanvas } from '@/components/activities/VisionBoardCanvas';
 import { ForumBoard } from '@/components/activities/ForumBoard';
 import { WordRoulette } from '@/components/activities/WordRoulette';
+import { FamilyTreeActivity } from '@/components/activities/FamilyTreeActivity';
 import { supabase } from '@/integrations/supabase/client';
 
 const activityIcons = {
@@ -78,6 +79,7 @@ export default function ActivityPage() {
   const isGratitudeActivity = (title: string) => title === 'Lista de Gratidão';
   const isAffirmationActivity = (title: string) => title === 'Afirmação de Potencial';
   const isManifestoActivity = (title: string) => title.toLowerCase().includes('manifesto');
+  const isFamilyTreeActivity = (title: string) => title.toLowerCase().includes('árvore da gratidão') || title.toLowerCase().includes('arvore da gratidao');
 
   // Estado para compartilhar manifesto no mural
   const [shareManifesto, setShareManifesto] = useState(false);
@@ -532,8 +534,30 @@ export default function ActivityPage() {
                 </div>
               )}
 
-              {/* Essay - Genérico (não é Gratidão nem Manifesto) */}
-              {activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && (
+              {/* Essay - Árvore da Gratidão */}
+              {activity.type === 'essay' && isFamilyTreeActivity(activity.title) && (
+                <FamilyTreeActivity
+                  description={activity.description}
+                  onSubmit={async (content) => {
+                    setIsSubmitting(true);
+                    await submitActivity({
+                      activity_id: activity.id,
+                      user_id: user.id,
+                      content,
+                    });
+                    toast.success('Árvore da Gratidão enviada com sucesso!');
+                    setIsSubmitting(false);
+                    if (journey) {
+                      navigate(`/jornadas/${journey.id}`);
+                    }
+                  }}
+                  isSubmitting={isSubmitting}
+                  fontSizeClass={fontSizeClass}
+                />
+              )}
+
+              {/* Essay - Genérico (não é Gratidão, Manifesto ou Árvore) */}
+              {activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sua Resposta</span>
@@ -678,8 +702,8 @@ export default function ActivityPage() {
               )}
             </CardContent>
             
-            {/* Footer with submit button - hide for gamified and forum since they have their own */}
-            {activity.type !== 'gamified' && activity.type !== 'forum' && (
+            {/* Footer with submit button - hide for gamified, forum, and family tree since they have their own */}
+            {activity.type !== 'gamified' && activity.type !== 'forum' && !isFamilyTreeActivity(activity.title) && (
               <CardFooter className="bg-cream/30 border-t border-primary/10 py-6">
                 <Button
                   onClick={() => handleSubmit()}
@@ -687,7 +711,7 @@ export default function ActivityPage() {
                     (activity.type === 'quiz' && quizAnswers.length !== activityQuestions.length) ||
                     (activity.type === 'essay' && isGratitudeActivity(activity.title) && !isGratitudeComplete) ||
                     (activity.type === 'essay' && isManifestoActivity(activity.title) && essayContent.length < 150) ||
-                    (activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && essayContent.length < 100) ||
+                    (activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && essayContent.length < 100) ||
                     (activity.type === 'upload' && !uploadFile)
                   )}
                   className="w-full bg-accent hover:bg-accent/90 text-primary font-semibold py-6 text-lg"
