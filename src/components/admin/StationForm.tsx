@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { Station } from '@/types';
+import { Station, Activity } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload, X, Loader2, Music, Image } from 'lucide-react';
 import { ImageLibrary } from './ImageLibrary';
+import { ActivityManager } from './ActivityManager';
+import { Separator } from '@/components/ui/separator';
 
 const stationSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -22,11 +24,15 @@ type StationFormData = z.infer<typeof stationSchema>;
 interface StationFormProps {
   journeyId: string;
   station?: Station;
+  activities?: Activity[];
   onSubmit: (data: Omit<Station, 'id' | 'created_at'>) => Promise<void>;
   onCancel: () => void;
+  onAddActivity?: (activity: Omit<Activity, 'id' | 'created_at'>) => Promise<Activity | null>;
+  onUpdateActivity?: (id: string, activity: Partial<Activity>) => Promise<void>;
+  onDeleteActivity?: (id: string) => Promise<void>;
 }
 
-export function StationForm({ journeyId, station, onSubmit, onCancel }: StationFormProps) {
+export function StationForm({ journeyId, station, activities = [], onSubmit, onCancel, onAddActivity, onUpdateActivity, onDeleteActivity }: StationFormProps) {
   const [topImageUrl, setTopImageUrl] = useState<string>(station?.image_url || '');
   const [cardImageUrl, setCardImageUrl] = useState<string>(station?.card_image_url || '');
   const [videoUrl, setVideoUrl] = useState<string>(station?.video_url || '');
@@ -390,6 +396,20 @@ export function StationForm({ journeyId, station, onSubmit, onCancel }: StationF
           Link para material complementar (vídeo adicional, artigo, etc.)
         </p>
       </div>
+
+      {/* Activities Section - Only shown when editing an existing station */}
+      {station && onAddActivity && onUpdateActivity && onDeleteActivity && (
+        <>
+          <Separator className="my-6" />
+          <ActivityManager
+            stationId={station.id}
+            activities={activities}
+            onAdd={onAddActivity}
+            onUpdate={onUpdateActivity}
+            onDelete={onDeleteActivity}
+          />
+        </>
+      )}
 
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4">
