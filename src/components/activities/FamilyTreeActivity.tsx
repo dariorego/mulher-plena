@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FontSizeControl } from '@/components/ui/font-size-control';
-import { CheckCircle, TreeDeciduous, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckCircle, TreeDeciduous, Users, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -445,6 +445,11 @@ export function FamilyTreeActivity({ description, onSubmit, isSubmitting, fontSi
     );
   };
 
+  const clearAll = () => {
+    setAncestors(createTreeStructure(userName));
+    setOpenLevels([1]);
+  };
+
   // Count filled ancestors (excluding level 0 which is auto-filled)
   const filledCount = ancestors.filter(a => a.level > 0 && a.name.trim()).length;
   const totalEditable = 14; // 2 + 4 + 8
@@ -551,18 +556,29 @@ export function FamilyTreeActivity({ description, onSubmit, isSubmitting, fontSi
           )}
         </div>
         
-        <Button
-          onClick={handleSubmit}
-          disabled={isSubmitting || !isComplete}
-          className="w-full py-6 text-lg font-semibold"
-          style={{
-            background: isComplete 
-              ? 'linear-gradient(135deg, #2E7D32, #1B5E20)' 
-              : undefined
-          }}
-        >
-          {isSubmitting ? 'Enviando...' : 'Enviar Árvore Genealógica'}
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            onClick={clearAll}
+            variant="outline"
+            className="py-6 px-6 text-lg font-semibold border-destructive text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-5 w-5 mr-2" />
+            Limpar
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !isComplete}
+            className="flex-1 py-6 text-lg font-semibold"
+            style={{
+              background: isComplete 
+                ? 'linear-gradient(135deg, #2E7D32, #1B5E20)' 
+                : undefined
+            }}
+          >
+            {isSubmitting ? 'Enviando...' : 'Enviar Árvore Genealógica'}
+          </Button>
+        </div>
       </div>
     </div>
   );
