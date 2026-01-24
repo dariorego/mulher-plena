@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { FontSizeControl } from '@/components/ui/font-size-control';
-import { CheckCircle, TreeDeciduous, Users } from 'lucide-react';
+import { CheckCircle, TreeDeciduous, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/contexts/AuthContext';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-interface FamilyMember {
+interface Ancestor {
+  id: number;
+  level: number;
   relation: string;
   name: string;
-  learning: string;
+  gender: 'M' | 'F' | null;
+  parentIds: number[];
 }
 
 interface FamilyTreeActivityProps {
@@ -20,164 +24,191 @@ interface FamilyTreeActivityProps {
   fontSizeClass: string;
 }
 
-// Tree positions organized by levels (matching the reference image structure)
-const treePositions = [
-  // Level 1 - Avós Maternos (top, 2 positions)
-  { id: 0, label: 'Avó Materna', level: 1 },
-  { id: 1, label: 'Avô Materno', level: 1 },
-  // Level 2 - Avós Paternos (2 positions)
-  { id: 2, label: 'Avó Paterna', level: 2 },
-  { id: 3, label: 'Avô Paterno', level: 2 },
-  // Level 3 - Pais e Tios (4 positions)
-  { id: 4, label: 'Mãe', level: 3 },
-  { id: 5, label: 'Pai', level: 3 },
-  { id: 6, label: 'Tia', level: 3 },
-  { id: 7, label: 'Tio', level: 3 },
-  // Level 4 - Você, Irmãos, Primos, Cônjuge (5 positions)
-  { id: 8, label: 'Irmã(o)', level: 4 },
-  { id: 9, label: 'EU', level: 4 },
-  { id: 10, label: 'Prima(o)', level: 4 },
-  { id: 11, label: 'Prima(o)', level: 4 },
-  { id: 12, label: 'Cônjuge', level: 4 },
-  // Level 5 - Filhos (bottom, 2 positions)
-  { id: 13, label: 'Filha(o)', level: 5 },
-  { id: 14, label: 'Filha(o)', level: 5 },
+// Tree structure: 15 positions (1 + 2 + 4 + 8)
+const createTreeStructure = (userName: string): Ancestor[] => [
+  // Nível 0 - Você (raiz)
+  { id: 0, level: 0, relation: 'Você', name: userName, gender: null, parentIds: [1, 2] },
+  
+  // Nível 1 - Pais (2)
+  { id: 1, level: 1, relation: 'Mãe', name: '', gender: 'F', parentIds: [3, 4] },
+  { id: 2, level: 1, relation: 'Pai', name: '', gender: 'M', parentIds: [5, 6] },
+  
+  // Nível 2 - Avós (4)
+  { id: 3, level: 2, relation: 'Avó Materna', name: '', gender: 'F', parentIds: [7, 8] },
+  { id: 4, level: 2, relation: 'Avô Materno', name: '', gender: 'M', parentIds: [9, 10] },
+  { id: 5, level: 2, relation: 'Avó Paterna', name: '', gender: 'F', parentIds: [11, 12] },
+  { id: 6, level: 2, relation: 'Avô Paterno', name: '', gender: 'M', parentIds: [13, 14] },
+  
+  // Nível 3 - Bisavós (8)
+  { id: 7, level: 3, relation: 'Bisavó (mãe da Avó Materna)', name: '', gender: 'F', parentIds: [] },
+  { id: 8, level: 3, relation: 'Bisavô (pai da Avó Materna)', name: '', gender: 'M', parentIds: [] },
+  { id: 9, level: 3, relation: 'Bisavó (mãe do Avô Materno)', name: '', gender: 'F', parentIds: [] },
+  { id: 10, level: 3, relation: 'Bisavô (pai do Avô Materno)', name: '', gender: 'M', parentIds: [] },
+  { id: 11, level: 3, relation: 'Bisavó (mãe da Avó Paterna)', name: '', gender: 'F', parentIds: [] },
+  { id: 12, level: 3, relation: 'Bisavô (pai da Avó Paterna)', name: '', gender: 'M', parentIds: [] },
+  { id: 13, level: 3, relation: 'Bisavó (mãe do Avô Paterno)', name: '', gender: 'F', parentIds: [] },
+  { id: 14, level: 3, relation: 'Bisavô (pai do Avô Paterno)', name: '', gender: 'M', parentIds: [] },
 ];
 
-const levelLabels = [
-  { level: 1, title: 'Avós Maternos' },
-  { level: 2, title: 'Avós Paternos' },
-  { level: 3, title: 'Pais e Tios' },
-  { level: 4, title: 'Você e Sua Geração' },
-  { level: 5, title: 'Filhos' },
+const LEVELS = [
+  { level: 3, title: 'Bisavós', count: 8, color: '#9C27B0' },
+  { level: 2, title: 'Avós', count: 4, color: '#2196F3' },
+  { level: 1, title: 'Pais', count: 2, color: '#FF9800' },
+  { level: 0, title: 'Você', count: 1, color: '#4CAF50' },
 ];
 
-// Tree visualization slot component
-function TreeSlot({ member, isFilled, isHighlighted }: { 
-  member: FamilyMember; 
-  isFilled: boolean;
+// Tree node component
+function TreeNode({ 
+  ancestor, 
+  isHighlighted,
+  isRoot = false
+}: { 
+  ancestor: Ancestor; 
   isHighlighted: boolean;
+  isRoot?: boolean;
 }) {
+  const isFilled = ancestor.name.trim() !== '';
+  const displayName = isFilled ? ancestor.name : (ancestor.gender === 'F' ? 'Desconhecida' : ancestor.gender === 'M' ? 'Desconhecido' : '?');
+  
   return (
     <div 
       className={`
-        relative px-2 py-1.5 min-w-[70px] max-w-[90px] text-center rounded-lg border-2 
-        transition-all duration-300 transform
-        ${isFilled 
-          ? 'bg-[#FFF3E0] border-[#FF8A65] shadow-md scale-105' 
-          : 'bg-white/60 border-dashed border-[#A5D6A7]'
+        relative px-2 py-1.5 text-center rounded-lg border-2 
+        transition-all duration-300 transform min-w-[60px] max-w-[80px]
+        ${isRoot 
+          ? 'bg-gradient-to-br from-emerald-100 to-emerald-200 border-emerald-500 shadow-lg' 
+          : isFilled 
+            ? 'bg-[#FFF3E0] border-[#FF8A65] shadow-md' 
+            : 'bg-white/70 border-dashed border-gray-300'
         }
-        ${isHighlighted ? 'ring-2 ring-[#FF8A65] ring-offset-1' : ''}
+        ${isHighlighted ? 'ring-2 ring-[#FF8A65] ring-offset-1 scale-110' : ''}
       `}
     >
-      <div className="text-[10px] text-[#795548] font-medium truncate mb-0.5">
-        {member.relation}
+      <div className="text-[9px] text-[#795548] font-medium truncate mb-0.5 leading-tight">
+        {ancestor.relation.split(' ')[0]}
       </div>
-      <div className={`text-xs font-semibold truncate ${isFilled ? 'text-[#5D4037]' : 'text-gray-400'}`}>
-        {member.name || '?'}
+      <div className={`text-[10px] font-semibold truncate ${isFilled || isRoot ? 'text-[#5D4037]' : 'text-gray-400 italic'}`}>
+        {displayName.length > 10 ? displayName.substring(0, 10) + '...' : displayName}
       </div>
-      {isFilled && (
-        <CheckCircle className="absolute -top-1.5 -right-1.5 h-4 w-4 text-green-500 bg-white rounded-full" />
+      {isFilled && !isRoot && (
+        <CheckCircle className="absolute -top-1 -right-1 h-3 w-3 text-green-500 bg-white rounded-full" />
       )}
     </div>
   );
 }
 
-// Tree visualization component
-function TreeVisualization({ members, activeIndex }: { members: FamilyMember[]; activeIndex: number | null }) {
-  const getPositionsByLevel = (level: number) => {
-    return treePositions.filter(p => p.level === level).map(p => ({
-      ...p,
-      member: members[p.id],
-      isFilled: !!(members[p.id].name.trim() && members[p.id].learning.trim())
-    }));
-  };
-
+// SVG connection lines between levels
+function ConnectionLines() {
   return (
-    <div className="relative flex flex-col items-center">
-      {/* Tree Crown */}
-      <div 
-        className="relative w-full max-w-md rounded-[50%] py-6 px-4"
-        style={{
-          background: 'radial-gradient(ellipse at center, #7CB342 0%, #558B2F 70%, #33691E 100%)',
-          boxShadow: 'inset 0 -10px 30px rgba(0,0,0,0.2), 0 10px 30px rgba(0,0,0,0.15)'
-        }}
-      >
-        <div className="space-y-3">
-          {/* Level 1 - Avós Maternos */}
-          <div className="flex justify-center gap-4">
-            {getPositionsByLevel(1).map(pos => (
-              <TreeSlot 
-                key={pos.id} 
-                member={pos.member} 
-                isFilled={pos.isFilled}
-                isHighlighted={activeIndex === pos.id}
-              />
-            ))}
-          </div>
-          
-          {/* Level 2 - Avós Paternos */}
-          <div className="flex justify-center gap-4">
-            {getPositionsByLevel(2).map(pos => (
-              <TreeSlot 
-                key={pos.id} 
-                member={pos.member} 
-                isFilled={pos.isFilled}
-                isHighlighted={activeIndex === pos.id}
-              />
-            ))}
-          </div>
-          
-          {/* Level 3 - Pais e Tios */}
-          <div className="flex justify-center gap-2">
-            {getPositionsByLevel(3).map(pos => (
-              <TreeSlot 
-                key={pos.id} 
-                member={pos.member} 
-                isFilled={pos.isFilled}
-                isHighlighted={activeIndex === pos.id}
-              />
-            ))}
-          </div>
-          
-          {/* Level 4 - Você e Geração */}
-          <div className="flex justify-center gap-1.5">
-            {getPositionsByLevel(4).map(pos => (
-              <TreeSlot 
-                key={pos.id} 
-                member={pos.member} 
-                isFilled={pos.isFilled}
-                isHighlighted={activeIndex === pos.id}
-              />
-            ))}
-          </div>
-          
-          {/* Level 5 - Filhos */}
-          <div className="flex justify-center gap-4 pt-1">
-            {getPositionsByLevel(5).map(pos => (
-              <TreeSlot 
-                key={pos.id} 
-                member={pos.member} 
-                isFilled={pos.isFilled}
-                isHighlighted={activeIndex === pos.id}
-              />
-            ))}
-          </div>
-        </div>
+    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+      <defs>
+        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#795548" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="#795548" stopOpacity="0.3" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+// Tree visualization component
+function AncestralTreeVisualization({ 
+  ancestors, 
+  activeId 
+}: { 
+  ancestors: Ancestor[]; 
+  activeId: number | null;
+}) {
+  const getByLevel = (level: number) => ancestors.filter(a => a.level === level);
+  
+  return (
+    <div className="relative flex flex-col items-center gap-2">
+      {/* Level 3 - Bisavós (8) */}
+      <div className="text-center mb-1">
+        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold text-white bg-purple-500">
+          Bisavós (8)
+        </span>
+      </div>
+      <div className="flex justify-center gap-1 flex-wrap max-w-full">
+        {getByLevel(3).map(ancestor => (
+          <TreeNode 
+            key={ancestor.id} 
+            ancestor={ancestor} 
+            isHighlighted={activeId === ancestor.id}
+          />
+        ))}
       </div>
       
-      {/* Tree Trunk */}
+      {/* Connection indicator */}
+      <div className="w-px h-4 bg-[#795548]/40" />
+      
+      {/* Level 2 - Avós (4) */}
+      <div className="text-center mb-1">
+        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold text-white bg-blue-500">
+          Avós (4)
+        </span>
+      </div>
+      <div className="flex justify-center gap-2">
+        {getByLevel(2).map(ancestor => (
+          <TreeNode 
+            key={ancestor.id} 
+            ancestor={ancestor} 
+            isHighlighted={activeId === ancestor.id}
+          />
+        ))}
+      </div>
+      
+      {/* Connection indicator */}
+      <div className="w-px h-4 bg-[#795548]/40" />
+      
+      {/* Level 1 - Pais (2) */}
+      <div className="text-center mb-1">
+        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold text-white bg-orange-500">
+          Pais (2)
+        </span>
+      </div>
+      <div className="flex justify-center gap-4">
+        {getByLevel(1).map(ancestor => (
+          <TreeNode 
+            key={ancestor.id} 
+            ancestor={ancestor} 
+            isHighlighted={activeId === ancestor.id}
+          />
+        ))}
+      </div>
+      
+      {/* Connection indicator */}
+      <div className="w-px h-4 bg-[#795548]/40" />
+      
+      {/* Level 0 - Você (1) */}
+      <div className="text-center mb-1">
+        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold text-white bg-green-500">
+          Você (1)
+        </span>
+      </div>
+      <div className="flex justify-center">
+        {getByLevel(0).map(ancestor => (
+          <TreeNode 
+            key={ancestor.id} 
+            ancestor={ancestor} 
+            isHighlighted={activeId === ancestor.id}
+            isRoot={true}
+          />
+        ))}
+      </div>
+      
+      {/* Tree trunk visual */}
       <div 
-        className="w-16 h-20 -mt-2 rounded-b-lg"
+        className="w-8 h-12 rounded-b-lg mt-1"
         style={{
           background: 'linear-gradient(180deg, #795548 0%, #5D4037 100%)',
-          boxShadow: 'inset -5px 0 10px rgba(0,0,0,0.2)'
+          boxShadow: 'inset -3px 0 6px rgba(0,0,0,0.2)'
         }}
       />
       
       {/* Ground/Roots */}
       <div 
-        className="w-32 h-4 -mt-1 rounded-full"
+        className="w-20 h-3 -mt-1 rounded-full"
         style={{
           background: 'linear-gradient(180deg, #8D6E63 0%, #6D4C41 100%)'
         }}
@@ -188,114 +219,141 @@ function TreeVisualization({ members, activeIndex }: { members: FamilyMember[]; 
 
 // Input section for a level
 function LevelInputSection({ 
-  level, 
-  title, 
-  members, 
+  level,
+  title,
+  count,
+  color,
+  ancestors,
   onUpdate,
-  onFocus 
+  onFocus,
+  isOpen,
+  onToggle
 }: { 
-  level: number; 
-  title: string; 
-  members: { id: number; member: FamilyMember }[];
-  onUpdate: (id: number, field: keyof FamilyMember, value: string) => void;
+  level: number;
+  title: string;
+  count: number;
+  color: string;
+  ancestors: Ancestor[];
+  onUpdate: (id: number, name: string) => void;
   onFocus: (id: number | null) => void;
+  isOpen: boolean;
+  onToggle: () => void;
 }) {
+  const filledCount = ancestors.filter(a => a.name.trim()).length;
+  
+  // Don't show input section for level 0 (Você - auto-filled)
+  if (level === 0) return null;
+  
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
+    <Collapsible open={isOpen} onOpenChange={onToggle}>
+      <CollapsibleTrigger className="w-full">
         <div 
-          className="px-3 py-1 rounded-full text-xs font-semibold text-white"
-          style={{ background: 'linear-gradient(135deg, #7CB342, #558B2F)' }}
+          className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:shadow-md transition-all"
+          style={{ borderColor: color, backgroundColor: `${color}10` }}
         >
-          Nível {level}
-        </div>
-        <span className="text-sm font-medium text-[#5D4037]">{title}</span>
-      </div>
-      
-      <div className="grid gap-3">
-        {members.map(({ id, member }) => {
-          const isFilled = !!(member.name.trim() && member.learning.trim());
-          return (
+          <div className="flex items-center gap-2">
             <div 
-              key={id} 
-              className={`p-3 rounded-lg border transition-all ${
-                isFilled 
-                  ? 'bg-[#FFF3E0] border-[#FF8A65]' 
-                  : 'bg-white border-[#A5D6A7]'
-              }`}
+              className="px-2 py-1 rounded-full text-xs font-bold text-white"
+              style={{ backgroundColor: color }}
             >
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="h-4 w-4 text-[#795548]" />
-                <span className="text-sm font-medium text-[#5D4037]">{member.relation}</span>
-                {isFilled && <CheckCircle className="h-4 w-4 text-green-500 ml-auto" />}
-              </div>
-              
-              <div className="grid gap-2">
+              {count}
+            </div>
+            <span className="font-semibold text-[#5D4037]">{title}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              {filledCount}/{count} preenchidos
+            </span>
+            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </div>
+        </div>
+      </CollapsibleTrigger>
+      
+      <CollapsibleContent>
+        <div className="mt-2 space-y-2 pl-2">
+          {ancestors.map((ancestor) => {
+            const isFilled = ancestor.name.trim() !== '';
+            return (
+              <div 
+                key={ancestor.id} 
+                className={`p-3 rounded-lg border transition-all ${
+                  isFilled 
+                    ? 'bg-[#FFF3E0] border-[#FF8A65]' 
+                    : 'bg-white border-gray-200'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-4 w-4 text-[#795548]" />
+                  <span className="text-sm font-medium text-[#5D4037]">{ancestor.relation}</span>
+                  {isFilled && <CheckCircle className="h-4 w-4 text-green-500 ml-auto" />}
+                </div>
+                
                 <div>
                   <Label className="text-xs text-[#795548]">Nome</Label>
                   <Input
-                    value={member.name}
-                    onChange={(e) => onUpdate(id, 'name', e.target.value)}
-                    onFocus={() => onFocus(id)}
+                    value={ancestor.name}
+                    onChange={(e) => onUpdate(ancestor.id, e.target.value)}
+                    onFocus={() => onFocus(ancestor.id)}
                     onBlur={() => onFocus(null)}
-                    placeholder="Digite o nome..."
-                    className="h-8 text-sm border-[#A5D6A7] focus:border-[#7CB342] bg-white"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-[#795548]">O que aprendeu?</Label>
-                  <Textarea
-                    value={member.learning}
-                    onChange={(e) => onUpdate(id, 'learning', e.target.value)}
-                    onFocus={() => onFocus(id)}
-                    onBlur={() => onFocus(null)}
-                    placeholder="Qual aprendizado recebeu dessa pessoa?"
-                    rows={2}
-                    className="resize-none text-sm border-[#A5D6A7] focus:border-[#7CB342] bg-white"
+                    placeholder={ancestor.gender === 'F' ? 'Nome da ancestral...' : 'Nome do ancestral...'}
+                    className="h-9 text-sm border-gray-300 focus:border-[#7CB342] bg-white"
                   />
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+            );
+          })}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
 export function FamilyTreeActivity({ description, onSubmit, isSubmitting, fontSizeClass }: FamilyTreeActivityProps) {
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(
-    treePositions.map(pos => ({ relation: pos.label, name: '', learning: '' }))
-  );
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const { user } = useAuth();
+  const userName = user?.name || user?.email?.split('@')[0] || 'Você';
+  
+  const [ancestors, setAncestors] = useState<Ancestor[]>(() => createTreeStructure(userName));
+  const [activeId, setActiveId] = useState<number | null>(null);
+  const [openLevels, setOpenLevels] = useState<number[]>([1]); // Start with Parents open
 
-  const updateMember = (index: number, field: keyof FamilyMember, value: string) => {
-    const newMembers = [...familyMembers];
-    newMembers[index] = { ...newMembers[index], [field]: value };
-    setFamilyMembers(newMembers);
+  const updateAncestor = (id: number, name: string) => {
+    setAncestors(prev => prev.map(a => a.id === id ? { ...a, name } : a));
   };
 
-  const filledCount = familyMembers.filter(m => m.name.trim() && m.learning.trim()).length;
+  const toggleLevel = (level: number) => {
+    setOpenLevels(prev => 
+      prev.includes(level) 
+        ? prev.filter(l => l !== level)
+        : [...prev, level]
+    );
+  };
+
+  // Count filled ancestors (excluding level 0 which is auto-filled)
+  const filledCount = ancestors.filter(a => a.level > 0 && a.name.trim()).length;
+  const totalEditable = 14; // 2 + 4 + 8
   const isComplete = filledCount >= 3;
 
   const formatContent = () => {
-    return familyMembers
-      .filter(m => m.name.trim() || m.learning.trim())
-      .map((member) => 
-        `**${member.relation}:** ${member.name}\n**Aprendizado:** ${member.learning}`
-      )
-      .join('\n\n---\n\n');
+    const grouped = LEVELS.map(l => ({
+      ...l,
+      members: ancestors.filter(a => a.level === l.level && a.name.trim())
+    })).filter(g => g.members.length > 0);
+
+    return grouped
+      .map(group => {
+        const membersText = group.members
+          .map(m => `- **${m.relation}:** ${m.name}`)
+          .join('\n');
+        return `### ${group.title}\n${membersText}`;
+      })
+      .join('\n\n');
   };
 
   const handleSubmit = async () => {
     await onSubmit(formatContent());
   };
 
-  const getMembersByLevel = (level: number) => {
-    return treePositions
-      .filter(p => p.level === level)
-      .map(p => ({ id: p.id, member: familyMembers[p.id] }));
-  };
+  const getAncestorsByLevel = (level: number) => ancestors.filter(a => a.level === level);
 
   return (
     <div className="space-y-6">
@@ -304,27 +362,28 @@ export function FamilyTreeActivity({ description, onSubmit, isSubmitting, fontSi
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TreeDeciduous className="h-5 w-5 text-[#7CB342]" />
-            <span className="text-sm font-semibold text-primary uppercase tracking-wider">Árvore da Gratidão</span>
+            <span className="text-sm font-semibold text-primary uppercase tracking-wider">Árvore Genealógica</span>
           </div>
           <FontSizeControl />
         </div>
         
         <p className={`text-foreground leading-relaxed ${fontSizeClass}`}>
-          Construa sua árvore genealógica e registre os aprendizados que cada pessoa da sua família trouxe para sua vida.
+          Construa sua árvore genealógica de ancestrais. Partindo de você, preencha os nomes dos seus pais, avós e bisavós.
         </p>
         
-        <div className="bg-[#E8F5E9] border-l-4 border-[#7CB342] p-4 rounded-r-lg">
+        <div className="bg-gradient-to-r from-sky-50 to-emerald-50 border-l-4 border-[#7CB342] p-4 rounded-r-lg">
           <p className={`text-[#5D4037] font-medium ${fontSizeClass}`}>
-            Preencha o nome e o aprendizado de cada familiar. Conforme você digita, os nomes aparecem na árvore!
+            📌 A estrutura segue o padrão genealógico: 1 → 2 → 4 → 8 pessoas por geração.
+            Campos não preenchidos aparecerão como "Desconhecido(a)".
           </p>
         </div>
         
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">
-            💡 Mínimo de 3 pessoas para enviar
+            💡 Preencha pelo menos 3 ancestrais para enviar
           </span>
           <span className={`font-semibold ${filledCount >= 3 ? 'text-green-600' : 'text-[#795548]'}`}>
-            {filledCount}/15 preenchidos
+            {filledCount}/{totalEditable} preenchidos
           </span>
         </div>
       </div>
@@ -334,27 +393,36 @@ export function FamilyTreeActivity({ description, onSubmit, isSubmitting, fontSi
         {/* Left Side - Tree Visualization */}
         <div className="order-2 lg:order-1">
           <div className="sticky top-4">
-            <div className="bg-gradient-to-b from-sky-100 to-sky-50 rounded-2xl p-6 border border-sky-200">
-              <h3 className="text-center text-sm font-semibold text-[#5D4037] mb-4">
-                Sua Árvore Genealógica
+            <div 
+              className="rounded-2xl p-4 border border-sky-200"
+              style={{
+                background: 'linear-gradient(180deg, #E3F2FD 0%, #E8F5E9 50%, #F1F8E9 100%)'
+              }}
+            >
+              <h3 className="text-center text-sm font-semibold text-[#5D4037] mb-3">
+                Sua Árvore de Ancestrais
               </h3>
-              <TreeVisualization members={familyMembers} activeIndex={activeIndex} />
+              <AncestralTreeVisualization ancestors={ancestors} activeId={activeId} />
             </div>
           </div>
         </div>
         
         {/* Right Side - Input Forms */}
         <div className="order-1 lg:order-2">
-          <ScrollArea className="h-[600px] pr-4">
-            <div className="space-y-6">
-              {levelLabels.map(({ level, title }) => (
+          <ScrollArea className="h-[550px] pr-4">
+            <div className="space-y-3">
+              {LEVELS.filter(l => l.level > 0).map(({ level, title, count, color }) => (
                 <LevelInputSection
                   key={level}
                   level={level}
                   title={title}
-                  members={getMembersByLevel(level)}
-                  onUpdate={updateMember}
-                  onFocus={setActiveIndex}
+                  count={count}
+                  color={color}
+                  ancestors={getAncestorsByLevel(level)}
+                  onUpdate={updateAncestor}
+                  onFocus={setActiveId}
+                  isOpen={openLevels.includes(level)}
+                  onToggle={() => toggleLevel(level)}
                 />
               ))}
             </div>
@@ -368,11 +436,11 @@ export function FamilyTreeActivity({ description, onSubmit, isSubmitting, fontSi
           {isComplete ? (
             <span className="text-green-600 font-medium flex items-center gap-1 text-sm">
               <CheckCircle className="h-4 w-4" /> 
-              Pronto para enviar sua Árvore da Gratidão!
+              Pronto para enviar sua Árvore Genealógica!
             </span>
           ) : (
             <span className="text-muted-foreground text-sm">
-              Preencha pelo menos 3 membros da família ({filledCount}/3)
+              Preencha pelo menos 3 ancestrais ({filledCount}/3)
             </span>
           )}
         </div>
@@ -387,7 +455,7 @@ export function FamilyTreeActivity({ description, onSubmit, isSubmitting, fontSi
               : undefined
           }}
         >
-          {isSubmitting ? 'Enviando...' : 'Enviar Árvore da Gratidão'}
+          {isSubmitting ? 'Enviando...' : 'Enviar Árvore Genealógica'}
         </Button>
       </div>
     </div>
