@@ -71,8 +71,8 @@ const navItems: Record<string, NavEntry[]> = {
       label: 'Edição',
       icon: Pencil,
       items: [
-        { path: '/jornadas', label: 'Jornadas', icon: BookOpen },
-        { path: '/gerenciar', label: 'Gerenciar Conteúdo', icon: GraduationCap },
+        { path: '/jornadas', label: 'Editar Conteúdo da Jornada', icon: BookOpen },
+        { path: '/gerenciar', label: 'Editar a Jornada', icon: GraduationCap },
         { path: '/gerenciar-landing', label: 'Página Inicial', icon: Home },
       ],
     },
