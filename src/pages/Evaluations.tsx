@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils';
 
 export default function Evaluations() {
   const { user } = useAuth();
-  const { activities, stations, journeys, submissions, evaluateSubmission, deleteSubmission } = useData();
+  const { activities, stations, journeys, submissions, evaluateSubmission, deleteSubmission, refreshData } = useData();
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
   const [score, setScore] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -173,6 +173,8 @@ export default function Evaluations() {
   const handleDeleteSubmission = async (submissionId: string) => {
     try {
       await deleteSubmission(submissionId);
+      // Refresh data to ensure all components have updated state
+      await refreshData();
       toast.success('Submissão excluída! O participante pode enviar novamente.');
     } catch (error) {
       console.error('Error deleting submission:', error);
