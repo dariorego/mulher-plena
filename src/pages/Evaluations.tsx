@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CheckCircle, Clock, ExternalLink, User, Filter, CalendarIcon, X } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { CheckCircle, Clock, ExternalLink, User, Filter, CalendarIcon, X, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,7 +24,7 @@ import { cn } from '@/lib/utils';
 
 export default function Evaluations() {
   const { user } = useAuth();
-  const { activities, stations, journeys, submissions, evaluateSubmission } = useData();
+  const { activities, stations, journeys, submissions, evaluateSubmission, deleteSubmission } = useData();
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
   const [score, setScore] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -166,6 +167,16 @@ export default function Evaluations() {
       setSelectedSubmission(null);
       setScore('');
       setFeedback('');
+    }
+  };
+
+  const handleDeleteSubmission = async (submissionId: string) => {
+    try {
+      await deleteSubmission(submissionId);
+      toast.success('Submissão excluída! O participante pode enviar novamente.');
+    } catch (error) {
+      console.error('Error deleting submission:', error);
+      toast.error('Erro ao excluir submissão. Verifique suas permissões.');
     }
   };
 
@@ -338,9 +349,37 @@ export default function Evaluations() {
                             {new Date(sub.submitted_at).toLocaleDateString('pt-BR')}
                           </p>
                         </div>
-                        <Button size="sm" onClick={() => setSelectedSubmission(sub.id)} className="flex-shrink-0 ml-3">
-                          Avaliar
-                        </Button>
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                          <Button size="sm" onClick={() => setSelectedSubmission(sub.id)}>
+                            Avaliar
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir submissão?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Você está prestes a excluir a submissão de <strong>{context.participantName}</strong> para a atividade <strong>"{context.activityTitle}"</strong>.
+                                  <br /><br />
+                                  Isso permitirá que o participante envie a atividade novamente. Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteSubmission(sub.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
                     );
                   })}
@@ -383,7 +422,35 @@ export default function Evaluations() {
                             {evaluatorName && ` • Avaliado por: ${evaluatorName}`}
                           </p>
                         </div>
-                        <Badge variant="secondary" className="flex-shrink-0 ml-3">Avaliado</Badge>
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                          <Badge variant="secondary">Avaliado</Badge>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir submissão avaliada?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Você está prestes a excluir a submissão avaliada de <strong>{context.participantName}</strong> para a atividade <strong>"{context.activityTitle}"</strong>.
+                                  <br /><br />
+                                  A nota ({sub.score}%) e feedback serão perdidos. O participante poderá enviar a atividade novamente. Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteSubmission(sub.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
                     );
                   })}
