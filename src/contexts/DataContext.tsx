@@ -25,6 +25,7 @@ interface DataContextType {
   deleteActivity: (id: string) => Promise<void>;
   addQuizQuestion: (question: Omit<QuizQuestion, 'id'>) => Promise<QuizQuestion | null>;
   submitActivity: (submission: Omit<ActivitySubmission, 'id' | 'submitted_at'>) => Promise<void>;
+  deleteSubmission: (id: string) => Promise<void>;
   evaluateSubmission: (id: string, score: number, feedback: string, evaluatorId: string) => Promise<void>;
   updateProgress: (progressData: Omit<UserProgress, 'id'>) => Promise<void>;
   awardBadge: (userId: string, badgeId: string) => Promise<void>;
@@ -254,6 +255,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setSubmissions(prev => [data, ...prev]);
   };
 
+  const deleteSubmission = async (id: string) => {
+    const { error } = await supabase
+      .from('activity_submissions')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting submission:', error);
+      throw error;
+    }
+    setSubmissions(prev => prev.filter(s => s.id !== id));
+  };
+
   const evaluateSubmission = async (id: string, score: number, feedback: string, evaluatorId: string) => {
     const { error } = await supabase
       .from('activity_submissions')
@@ -388,6 +402,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       deleteActivity,
       addQuizQuestion,
       submitActivity,
+      deleteSubmission,
       evaluateSubmission,
       updateProgress,
       awardBadge,
