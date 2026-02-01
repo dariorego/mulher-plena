@@ -94,9 +94,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     fetchData();
   }, [fetchData]);
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     await fetchData();
-  };
+  }, [fetchData]);
 
   // Journey operations
   const addJourney = async (journey: Omit<Journey, 'id' | 'created_at' | 'updated_at'>): Promise<Journey | null> => {

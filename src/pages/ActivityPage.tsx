@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
@@ -41,12 +41,13 @@ export default function ActivityPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { activities, stations, journeys, submissions, quizQuestions, submitActivity, awardBadge, userBadges, updateActivity } = useData();
+  const { activities, stations, journeys, submissions, quizQuestions, submitActivity, awardBadge, userBadges, updateActivity, refreshData } = useData();
   const { showScoreToStudents, showFeedbackToStudents } = useSettings();
   const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
   const [essayContent, setEssayContent] = useState('');
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isEditingActivity, setIsEditingActivity] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
@@ -86,6 +87,26 @@ export default function ActivityPage() {
 
   const isGratitudeComplete = gratitudeItems.every(item => item.aspect.trim() && item.meaning.trim());
 
+  // Garante que a página de atividade sempre reflita o estado mais recente do banco
+  // (ex: quando um professor/admin exclui a submissão para liberar reenvio)
+  useEffect(() => {
+    if (!user || !id) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setIsRefreshing(true);
+        await refreshData();
+      } finally {
+        if (!cancelled) setIsRefreshing(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, id, refreshData]);
+
   if (!user || !id) return null;
 
   const activity = activities.find(a => a.id === id);
@@ -109,6 +130,19 @@ export default function ActivityPage() {
   const existingSubmission = submissions.find(
     s => s.activity_id === activity.id && s.user_id === user.id
   );
+
+  const handleRefreshStatus = async () => {
+    try {
+      setIsRefreshing(true);
+      await refreshData();
+      toast.success('Status atualizado.');
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      toast.error('Não foi possível atualizar o status agora.');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleSubmit = async (canvasData?: string) => {
     setIsSubmitting(true);
@@ -266,6 +300,15 @@ export default function ActivityPage() {
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
                 </div>
               )}
+
+              {/* Allow student to refresh status after admin clears submission */}
+              {user.role === 'aluno' && (
+                <div className="flex justify-end">
+                  <Button variant="outline" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
+                    {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -286,6 +329,14 @@ export default function ActivityPage() {
                     <p className="text-sm mt-2 p-2 bg-white rounded border border-green-200">
                       <span className="font-medium">Feedback:</span> {existingSubmission.feedback}
                     </p>
+                  )}
+
+                  {user.role === 'aluno' && (
+                    <div className="mt-3 flex justify-end">
+                      <Button variant="outline" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
+                        {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
