@@ -10,8 +10,13 @@ import { supabase } from '@/integrations/supabase/client';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { journeys, stations, activities, submissions, userBadges, badges, getJourneyProgress, getUserStats } = useData();
+  const { journeys, stations, activities, submissions, userBadges, badges, getJourneyProgress, getUserStats, refreshData } = useData();
   const [profiles, setProfiles] = useState<Record<string, string>>({});
+
+  // Sincroniza dados do banco ao abrir o Dashboard
+  useEffect(() => {
+    refreshData();
+  }, [refreshData]);
 
   // Fetch profiles for participant names
   useEffect(() => {
