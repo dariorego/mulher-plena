@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,8 @@ import {
   Loader2, 
   FolderOpen,
   Copy,
-  Check
+  Check,
+  RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -56,8 +57,11 @@ export default function ImageLibraryPage() {
   const [selectedBucket, setSelectedBucket] = useState('all');
   const [deleteImage, setDeleteImage] = useState<StorageImage | null>(null);
   const [zoomImage, setZoomImage] = useState<StorageImage | null>(null);
+  const [replaceImage, setReplaceImage] = useState<StorageImage | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [replacing, setReplacing] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadImages();
@@ -157,6 +161,54 @@ export default function ImageLibraryPage() {
     } catch (error) {
       toast.error('Erro ao copiar URL');
     }
+  };
+
+  const handleReplace = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!replaceImage || !e.target.files?.[0]) return;
+    
+    const file = e.target.files[0];
+    setReplacing(true);
+    
+    try {
+      // Extract the path from URL
+      const urlParts = replaceImage.url.split(`${replaceImage.bucket}/`);
+      const filePath = decodeURIComponent(urlParts[1] || replaceImage.name);
+      
+      // Upload the new file with the same path (upsert)
+      const { error } = await supabase.storage
+        .from(replaceImage.bucket)
+        .upload(filePath, file, { upsert: true });
+
+      if (error) throw error;
+
+      // Get new URL with cache-busting timestamp
+      const { data: { publicUrl } } = supabase.storage
+        .from(replaceImage.bucket)
+        .getPublicUrl(filePath);
+
+      // Update the images list with new URL
+      setImages(prev => prev.map(img => 
+        img.url === replaceImage.url 
+          ? { ...img, url: `${publicUrl}?t=${Date.now()}` }
+          : img
+      ));
+      
+      toast.success('Imagem substituída com sucesso!');
+    } catch (error) {
+      console.error('Error replacing image:', error);
+      toast.error('Erro ao substituir imagem');
+    } finally {
+      setReplacing(false);
+      setReplaceImage(null);
+      if (replaceInputRef.current) {
+        replaceInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleStartReplace = (image: StorageImage) => {
+    setReplaceImage(image);
+    setTimeout(() => replaceInputRef.current?.click(), 0);
   };
 
   const filteredImages = images.filter(img => {
@@ -269,11 +321,29 @@ export default function ImageLibraryPage() {
                                 e.stopPropagation();
                                 handleCopyUrl(image.url);
                               }}
+                              title="Copiar URL"
                             >
                               {copiedUrl === image.url ? (
                                 <Check className="h-4 w-4 text-green-600" />
                               ) : (
                                 <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              className="h-8 w-8"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartReplace(image);
+                              }}
+                              disabled={replacing && replaceImage?.url === image.url}
+                              title="Substituir imagem"
+                            >
+                              {replacing && replaceImage?.url === image.url ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-4 w-4" />
                               )}
                             </Button>
                             <Button
@@ -284,6 +354,7 @@ export default function ImageLibraryPage() {
                                 e.stopPropagation();
                                 setDeleteImage(image);
                               }}
+                              title="Excluir imagem"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -363,6 +434,15 @@ export default function ImageLibraryPage() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Hidden input for replacing images */}
+        <input
+          ref={replaceInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleReplace}
+          className="hidden"
+        />
       </div>
     </AppLayout>
   );
