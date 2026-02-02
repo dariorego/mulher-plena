@@ -232,7 +232,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     if (error) {
       console.error('Error deleting activity:', error);
-      return;
+      throw error;
     }
     setActivities(prev => prev.filter(a => a.id !== id));
   };
