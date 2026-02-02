@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ActivityForm } from './ActivityForm';
 import { Plus, Edit2, Trash2, FileText, Upload, PenLine, Gamepad2, MessageSquare } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 const activityIcons = {
@@ -50,9 +51,22 @@ export function ActivityManager({ stationId, activities, onAdd, onUpdate, onDele
   const handleDelete = async () => {
     if (!deletingActivity) return;
     setIsDeleting(true);
-    await onDelete(deletingActivity.id);
-    setDeletingActivity(null);
-    setIsDeleting(false);
+    try {
+      await onDelete(deletingActivity.id);
+      toast({
+        title: 'Atividade excluída com sucesso!',
+        description: `A atividade "${deletingActivity.title}" foi removida.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro ao excluir atividade',
+        description: 'Não foi possível remover a atividade. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingActivity(null);
+      setIsDeleting(false);
+    }
   };
 
   const stationActivities = activities.filter(a => a.station_id === stationId);
