@@ -129,8 +129,10 @@ export default function StationDetail() {
           </div>
         )}
 
-        {/* Title */}
-        <h1 className="text-3xl font-cinzel font-bold text-primary">{station.title}</h1>
+        {/* Title - Only visible for admin */}
+        {user.role === 'admin' && (
+          <h1 className="text-3xl font-cinzel font-bold text-primary">{station.title}</h1>
+        )}
 
         {/* Progress Bar */}
         <Card className="border-primary/20">
