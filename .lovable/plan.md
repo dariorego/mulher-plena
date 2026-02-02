@@ -1,127 +1,86 @@
 
-## Eventos por Jornada ou Gerais
+# Plano: Melhorar o Feedback de Exclusão de Atividade
 
-Adicionar a capacidade de vincular eventos a uma jornada específica ou deixá-los como eventos gerais.
+## Resumo
+A funcionalidade de exclusão de atividades já está implementada no código, mas pode estar faltando feedback visual adequado para o usuário. Vou adicionar mensagens de confirmação (toast) e garantir que o fluxo de exclusão funcione corretamente.
 
-### Comportamento
+## O que já existe
+- **Botão de excluir**: Presente no `ActivityManager.tsx` com ícone de lixeira
+- **Diálogo de confirmação**: AlertDialog perguntando se deseja excluir
+- **Função de exclusão**: `deleteActivity` no `DataContext.tsx` remove do Supabase e atualiza o estado
+- **Políticas RLS**: Admins têm permissão total na tabela `activities`
 
-| Tipo de Evento | Onde Aparece |
-|----------------|--------------|
-| **Geral** (sem jornada) | Dashboard (Visão Geral) |
-| **Vinculado a Jornada** | Página da Jornada (Visão Geral) |
+## Alterações Propostas
 
----
+### 1. Adicionar Toast de Confirmação no ActivityManager
+Após a exclusão bem-sucedida, mostrar uma mensagem de sucesso para o usuário.
 
-### Alterações Necessárias
+**Arquivo**: `src/components/admin/ActivityManager.tsx`
+- Importar o hook `toast` de `@/hooks/use-toast`
+- Adicionar toast de sucesso após `onDelete(deletingActivity.id)` com mensagem "Atividade excluída com sucesso!"
+- Adicionar tratamento de erro com toast de falha
 
-#### 1. Banco de Dados
-
-Adicionar coluna `journey_id` na tabela `scheduled_events`:
-
-```sql
-ALTER TABLE public.scheduled_events 
-ADD COLUMN journey_id UUID REFERENCES public.journeys(id) ON DELETE SET NULL;
-```
-
-#### 2. Tipo TypeScript
-
-**Arquivo:** `src/types/index.ts`
-
-Adicionar `journey_id` na interface `ScheduledEvent`:
-
-```typescript
-export interface ScheduledEvent {
-  id: string;
-  title: string;
-  description?: string;
-  event_date: string;
-  duration_minutes: number;
-  meeting_link?: string;
-  journey_id?: string;  // NOVO - null = evento geral
-  created_by?: string;
-  created_at: string;
-  updated_at: string;
-}
-```
-
-#### 3. Formulário de Evento
-
-**Arquivo:** `src/components/calendar/EventForm.tsx`
-
-- Adicionar campo Select para escolher a jornada
-- Opções: "Geral (para todos)" + lista de jornadas disponíveis
-- Receber `journeys` como prop
-
-#### 4. Página do Calendário (Admin)
-
-**Arquivo:** `src/pages/CalendarPage.tsx`
-
-- Passar lista de jornadas para o `EventForm`
-- Exibir indicador visual no `EventCard` quando evento é vinculado a uma jornada
-
-#### 5. Dashboard
-
-**Arquivo:** `src/pages/Dashboard.tsx`
-
-- Filtrar apenas eventos gerais (`journey_id === null ou undefined`)
-
-```typescript
-const generalEvents = scheduledEvents.filter(e => !e.journey_id);
-```
-
-#### 6. Página da Jornada
-
-**Arquivo:** `src/pages/JourneyDetail.tsx`
-
-- Adicionar widget `UpcomingEvents` no card "Visão Geral"
-- Filtrar apenas eventos da jornada atual
-
-```typescript
-const journeyEvents = scheduledEvents.filter(e => e.journey_id === journey.id);
-```
-
-#### 7. Componente EventCard (Opcional)
-
-**Arquivo:** `src/components/calendar/EventCard.tsx`
-
-- Exibir badge/tag indicando a jornada vinculada quando aplicável
+### 2. Melhorar Tratamento de Erros
+Garantir que erros sejam capturados e exibidos ao usuário.
 
 ---
 
-### Fluxo Visual
+## Detalhes Técnicos
 
-```text
-+---------------------------+
-|      Formulário Evento    |
-+---------------------------+
-| Título: [_______________] |
-| Jornada: [Geral (todos) v]|
-|          [Jornada 1      ]|
-|          [Jornada 2      ]|
-| Data/Hora: [___] [___]    |
-| ...                       |
-+---------------------------+
+### Modificações no ActivityManager.tsx
 
-Dashboard (Aluno)           Página da Jornada
-+-----------------------+   +-----------------------+
-| Próximos Eventos      |   | Visão Geral           |
-| (apenas gerais)       |   | - Estações: 5         |
-|                       |   | - Progresso: 40%      |
-| [Evento Geral 1]      |   |                       |
-| [Evento Geral 2]      |   | Próximos Eventos      |
-+-----------------------+   | (desta jornada)       |
-                            | [Evento Jornada 1]    |
-                            +-----------------------+
+```typescript
+// Adicionar import
+import { toast } from '@/hooks/use-toast';
+
+// Modificar handleDelete
+const handleDelete = async () => {
+  if (!deletingActivity) return;
+  setIsDeleting(true);
+  try {
+    await onDelete(deletingActivity.id);
+    toast({ 
+      title: 'Atividade excluída com sucesso!',
+      description: `A atividade "${deletingActivity.title}" foi removida.`
+    });
+  } catch (error) {
+    toast({ 
+      title: 'Erro ao excluir atividade',
+      variant: 'destructive'
+    });
+  } finally {
+    setDeletingActivity(null);
+    setIsDeleting(false);
+  }
+};
 ```
 
----
+### Modificações no DataContext.tsx (Opcional)
+Fazer a função `deleteActivity` lançar erro em caso de falha para permitir tratamento no componente.
 
-### Ordem de Implementação
+```typescript
+const deleteActivity = async (id: string) => {
+  const { error } = await supabase
+    .from('activities')
+    .delete()
+    .eq('id', id);
 
-1. Atualizar tipo `ScheduledEvent` com `journey_id`
-2. Modificar `EventForm` para incluir seletor de jornada
-3. Atualizar `CalendarPage` para passar jornadas ao formulário
-4. Atualizar `EventCard` para exibir jornada vinculada
-5. Filtrar eventos gerais no Dashboard
-6. Adicionar widget de eventos na página da Jornada
-7. Executar SQL para adicionar coluna no banco
+  if (error) {
+    console.error('Error deleting activity:', error);
+    throw error; // Lançar erro para tratamento no componente
+  }
+  setActivities(prev => prev.filter(a => a.id !== id));
+};
+```
+
+## Arquivos a Modificar
+1. `src/components/admin/ActivityManager.tsx` - Adicionar toast de feedback
+2. `src/contexts/DataContext.tsx` - Lançar erro em caso de falha (opcional)
+
+## Teste Recomendado
+1. Acesse como admin
+2. Vá para uma jornada existente
+3. Clique em "Editar" em uma estação
+4. Na lista de atividades, clique no ícone de lixeira
+5. Confirme no diálogo
+6. Verifique se a atividade foi removida e o toast apareceu
