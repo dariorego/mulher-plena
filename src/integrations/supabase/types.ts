@@ -429,6 +429,7 @@ export type Database = {
           id: string
           journey_id: string
           station_id: string | null
+          step_type: string | null
           time_spent: number
           user_id: string
         }
@@ -439,6 +440,7 @@ export type Database = {
           id?: string
           journey_id: string
           station_id?: string | null
+          step_type?: string | null
           time_spent?: number
           user_id: string
         }
@@ -449,6 +451,7 @@ export type Database = {
           id?: string
           journey_id?: string
           station_id?: string | null
+          step_type?: string | null
           time_spent?: number
           user_id?: string
         }

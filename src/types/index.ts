@@ -99,6 +99,7 @@ export interface UserProgress {
   journey_id: string;
   station_id?: string;
   activity_id?: string;
+  step_type?: 'video' | 'supplementary' | null;
   completed: boolean;
   completed_at?: string;
   time_spent: number;
