@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -10,8 +11,9 @@ import { FontSizeControl } from '@/components/ui/font-size-control';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { useFontSize } from '@/contexts/FontSizeContext';
-import { ArrowLeft, Play, Film, ChevronLeft, ChevronRight, Headphones, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Play, Film, ChevronLeft, ChevronRight, Headphones, CheckCircle, PartyPopper } from 'lucide-react';
 import { toast } from 'sonner';
+import confetti from 'canvas-confetti';
 import videoAulaTitleImage from '@/assets/video-aula-title.png';
 import activityButtonImage from '@/assets/activity-button.png';
 import atividadeTitleImage from '@/assets/atividade-title.png';
@@ -56,6 +58,50 @@ export default function StationDetail() {
   const videoCompleted = isStepCompleted(user.id, station.id, 'video');
   const activityCompleted = isStepCompleted(user.id, station.id, 'activity');
   const supplementaryCompleted = isStepCompleted(user.id, station.id, 'supplementary');
+
+  // Track if celebration was already shown
+  const celebrationShown = useRef(false);
+
+  // Celebrate when reaching 100%
+  useEffect(() => {
+    if (stationProgress === 100 && !celebrationShown.current) {
+      celebrationShown.current = true;
+      
+      // Fire confetti
+      const duration = 3000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+      const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+        });
+      }, 250);
+
+      // Show toast
+      toast.success('🎉 Parabéns, estação concluída!', {
+        description: 'Você completou todas as etapas desta estação!',
+        duration: 5000,
+        icon: <PartyPopper className="h-5 w-5 text-accent" />,
+      });
+    }
+  }, [stationProgress]);
 
   // Navigation between stations
   const journeyStations = stations
