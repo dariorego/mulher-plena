@@ -142,17 +142,17 @@ export default function StationDetail() {
           </Card>
         )}
 
-        {/* Activity Section */}
-        <Card>
-          <div className="w-full overflow-hidden rounded-t-lg">
-            <img
-              src={atividadeTitleImage}
-              alt="Atividade"
-              className="w-full h-auto object-cover"
-            />
-          </div>
-          <CardContent className="pt-4">
-            {firstActivity ? (
+        {/* Activity Section - Only show if there are activities */}
+        {firstActivity && (
+          <Card>
+            <div className="w-full overflow-hidden rounded-t-lg">
+              <img
+                src={atividadeTitleImage}
+                alt="Atividade"
+                className="w-full h-auto object-cover"
+              />
+            </div>
+            <CardContent className="pt-4">
               <div className="flex justify-center">
                 <div 
                   onClick={handleActivityClick}
@@ -165,13 +165,9 @@ export default function StationDetail() {
                   />
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-8 bg-muted/50 rounded-lg">
-                <p className="text-muted-foreground">Nenhuma atividade disponível para esta estação.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Audio Section - After Activity, Before Supplementary Material */}
         {station.audio_url && (
