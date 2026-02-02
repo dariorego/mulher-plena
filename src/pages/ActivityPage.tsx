@@ -208,8 +208,8 @@ export default function ActivityPage() {
     toast.success('Atividade enviada com sucesso!');
     setIsSubmitting(false);
 
-    if (journey) {
-      navigate(`/jornadas/${journey.id}`);
+    if (station) {
+      navigate(`/estacao/${station.id}`);
     }
   };
 
