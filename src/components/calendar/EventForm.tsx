@@ -206,14 +206,17 @@ export function EventForm({ event, journeys = [], onSubmit, onCancel, isLoading 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Jornada</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ''}>
+              <Select 
+                onValueChange={(val) => field.onChange(val === '__general__' ? '' : val)} 
+                value={field.value || '__general__'}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a jornada" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">Geral (para todos)</SelectItem>
+                  <SelectItem value="__general__">Geral (para todos)</SelectItem>
                   {journeys.map((journey) => (
                     <SelectItem key={journey.id} value={journey.id}>
                       {journey.title}
