@@ -184,7 +184,7 @@ export default function StationDetail() {
               </div>
               
               {/* Video Completion Checkbox */}
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${videoCompleted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted/50'}`}>
                 <div className="flex items-center gap-3">
                   <Checkbox 
                     id="video-complete"
@@ -199,8 +199,8 @@ export default function StationDetail() {
                     Marcar como assistido
                   </label>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {videoPercentage}% do progresso
+                <span className={`text-sm font-semibold ${videoCompleted ? 'text-green-600' : 'text-muted-foreground'}`}>
+                  +{videoPercentage}%
                 </span>
               </div>
             </CardContent>
@@ -232,7 +232,7 @@ export default function StationDetail() {
               </div>
               
               {/* Activity Completion Status */}
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${activityCompleted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted/50'}`}>
                 <div className="flex items-center gap-3">
                   <Checkbox 
                     id="activity-complete"
@@ -247,8 +247,8 @@ export default function StationDetail() {
                     {activityCompleted ? 'Atividade enviada' : 'Atividade pendente'}
                   </label>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {activityPercentage}% do progresso
+                <span className={`text-sm font-semibold ${activityCompleted ? 'text-green-600' : 'text-muted-foreground'}`}>
+                  +{activityPercentage}%
                 </span>
               </div>
             </CardContent>
@@ -317,7 +317,7 @@ export default function StationDetail() {
               </Dialog>
 
               {/* Supplementary Completion Checkbox */}
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${supplementaryCompleted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted/50'}`}>
                 <div className="flex items-center gap-3">
                   <Checkbox 
                     id="supplementary-complete"
@@ -332,8 +332,8 @@ export default function StationDetail() {
                     Marcar como visto
                   </label>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {supplementaryPercentage}% do progresso
+                <span className={`text-sm font-semibold ${supplementaryCompleted ? 'text-green-600' : 'text-muted-foreground'}`}>
+                  +{supplementaryPercentage}%
                 </span>
               </div>
             </CardContent>
