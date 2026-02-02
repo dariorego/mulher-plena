@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { StationForm } from '@/components/admin/StationForm';
 import { StationCard } from '@/components/admin/StationCard';
 import { FontSizeControl } from '@/components/ui/font-size-control';
+import { UpcomingEvents } from '@/components/calendar/UpcomingEvents';
 import { useFontSize } from '@/contexts/FontSizeContext';
 import { Station } from '@/types';
 import { ArrowLeft, Play, CheckCircle, Circle, FileText, Upload, PenLine, Gamepad2, Plus } from 'lucide-react';
@@ -34,7 +35,7 @@ const activityLabels = {
 export default function JourneyDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { journeys, stations, activities, submissions, getJourneyProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity } = useData();
+  const { journeys, stations, activities, submissions, scheduledEvents, getJourneyProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity } = useData();
   const navigate = useNavigate();
 
   const [isStationFormOpen, setIsStationFormOpen] = useState(false);
@@ -64,6 +65,8 @@ export default function JourneyDetail() {
     .sort((a, b) => a.order_index - b.order_index);
 
   const progress = user.role === 'aluno' ? getJourneyProgress(user.id, journey.id) : 0;
+
+  const journeyEvents = scheduledEvents.filter(e => e.journey_id === journey.id);
 
   const isActivityCompleted = (activityId: string) => {
     return submissions.some(s => s.activity_id === activityId && s.user_id === user.id);
@@ -159,6 +162,12 @@ export default function JourneyDetail() {
                     <span className="font-semibold text-primary">{progress}%</span>
                   </div>
                   <Progress value={progress} className="h-3" />
+                </div>
+              )}
+
+              {journeyEvents.length > 0 && (
+                <div className="pt-4 border-t">
+                  <UpcomingEvents events={journeyEvents} maxEvents={3} />
                 </div>
               )}
             </CardContent>

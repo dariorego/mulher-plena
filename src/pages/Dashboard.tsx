@@ -238,7 +238,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div>
-              <UpcomingEvents events={scheduledEvents} maxEvents={5} />
+              <UpcomingEvents events={scheduledEvents.filter(e => !e.journey_id)} maxEvents={5} />
             </div>
           </div>
         )}
