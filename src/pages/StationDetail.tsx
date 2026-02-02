@@ -33,38 +33,21 @@ export default function StationDetail() {
   const navigate = useNavigate();
   const { sizeClass: fontSizeClass } = useFontSize();
 
-  if (!user || !id) return null;
-
-  const station = stations.find(s => s.id === id);
-  if (!station) {
-    return (
-      <AppLayout>
-        <div className="text-center py-12">
-          <h2 className="text-xl font-semibold">Estação não encontrada</h2>
-          <Link to="/jornadas">
-            <Button variant="link">Voltar para jornadas</Button>
-          </Link>
-        </div>
-      </AppLayout>
-    );
-  }
-
-  const journey = journeys.find(j => j.id === station.journey_id);
-  const stationActivities = activities.filter(a => a.station_id === station.id);
-  const firstActivity = stationActivities[0];
-
-  // Progress tracking
-  const stationProgress = getStationProgress(user.id, station.id);
-  const videoCompleted = isStepCompleted(user.id, station.id, 'video');
-  const activityCompleted = isStepCompleted(user.id, station.id, 'activity');
-  const supplementaryCompleted = isStepCompleted(user.id, station.id, 'supplementary');
-
-  // Track if celebration was already shown
+  // Track if celebration was already shown - must be before any conditional returns
   const celebrationShown = useRef(false);
+
+  // Get station data
+  const station = stations.find(s => s.id === id);
+  
+  // Calculate progress - safely handle missing data
+  const stationProgress = user && station ? getStationProgress(user.id, station.id) : 0;
+  const videoCompleted = user && station ? isStepCompleted(user.id, station.id, 'video') : false;
+  const activityCompleted = user && station ? isStepCompleted(user.id, station.id, 'activity') : false;
+  const supplementaryCompleted = user && station ? isStepCompleted(user.id, station.id, 'supplementary') : false;
 
   // Celebrate when reaching 100%
   useEffect(() => {
-    if (stationProgress === 100 && !celebrationShown.current) {
+    if (stationProgress === 100 && !celebrationShown.current && station) {
       celebrationShown.current = true;
       
       // Fire confetti
@@ -101,7 +84,32 @@ export default function StationDetail() {
         icon: <PartyPopper className="h-5 w-5 text-accent" />,
       });
     }
-  }, [stationProgress]);
+  }, [stationProgress, station]);
+
+  // Reset celebration flag when station changes
+  useEffect(() => {
+    celebrationShown.current = false;
+  }, [id]);
+
+  // Early returns after all hooks
+  if (!user || !id) return null;
+
+  if (!station) {
+    return (
+      <AppLayout>
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold">Estação não encontrada</h2>
+          <Link to="/jornadas">
+            <Button variant="link">Voltar para jornadas</Button>
+          </Link>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const journey = journeys.find(j => j.id === station.journey_id);
+  const stationActivities = activities.filter(a => a.station_id === station.id);
+  const firstActivity = stationActivities[0];
 
   // Navigation between stations
   const journeyStations = stations
