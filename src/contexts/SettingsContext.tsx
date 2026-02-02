@@ -3,6 +3,9 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 interface EvaluationSettings {
   showScoreToStudents: boolean;
   showFeedbackToStudents: boolean;
+  videoPercentage: number;
+  activityPercentage: number;
+  supplementaryPercentage: number;
 }
 
 interface SettingsContextType extends EvaluationSettings {
@@ -14,6 +17,9 @@ const SETTINGS_KEY = 'evaluation-settings';
 const defaultSettings: EvaluationSettings = {
   showScoreToStudents: true,
   showFeedbackToStudents: true,
+  videoPercentage: 40,
+  activityPercentage: 40,
+  supplementaryPercentage: 20,
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);

@@ -1,14 +1,17 @@
-import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FontSizeControl } from '@/components/ui/font-size-control';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
 import { useFontSize } from '@/contexts/FontSizeContext';
-import { ArrowLeft, Play, Film, ChevronLeft, ChevronRight, Headphones } from 'lucide-react';
+import { ArrowLeft, Play, Film, ChevronLeft, ChevronRight, Headphones, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import videoAulaTitleImage from '@/assets/video-aula-title.png';
 import activityButtonImage from '@/assets/activity-button.png';
 import atividadeTitleImage from '@/assets/atividade-title.png';
@@ -16,7 +19,15 @@ import atividadeTitleImage from '@/assets/atividade-title.png';
 export default function StationDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { stations, activities, journeys } = useData();
+  const { 
+    stations, 
+    activities, 
+    journeys, 
+    markStationStepComplete, 
+    getStationProgress, 
+    isStepCompleted 
+  } = useData();
+  const { videoPercentage, activityPercentage, supplementaryPercentage } = useSettings();
   const navigate = useNavigate();
   const { sizeClass: fontSizeClass } = useFontSize();
 
@@ -39,6 +50,12 @@ export default function StationDetail() {
   const journey = journeys.find(j => j.id === station.journey_id);
   const stationActivities = activities.filter(a => a.station_id === station.id);
   const firstActivity = stationActivities[0];
+
+  // Progress tracking
+  const stationProgress = getStationProgress(user.id, station.id);
+  const videoCompleted = isStepCompleted(user.id, station.id, 'video');
+  const activityCompleted = isStepCompleted(user.id, station.id, 'activity');
+  const supplementaryCompleted = isStepCompleted(user.id, station.id, 'supplementary');
 
   // Navigation between stations
   const journeyStations = stations
@@ -74,6 +91,21 @@ export default function StationDetail() {
     }
   };
 
+  const handleVideoComplete = async (checked: boolean) => {
+    await markStationStepComplete(station.id, 'video', checked);
+    toast.success(checked ? 'Vídeo marcado como assistido' : 'Marcação do vídeo removida');
+  };
+
+  const handleSupplementaryComplete = async (checked: boolean) => {
+    await markStationStepComplete(station.id, 'supplementary', checked);
+    toast.success(checked ? 'Material complementar marcado como visto' : 'Marcação do material removida');
+  };
+
+  // Calculate which sections are present for percentage display
+  const hasVideo = !!station.video_url;
+  const hasActivity = stationActivities.length > 0;
+  const hasSupplementary = !!station.supplementary_url;
+
   return (
     <AppLayout>
       <div className="space-y-8 max-w-4xl mx-auto">
@@ -99,6 +131,17 @@ export default function StationDetail() {
 
         {/* Title */}
         <h1 className="text-3xl font-cinzel font-bold text-primary">{station.title}</h1>
+
+        {/* Progress Bar */}
+        <Card className="border-primary/20">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-primary">Progresso da Estação</span>
+              <span className="text-sm font-bold text-primary">{stationProgress}%</span>
+            </div>
+            <Progress value={stationProgress} className="h-3" />
+          </CardContent>
+        </Card>
 
         {/* Description */}
         {station.description && (
@@ -128,7 +171,7 @@ export default function StationDetail() {
                 className="w-full h-auto object-cover"
               />
             </div>
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 space-y-4">
               <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                 <iframe
                   src={videoEmbedUrl}
@@ -137,6 +180,27 @@ export default function StationDetail() {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
+              </div>
+              
+              {/* Video Completion Checkbox */}
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Checkbox 
+                    id="video-complete"
+                    checked={videoCompleted}
+                    onCheckedChange={handleVideoComplete}
+                  />
+                  <label 
+                    htmlFor="video-complete" 
+                    className="text-sm font-medium cursor-pointer flex items-center gap-2"
+                  >
+                    {videoCompleted && <CheckCircle className="h-4 w-4 text-green-600" />}
+                    Marcar como assistido
+                  </label>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {videoPercentage}% do progresso
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -152,7 +216,7 @@ export default function StationDetail() {
                 className="w-full h-auto object-cover"
               />
             </div>
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 space-y-4">
               <div className="flex justify-center">
                 <div 
                   onClick={handleActivityClick}
@@ -164,6 +228,27 @@ export default function StationDetail() {
                     className="h-[150px] w-auto rounded-lg shadow-md hover:shadow-lg transition-shadow"
                   />
                 </div>
+              </div>
+              
+              {/* Activity Completion Status */}
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Checkbox 
+                    id="activity-complete"
+                    checked={activityCompleted}
+                    disabled
+                  />
+                  <label 
+                    htmlFor="activity-complete" 
+                    className="text-sm font-medium flex items-center gap-2"
+                  >
+                    {activityCompleted && <CheckCircle className="h-4 w-4 text-green-600" />}
+                    {activityCompleted ? 'Atividade enviada' : 'Atividade pendente'}
+                  </label>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {activityPercentage}% do progresso
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -197,7 +282,7 @@ export default function StationDetail() {
             <CardHeader>
               <CardTitle className="text-lg font-cinzel text-primary">Material Complementar</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex items-center gap-3 mb-4">
                 <Film className="h-5 w-5 text-accent" />
                 <h3 className="font-medium text-primary">Vídeo Complementar</h3>
@@ -229,6 +314,27 @@ export default function StationDetail() {
                   </div>
                 </DialogContent>
               </Dialog>
+
+              {/* Supplementary Completion Checkbox */}
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Checkbox 
+                    id="supplementary-complete"
+                    checked={supplementaryCompleted}
+                    onCheckedChange={handleSupplementaryComplete}
+                  />
+                  <label 
+                    htmlFor="supplementary-complete" 
+                    className="text-sm font-medium cursor-pointer flex items-center gap-2"
+                  >
+                    {supplementaryCompleted && <CheckCircle className="h-4 w-4 text-green-600" />}
+                    Marcar como visto
+                  </label>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {supplementaryPercentage}% do progresso
+                </span>
+              </div>
             </CardContent>
           </Card>
         )}
