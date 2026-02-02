@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
+import { useSettings } from './SettingsContext';
 import { Journey, Station, Activity, QuizQuestion, ActivitySubmission, UserProgress, Badge, UserBadge } from '@/types';
 
 interface DataContextType {
@@ -31,12 +32,16 @@ interface DataContextType {
   awardBadge: (userId: string, badgeId: string) => Promise<void>;
   getJourneyProgress: (userId: string, journeyId: string) => number;
   getUserStats: (userId: string) => { totalPoints: number; completedActivities: number; averageScore: number };
+  markStationStepComplete: (stationId: string, step: 'video' | 'supplementary', completed: boolean) => Promise<void>;
+  getStationProgress: (userId: string, stationId: string) => number;
+  isStepCompleted: (userId: string, stationId: string, step: 'video' | 'supplementary' | 'activity') => boolean;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { videoPercentage, activityPercentage, supplementaryPercentage } = useSettings();
   const [journeys, setJourneys] = useState<Journey[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -346,23 +351,100 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setUserBadges(prev => [...prev, data]);
   };
 
-  // Computed values
-  const getJourneyProgress = (userId: string, journeyId: string): number => {
-    const journeyStations = stations.filter(s => s.journey_id === journeyId);
-    const journeyActivities = activities.filter(a =>
-      journeyStations.some(s => s.id === a.station_id)
-    );
-    
-    if (journeyActivities.length === 0) return 0;
+  // Check if a specific step is completed for a station
+  const isStepCompleted = useCallback((userId: string, stationId: string, step: 'video' | 'supplementary' | 'activity'): boolean => {
+    const station = stations.find(s => s.id === stationId);
+    if (!station) return false;
 
-    const completedActivities = progress.filter(p =>
+    if (step === 'activity') {
+      // Check if user has submitted any activity for this station
+      const stationActivities = activities.filter(a => a.station_id === stationId);
+      return stationActivities.some(activity => 
+        submissions.some(s => s.user_id === userId && s.activity_id === activity.id)
+      );
+    }
+
+    // For video and supplementary, check progress with special markers
+    const specialActivityId = step === 'video' ? '__video__' : '__supplementary__';
+    return progress.some(p =>
       p.user_id === userId &&
-      p.journey_id === journeyId &&
+      p.station_id === stationId &&
+      p.activity_id === specialActivityId &&
       p.completed
-    ).length;
+    );
+  }, [stations, activities, submissions, progress]);
 
-    return Math.round((completedActivities / journeyActivities.length) * 100);
+  // Mark a station step as complete
+  const markStationStepComplete = async (stationId: string, step: 'video' | 'supplementary', completed: boolean) => {
+    if (!user) return;
+
+    const station = stations.find(s => s.id === stationId);
+    if (!station) return;
+
+    const specialActivityId = step === 'video' ? '__video__' : '__supplementary__';
+    
+    const progressData: Omit<UserProgress, 'id'> = {
+      user_id: user.id,
+      journey_id: station.journey_id,
+      station_id: stationId,
+      activity_id: specialActivityId,
+      completed,
+      completed_at: completed ? new Date().toISOString() : undefined,
+      time_spent: 0,
+    };
+
+    await updateProgress(progressData);
   };
+
+  // Get station progress based on configured percentages
+  const getStationProgress = useCallback((userId: string, stationId: string): number => {
+    const station = stations.find(s => s.id === stationId);
+    if (!station) return 0;
+
+    let total = 0;
+    let maxPossible = 0;
+
+    // Check video
+    if (station.video_url) {
+      maxPossible += videoPercentage;
+      if (isStepCompleted(userId, stationId, 'video')) {
+        total += videoPercentage;
+      }
+    }
+
+    // Check activity
+    const stationActivities = activities.filter(a => a.station_id === stationId);
+    if (stationActivities.length > 0) {
+      maxPossible += activityPercentage;
+      if (isStepCompleted(userId, stationId, 'activity')) {
+        total += activityPercentage;
+      }
+    }
+
+    // Check supplementary material
+    if (station.supplementary_url) {
+      maxPossible += supplementaryPercentage;
+      if (isStepCompleted(userId, stationId, 'supplementary')) {
+        total += supplementaryPercentage;
+      }
+    }
+
+    // Normalize to 100% based on available content
+    if (maxPossible === 0) return 0;
+    return Math.round((total / maxPossible) * 100);
+  }, [stations, activities, videoPercentage, activityPercentage, supplementaryPercentage, isStepCompleted]);
+
+  // Computed values
+  const getJourneyProgress = useCallback((userId: string, journeyId: string): number => {
+    const journeyStations = stations.filter(s => s.journey_id === journeyId);
+    if (journeyStations.length === 0) return 0;
+
+    const totalProgress = journeyStations.reduce((acc, station) => {
+      return acc + getStationProgress(userId, station.id);
+    }, 0);
+
+    return Math.round(totalProgress / journeyStations.length);
+  }, [stations, getStationProgress]);
 
   const getUserStats = (userId: string) => {
     const userSubmissions = submissions.filter(s => s.user_id === userId && s.score !== undefined);
@@ -408,6 +490,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       awardBadge,
       getJourneyProgress,
       getUserStats,
+      markStationStepComplete,
+      getStationProgress,
+      isStepCompleted,
     }}>
       {children}
     </DataContext.Provider>
