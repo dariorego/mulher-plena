@@ -92,7 +92,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (activitiesRes.data) setActivities(activitiesRes.data as Activity[]);
       if (questionsRes.data) setQuizQuestions(questionsRes.data);
       if (submissionsRes.data) setSubmissions(submissionsRes.data);
-      if (progressRes.data) setProgress(progressRes.data);
+      if (progressRes.data) setProgress(progressRes.data as UserProgress[]);
       if (badgesRes.data) setBadges(badgesRes.data);
       if (userBadgesRes.data) setUserBadges(userBadgesRes.data);
       if (scheduledEventsRes.data) setScheduledEvents(scheduledEventsRes.data as ScheduledEvent[]);
@@ -307,13 +307,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // Progress operations
   const updateProgress = async (progressData: Omit<UserProgress, 'id'>) => {
-    // Check if progress already exists
-    const existing = progress.find(p =>
-      p.user_id === progressData.user_id &&
-      p.journey_id === progressData.journey_id &&
-      p.station_id === progressData.station_id &&
-      p.activity_id === progressData.activity_id
-    );
+    // Check if progress already exists - handle both activity-based and step-based progress
+    const existing = progress.find(p => {
+      const sameUser = p.user_id === progressData.user_id;
+      const sameJourney = p.journey_id === progressData.journey_id;
+      const sameStation = p.station_id === progressData.station_id;
+      
+      // For step-based progress (video/supplementary)
+      if (progressData.step_type) {
+        return sameUser && sameJourney && sameStation && p.step_type === progressData.step_type;
+      }
+      
+      // For activity-based progress
+      return sameUser && sameJourney && sameStation && p.activity_id === progressData.activity_id;
+    });
 
     if (existing) {
       const { error } = await supabase
@@ -337,7 +344,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         console.error('Error adding progress:', error);
         return;
       }
-      setProgress(prev => [...prev, data]);
+      setProgress(prev => [...prev, data as UserProgress]);
     }
   };
 
@@ -372,12 +379,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       );
     }
 
-    // For video and supplementary, check progress with special markers
-    const specialActivityId = step === 'video' ? '__video__' : '__supplementary__';
+    // For video and supplementary, check progress with step_type
     return progress.some(p =>
       p.user_id === userId &&
       p.station_id === stationId &&
-      p.activity_id === specialActivityId &&
+      p.step_type === step &&
       p.completed
     );
   }, [stations, activities, submissions, progress]);
@@ -388,14 +394,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     const station = stations.find(s => s.id === stationId);
     if (!station) return;
-
-    const specialActivityId = step === 'video' ? '__video__' : '__supplementary__';
     
     const progressData: Omit<UserProgress, 'id'> = {
       user_id: user.id,
       journey_id: station.journey_id,
       station_id: stationId,
-      activity_id: specialActivityId,
+      activity_id: null,
+      step_type: step,
       completed,
       completed_at: completed ? new Date().toISOString() : undefined,
       time_spent: 0,
