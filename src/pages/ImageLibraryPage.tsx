@@ -26,6 +26,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
+import {
   Tabs,
   TabsContent,
   TabsList,
@@ -51,6 +55,7 @@ export default function ImageLibraryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBucket, setSelectedBucket] = useState('all');
   const [deleteImage, setDeleteImage] = useState<StorageImage | null>(null);
+  const [zoomImage, setZoomImage] = useState<StorageImage | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
@@ -244,22 +249,26 @@ export default function ImageLibraryPage() {
                         <img
                           src={image.url}
                           alt={image.name}
-                          className="max-w-full max-h-full object-contain"
+                          className="max-w-full max-h-full object-contain cursor-zoom-in"
                           loading="lazy"
+                          onClick={() => setZoomImage(image)}
                         />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2 pointer-events-none">
                           <p className="text-white text-xs text-center truncate w-full">
                             {image.name}
                           </p>
                           <p className="text-white/70 text-[10px]">
                             {getBucketLabel(image.bucket)}
                           </p>
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 pointer-events-auto">
                             <Button
                               size="icon"
                               variant="secondary"
                               className="h-8 w-8"
-                              onClick={() => handleCopyUrl(image.url)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyUrl(image.url);
+                              }}
                             >
                               {copiedUrl === image.url ? (
                                 <Check className="h-4 w-4 text-green-600" />
@@ -271,7 +280,10 @@ export default function ImageLibraryPage() {
                               size="icon"
                               variant="destructive"
                               className="h-8 w-8"
-                              onClick={() => setDeleteImage(image)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteImage(image);
+                              }}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -318,6 +330,39 @@ export default function ImageLibraryPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Zoom Image Dialog */}
+        <Dialog open={!!zoomImage} onOpenChange={() => setZoomImage(null)}>
+          <DialogContent className="max-w-[90vw] max-h-[90vh] p-2 overflow-hidden">
+            {zoomImage && (
+              <div className="flex flex-col items-center gap-3">
+                <img
+                  src={zoomImage.url}
+                  alt={zoomImage.name}
+                  className="max-w-full max-h-[80vh] object-contain animate-scale-in"
+                />
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="font-medium">{zoomImage.name}</span>
+                  <span>•</span>
+                  <span>{getBucketLabel(zoomImage.bucket)}</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="ml-2"
+                    onClick={() => handleCopyUrl(zoomImage.url)}
+                  >
+                    {copiedUrl === zoomImage.url ? (
+                      <Check className="h-4 w-4 text-green-600 mr-1" />
+                    ) : (
+                      <Copy className="h-4 w-4 mr-1" />
+                    )}
+                    Copiar URL
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
