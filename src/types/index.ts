@@ -150,6 +150,7 @@ export interface ScheduledEvent {
   event_date: string;
   duration_minutes: number;
   meeting_link?: string;
+  journey_id?: string;
   created_by?: string;
   created_at: string;
   updated_at: string;

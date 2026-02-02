@@ -17,7 +17,7 @@ import { Navigate } from 'react-router-dom';
 
 export default function CalendarPage() {
   const { user } = useAuth();
-  const { scheduledEvents, addScheduledEvent, updateScheduledEvent, deleteScheduledEvent } = useData();
+  const { scheduledEvents, journeys, addScheduledEvent, updateScheduledEvent, deleteScheduledEvent } = useData();
   
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -125,6 +125,7 @@ export default function CalendarPage() {
                     <EventCard
                       key={event.id}
                       event={event}
+                      journeys={journeys}
                       showActions
                       onEdit={handleEdit}
                       onDelete={setDeletingEvent}
@@ -144,6 +145,7 @@ export default function CalendarPage() {
           </DialogHeader>
           <EventForm
             event={editingEvent}
+            journeys={journeys}
             onSubmit={handleSubmit}
             onCancel={() => {
               setIsFormOpen(false);

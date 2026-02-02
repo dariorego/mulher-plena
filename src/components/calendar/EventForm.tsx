@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ScheduledEvent } from '@/types';
+import { ScheduledEvent, Journey } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,12 +21,14 @@ const eventSchema = z.object({
   event_time: z.string().min(1, 'Hora é obrigatória'),
   duration_minutes: z.number().min(15, 'Mínimo 15 minutos'),
   meeting_link: z.string().url('URL inválida').optional().or(z.literal('')),
+  journey_id: z.string().optional(),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
 
 interface EventFormProps {
   event?: ScheduledEvent | null;
+  journeys?: Journey[];
   onSubmit: (data: Omit<ScheduledEvent, 'id' | 'created_at' | 'updated_at'>) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -43,7 +45,7 @@ const durationOptions = [
   { value: 240, label: '4 horas' },
 ];
 
-export function EventForm({ event, onSubmit, onCancel, isLoading }: EventFormProps) {
+export function EventForm({ event, journeys = [], onSubmit, onCancel, isLoading }: EventFormProps) {
   const eventDate = event ? new Date(event.event_date) : undefined;
   
   const form = useForm<EventFormData>({
@@ -55,6 +57,7 @@ export function EventForm({ event, onSubmit, onCancel, isLoading }: EventFormPro
       event_time: eventDate ? format(eventDate, 'HH:mm') : '',
       duration_minutes: event?.duration_minutes || 60,
       meeting_link: event?.meeting_link || '',
+      journey_id: event?.journey_id || '',
     },
   });
 
@@ -69,6 +72,7 @@ export function EventForm({ event, onSubmit, onCancel, isLoading }: EventFormPro
       event_date: eventDateTime.toISOString(),
       duration_minutes: data.duration_minutes,
       meeting_link: data.meeting_link || undefined,
+      journey_id: data.journey_id || undefined,
     });
   };
 
@@ -191,6 +195,32 @@ export function EventForm({ event, onSubmit, onCancel, isLoading }: EventFormPro
               <FormControl>
                 <Input placeholder="https://meet.google.com/..." {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="journey_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Jornada</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value || ''}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a jornada" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="">Geral (para todos)</SelectItem>
+                  {journeys.map((journey) => (
+                    <SelectItem key={journey.id} value={journey.id}>
+                      {journey.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
