@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { useSettings } from './SettingsContext';
-import { Journey, Station, Activity, QuizQuestion, ActivitySubmission, UserProgress, Badge, UserBadge } from '@/types';
+import { Journey, Station, Activity, QuizQuestion, ActivitySubmission, UserProgress, Badge, UserBadge, ScheduledEvent } from '@/types';
 
 interface DataContextType {
   journeys: Journey[];
@@ -13,6 +13,7 @@ interface DataContextType {
   progress: UserProgress[];
   badges: Badge[];
   userBadges: UserBadge[];
+  scheduledEvents: ScheduledEvent[];
   isLoading: boolean;
   refreshData: () => Promise<void>;
   addJourney: (journey: Omit<Journey, 'id' | 'created_at' | 'updated_at'>) => Promise<Journey | null>;
@@ -35,6 +36,9 @@ interface DataContextType {
   markStationStepComplete: (stationId: string, step: 'video' | 'supplementary', completed: boolean) => Promise<void>;
   getStationProgress: (userId: string, stationId: string) => number;
   isStepCompleted: (userId: string, stationId: string, step: 'video' | 'supplementary' | 'activity') => boolean;
+  addScheduledEvent: (event: Omit<ScheduledEvent, 'id' | 'created_at' | 'updated_at'>) => Promise<ScheduledEvent | null>;
+  updateScheduledEvent: (id: string, event: Partial<ScheduledEvent>) => Promise<void>;
+  deleteScheduledEvent: (id: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -50,6 +54,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<UserProgress[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+  const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -69,6 +74,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         progressRes,
         badgesRes,
         userBadgesRes,
+        eventsRes,
       ] = await Promise.all([
         supabase.from('journeys').select('*').order('order_index'),
         supabase.from('stations').select('*').order('order_index'),
@@ -78,6 +84,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         supabase.from('user_progress').select('*'),
         supabase.from('badges').select('*'),
         supabase.from('user_badges').select('*'),
+        supabase.from('scheduled_events').select('*').order('event_date'),
       ]);
 
       if (journeysRes.data) setJourneys(journeysRes.data);
@@ -88,6 +95,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (progressRes.data) setProgress(progressRes.data);
       if (badgesRes.data) setBadges(badgesRes.data);
       if (userBadgesRes.data) setUserBadges(userBadgesRes.data);
+      if (eventsRes.data) setScheduledEvents(eventsRes.data as ScheduledEvent[]);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -461,6 +469,48 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return { totalPoints: Math.round(totalPoints), completedActivities, averageScore: Math.round(averageScore) };
   };
 
+  // Scheduled Event operations
+  const addScheduledEvent = async (event: Omit<ScheduledEvent, 'id' | 'created_at' | 'updated_at'>): Promise<ScheduledEvent | null> => {
+    const { data, error } = await supabase
+      .from('scheduled_events')
+      .insert({ ...event, created_by: user?.id })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding scheduled event:', error);
+      return null;
+    }
+    setScheduledEvents(prev => [...prev, data as ScheduledEvent].sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()));
+    return data as ScheduledEvent;
+  };
+
+  const updateScheduledEvent = async (id: string, event: Partial<ScheduledEvent>) => {
+    const { error } = await supabase
+      .from('scheduled_events')
+      .update({ ...event, updated_at: new Date().toISOString() })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating scheduled event:', error);
+      return;
+    }
+    setScheduledEvents(prev => prev.map(e => e.id === id ? { ...e, ...event } : e).sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()));
+  };
+
+  const deleteScheduledEvent = async (id: string) => {
+    const { error } = await supabase
+      .from('scheduled_events')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting scheduled event:', error);
+      return;
+    }
+    setScheduledEvents(prev => prev.filter(e => e.id !== id));
+  };
+
   return (
     <DataContext.Provider value={{
       journeys,
@@ -471,6 +521,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       progress,
       badges,
       userBadges,
+      scheduledEvents,
       isLoading,
       refreshData,
       addJourney,
@@ -493,6 +544,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       markStationStepComplete,
       getStationProgress,
       isStepCompleted,
+      addScheduledEvent,
+      updateScheduledEvent,
+      deleteScheduledEvent,
     }}>
       {children}
     </DataContext.Provider>

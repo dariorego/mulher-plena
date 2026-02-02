@@ -24,6 +24,7 @@ import UsersPage from "./pages/UsersPage";
 import ImageLibraryPage from "./pages/ImageLibraryPage";
 import LandingPage from "./pages/LandingPage";
 import Settings from "./pages/Settings";
+import CalendarPage from "./pages/CalendarPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ function AppRoutes() {
       <Route path="/usuarios" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
       <Route path="/imagens" element={<ProtectedRoute><ImageLibraryPage /></ProtectedRoute>} />
       <Route path="/configuracoes" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/calendario" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

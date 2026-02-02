@@ -142,3 +142,15 @@ export interface LandingSection {
   created_at: string;
   updated_at: string;
 }
+
+export interface ScheduledEvent {
+  id: string;
+  title: string;
+  description?: string;
+  event_date: string;
+  duration_minutes: number;
+  meeting_link?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
