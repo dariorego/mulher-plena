@@ -117,8 +117,7 @@ export default function JourneyDetail() {
           <img
             src={journey.cover_image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200'}
             alt={journey.title}
-            className="w-full h-auto object-cover"
-            style={{ aspectRatio: '1293/253' }}
+            className="w-full h-auto object-contain"
           />
         </div>
 
