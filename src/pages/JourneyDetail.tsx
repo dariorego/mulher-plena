@@ -244,8 +244,7 @@ export default function JourneyDetail() {
 
                       {/* Content - Only title and activity count */}
                       <CardContent className="p-4">
-                        <h3 className="font-semibold text-lg">{station.title}</h3>
-                        <p className="text-xs text-muted-foreground mt-2">
+                        <p className="text-xs text-muted-foreground">
                           {stationActivities.length} {stationActivities.length === 1 ? 'atividade' : 'atividades'}
                         </p>
                       </CardContent>
