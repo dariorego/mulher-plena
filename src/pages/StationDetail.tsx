@@ -123,8 +123,7 @@ export default function StationDetail() {
             <img
               src={station.image_url}
               alt={station.title}
-              className="w-full h-auto object-cover"
-              style={{ aspectRatio: '1293/253' }}
+              className="w-full h-auto object-contain"
             />
           </div>
         )}
