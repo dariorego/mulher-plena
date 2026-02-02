@@ -295,6 +295,53 @@ export type Database = {
           },
         ]
       }
+      scheduled_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number
+          event_date: string
+          id: string
+          journey_id: string | null
+          meeting_link: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          event_date: string
+          id?: string
+          journey_id?: string | null
+          meeting_link?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          event_date?: string
+          id?: string
+          journey_id?: string | null
+          meeting_link?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_events_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stations: {
         Row: {
           audio_url: string | null
