@@ -30,6 +30,7 @@ import {
   Pencil,
   ChevronDown,
   ImageIcon,
+  Calendar,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -83,6 +84,7 @@ const navItems: Record<string, NavEntry[]> = {
       icon: Settings,
       items: [
         { path: '/usuarios', label: 'Usuários', icon: Users },
+        { path: '/calendario', label: 'Calendário', icon: Calendar },
         { path: '/imagens', label: 'Repositório de Imagens', icon: ImageIcon },
         { path: '/configuracoes', label: 'Configurações', icon: Settings },
       ],
