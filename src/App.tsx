@@ -21,6 +21,7 @@ import SubmissionView from "./pages/SubmissionView";
 import ManageContent from "./pages/ManageContent";
 import ManageLandingPage from "./pages/ManageLandingPage";
 import UsersPage from "./pages/UsersPage";
+import ImageLibraryPage from "./pages/ImageLibraryPage";
 import LandingPage from "./pages/LandingPage";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -60,6 +61,7 @@ function AppRoutes() {
       <Route path="/gerenciar" element={<ProtectedRoute><ManageContent /></ProtectedRoute>} />
       <Route path="/gerenciar-landing" element={<ProtectedRoute><ManageLandingPage /></ProtectedRoute>} />
       <Route path="/usuarios" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+      <Route path="/imagens" element={<ProtectedRoute><ImageLibraryPage /></ProtectedRoute>} />
       <Route path="/configuracoes" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
