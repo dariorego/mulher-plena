@@ -108,7 +108,7 @@ export default function StationDetail() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-4xl mx-auto">
+      <div className="space-y-8">
         {/* Back Button */}
         <Link to={journey ? `/jornadas/${journey.id}` : '/jornadas'}>
           <Button variant="ghost" size="sm" className="gap-2">
