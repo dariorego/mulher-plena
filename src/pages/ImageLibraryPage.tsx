@@ -239,12 +239,12 @@ export default function ImageLibraryPage() {
                     {filteredImages.map((image, index) => (
                       <div
                         key={`${image.bucket}-${image.name}-${index}`}
-                        className="group relative aspect-square rounded-lg overflow-hidden border bg-muted"
+                        className="group relative aspect-square rounded-lg overflow-hidden border bg-muted flex items-center justify-center"
                       >
                         <img
                           src={image.url}
                           alt={image.name}
-                          className="w-full h-full object-cover"
+                          className="max-w-full max-h-full object-contain"
                           loading="lazy"
                         />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
