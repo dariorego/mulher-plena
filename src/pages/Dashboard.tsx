@@ -7,10 +7,11 @@ import { BookOpen, Trophy, Target, Clock, TrendingUp, Users, FileText, CheckCirc
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { UpcomingEvents } from '@/components/calendar/UpcomingEvents';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { journeys, stations, activities, submissions, userBadges, badges, getJourneyProgress, getUserStats, refreshData } = useData();
+  const { journeys, stations, activities, submissions, userBadges, badges, scheduledEvents, getJourneyProgress, getUserStats, refreshData } = useData();
   const [profiles, setProfiles] = useState<Record<string, string>>({});
 
   // Sincroniza dados do banco ao abrir o Dashboard
@@ -202,37 +203,42 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Journey Progress (Students) */}
+        {/* Upcoming Events + Journey Progress (Students) */}
         {user.role === 'aluno' && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Suas Jornadas</h2>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {journeys.map((journey) => {
-                const progress = getJourneyProgress(user.id, journey.id);
-                return (
-                  <Link key={journey.id} to={`/jornadas/${journey.id}`}>
-                    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-                      <div className="bg-muted">
-                        <img
-                          src={journey.cover_image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800'}
-                          alt={journey.title}
-                          className="w-full h-auto object-contain"
-                        />
-                      </div>
-                      <CardContent className="pt-4">
-                        <h3 className="font-semibold text-lg mb-3">{journey.title}</h3>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Progresso</span>
-                            <span className="font-medium">{progress}%</span>
-                          </div>
-                          <Progress value={progress} className="h-2" />
+          <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Suas Jornadas</h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                {journeys.map((journey) => {
+                  const progress = getJourneyProgress(user.id, journey.id);
+                  return (
+                    <Link key={journey.id} to={`/jornadas/${journey.id}`}>
+                      <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                        <div className="bg-muted">
+                          <img
+                            src={journey.cover_image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800'}
+                            alt={journey.title}
+                            className="w-full h-auto object-contain"
+                          />
                         </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
+                        <CardContent className="pt-4">
+                          <h3 className="font-semibold text-lg mb-3">{journey.title}</h3>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Progresso</span>
+                              <span className="font-medium">{progress}%</span>
+                            </div>
+                            <Progress value={progress} className="h-2" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <UpcomingEvents events={scheduledEvents} maxEvents={5} />
             </div>
           </div>
         )}
