@@ -74,7 +74,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         progressRes,
         badgesRes,
         userBadgesRes,
-        eventsRes,
       ] = await Promise.all([
         supabase.from('journeys').select('*').order('order_index'),
         supabase.from('stations').select('*').order('order_index'),
@@ -84,8 +83,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         supabase.from('user_progress').select('*'),
         supabase.from('badges').select('*'),
         supabase.from('user_badges').select('*'),
-        supabase.from('scheduled_events').select('*').order('event_date'),
       ]);
+
+      // Fetch scheduled events separately with type assertion (table may not exist yet)
+      const scheduledEventsRes = await (supabase as any).from('scheduled_events').select('*').order('event_date');
 
       if (journeysRes.data) setJourneys(journeysRes.data);
       if (stationsRes.data) setStations(stationsRes.data);
@@ -95,7 +96,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (progressRes.data) setProgress(progressRes.data);
       if (badgesRes.data) setBadges(badgesRes.data);
       if (userBadgesRes.data) setUserBadges(userBadgesRes.data);
-      if (eventsRes.data) setScheduledEvents(eventsRes.data as ScheduledEvent[]);
+      if (scheduledEventsRes?.data) setScheduledEvents(scheduledEventsRes.data as ScheduledEvent[]);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -471,7 +472,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // Scheduled Event operations
   const addScheduledEvent = async (event: Omit<ScheduledEvent, 'id' | 'created_at' | 'updated_at'>): Promise<ScheduledEvent | null> => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('scheduled_events')
       .insert({ ...event, created_by: user?.id })
       .select()
@@ -486,7 +487,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const updateScheduledEvent = async (id: string, event: Partial<ScheduledEvent>) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('scheduled_events')
       .update({ ...event, updated_at: new Date().toISOString() })
       .eq('id', id);
@@ -499,7 +500,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteScheduledEvent = async (id: string) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('scheduled_events')
       .delete()
       .eq('id', id);
