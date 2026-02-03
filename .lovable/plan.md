@@ -1,86 +1,98 @@
 
-# Plano: Melhorar o Feedback de Exclusão de Atividade
+# Plano: Adicionar Podcast ao Cálculo de Progresso e Exibir Percentual por Estação
 
 ## Resumo
-A funcionalidade de exclusão de atividades já está implementada no código, mas pode estar faltando feedback visual adequado para o usuário. Vou adicionar mensagens de confirmação (toast) e garantir que o fluxo de exclusão funcione corretamente.
+Adicionar o **Podcast** como quarta etapa de conclusão (junto com Vídeo, Atividade e Material Complementar) e exibir a **barra de progresso individual de cada Estação** nos cards da página de Jornada.
 
-## O que já existe
-- **Botão de excluir**: Presente no `ActivityManager.tsx` com ícone de lixeira
-- **Diálogo de confirmação**: AlertDialog perguntando se deseja excluir
-- **Função de exclusão**: `deleteActivity` no `DataContext.tsx` remove do Supabase e atualiza o estado
-- **Políticas RLS**: Admins têm permissão total na tabela `activities`
+---
 
-## Alterações Propostas
+## O que será implementado
 
-### 1. Adicionar Toast de Confirmação no ActivityManager
-Após a exclusão bem-sucedida, mostrar uma mensagem de sucesso para o usuário.
+### 1. Exibir Progresso de Cada Estação na Página da Jornada
+Na página `JourneyDetail`, cada card de estação (visão do aluno) passará a mostrar uma barra de progresso com o percentual concluído daquela estação específica.
 
-**Arquivo**: `src/components/admin/ActivityManager.tsx`
-- Importar o hook `toast` de `@/hooks/use-toast`
-- Adicionar toast de sucesso após `onDelete(deletingActivity.id)` com mensagem "Atividade excluída com sucesso!"
-- Adicionar tratamento de erro com toast de falha
+**Visual proposto:**
+```text
+┌─────────────────────────┐
+│ [Imagem da Estação]     │
+│     #1                  │
+├─────────────────────────┤
+│ 2 atividades            │
+│ ▓▓▓▓▓▓▓░░░░░░░░░ 45%   │
+└─────────────────────────┘
+```
 
-### 2. Melhorar Tratamento de Erros
-Garantir que erros sejam capturados e exibidos ao usuário.
+### 2. Adicionar Podcast ao Sistema de Progresso
+O áudio/podcast que já existe nas estações passará a contribuir para o percentual de conclusão.
+
+**Novo cálculo de progresso:**
+- Vídeo: X%
+- Atividade: Y%
+- Material Complementar: Z%
+- **Podcast: W%** (novo)
+- Total: 100%
+
+### 3. Atualizar Configurações
+A página de Configurações receberá um novo campo para definir o percentual do Podcast.
+
+---
+
+## Arquivos a Modificar
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/contexts/SettingsContext.tsx` | Adicionar `podcastPercentage` |
+| `src/pages/Settings.tsx` | Adicionar input para configurar % do Podcast |
+| `src/contexts/DataContext.tsx` | Incluir podcast no cálculo de `getStationProgress` e `isStepCompleted` |
+| `src/pages/StationDetail.tsx` | Adicionar checkbox "Marcar podcast como ouvido" e exibir +X% |
+| `src/pages/JourneyDetail.tsx` | Exibir barra de progresso em cada card de estação |
 
 ---
 
 ## Detalhes Técnicos
 
-### Modificações no ActivityManager.tsx
+### SettingsContext.tsx
+Adicionar nova propriedade ao contexto:
+- `podcastPercentage: number` (valor padrão: 10)
+- Ajustar valores padrões para somar 100 (ex: 35+35+20+10=100)
 
-```typescript
-// Adicionar import
-import { toast } from '@/hooks/use-toast';
+### DataContext.tsx
+Modificar as funções:
+- `isStepCompleted`: aceitar `'podcast'` como step válido
+- `getStationProgress`: verificar se `station.audio_url` existe e se foi marcado como concluído
+- `markStationStepComplete`: permitir marcar podcast como concluído
 
-// Modificar handleDelete
-const handleDelete = async () => {
-  if (!deletingActivity) return;
-  setIsDeleting(true);
-  try {
-    await onDelete(deletingActivity.id);
-    toast({ 
-      title: 'Atividade excluída com sucesso!',
-      description: `A atividade "${deletingActivity.title}" foi removida.`
-    });
-  } catch (error) {
-    toast({ 
-      title: 'Erro ao excluir atividade',
-      variant: 'destructive'
-    });
-  } finally {
-    setDeletingActivity(null);
-    setIsDeleting(false);
-  }
-};
-```
+### StationDetail.tsx
+Na seção de Áudio (já existente), adicionar:
+- Checkbox similar ao do vídeo e material complementar
+- Mostrar `+X%` quando marcado
+- Fundo verde quando concluído
 
-### Modificações no DataContext.tsx (Opcional)
-Fazer a função `deleteActivity` lançar erro em caso de falha para permitir tratamento no componente.
+### JourneyDetail.tsx
+Nos cards de estação (visão aluno):
+- Importar `getStationProgress` do DataContext
+- Adicionar componente `<Progress>` abaixo da contagem de atividades
+- Mostrar percentual em texto
 
-```typescript
-const deleteActivity = async (id: string) => {
-  const { error } = await supabase
-    .from('activities')
-    .delete()
-    .eq('id', id);
+---
 
-  if (error) {
-    console.error('Error deleting activity:', error);
-    throw error; // Lançar erro para tratamento no componente
-  }
-  setActivities(prev => prev.filter(a => a.id !== id));
-};
-```
+## Valores Padrão Propostos
+Para manter compatibilidade, os novos valores padrão serão:
+- Vídeo: 35%
+- Atividade: 35%
+- Material Complementar: 20%
+- Podcast: 10%
 
-## Arquivos a Modificar
-1. `src/components/admin/ActivityManager.tsx` - Adicionar toast de feedback
-2. `src/contexts/DataContext.tsx` - Lançar erro em caso de falha (opcional)
+Esses valores serão configuráveis na página de Configurações.
 
-## Teste Recomendado
-1. Acesse como admin
-2. Vá para uma jornada existente
-3. Clique em "Editar" em uma estação
-4. Na lista de atividades, clique no ícone de lixeira
-5. Confirme no diálogo
-6. Verifique se a atividade foi removida e o toast apareceu
+---
+
+## Fluxo do Usuário Atualizado
+1. Usuário acessa uma Jornada
+2. Vê todas as Estações com suas respectivas barras de progresso
+3. Clica em uma Estação
+4. Assiste o vídeo → marca checkbox → +35%
+5. Ouve o podcast → marca checkbox → +10%
+6. Faz a atividade → enviada automaticamente → +35%
+7. Assiste material complementar → marca checkbox → +20%
+8. Estação 100% → confetes e parabéns!
