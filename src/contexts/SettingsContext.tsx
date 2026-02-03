@@ -6,6 +6,7 @@ interface EvaluationSettings {
   videoPercentage: number;
   activityPercentage: number;
   supplementaryPercentage: number;
+  podcastPercentage: number;
 }
 
 interface SettingsContextType extends EvaluationSettings {
@@ -17,9 +18,10 @@ const SETTINGS_KEY = 'evaluation-settings';
 const defaultSettings: EvaluationSettings = {
   showScoreToStudents: true,
   showFeedbackToStudents: true,
-  videoPercentage: 40,
-  activityPercentage: 40,
+  videoPercentage: 35,
+  activityPercentage: 35,
   supplementaryPercentage: 20,
+  podcastPercentage: 10,
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
