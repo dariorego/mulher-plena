@@ -128,8 +128,7 @@ export default function JourneyDetail() {
         {/* Title, Description & Overview */}
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold">{journey.title}</h1>
+            <div className="flex justify-end">
               <FontSizeControl />
             </div>
             <div 
