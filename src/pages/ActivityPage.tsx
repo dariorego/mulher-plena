@@ -251,7 +251,7 @@ export default function ActivityPage() {
             </div>
             {station && (
               <p className="text-sm text-muted-foreground">
-                {journey?.title} • {station.title}
+                {journey?.title}
               </p>
             )}
           </div>

@@ -268,9 +268,9 @@ export default function Dashboard() {
                               <User className="h-4 w-4 text-primary flex-shrink-0" />
                               <p className="font-semibold text-foreground truncate">{participantName}</p>
                             </div>
-                            {journey && station && (
+                            {journey && (
                               <p className="text-xs text-muted-foreground truncate">
-                                {journey.title} &gt; {station.title}
+                                {journey.title}
                               </p>
                             )}
                             <p className="font-medium text-sm text-primary">{activity?.title}</p>
