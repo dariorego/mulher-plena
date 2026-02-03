@@ -35,7 +35,8 @@ const activityLabels = {
 export default function JourneyDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { journeys, stations, activities, submissions, scheduledEvents, getJourneyProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity } = useData();
+  const { journeys, stations, activities, submissions, scheduledEvents, getJourneyProgress, getStationProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity } = useData();
+  const { user: authUser } = useAuth();
   const navigate = useNavigate();
 
   const [isStationFormOpen, setIsStationFormOpen] = useState(false);
@@ -218,6 +219,7 @@ export default function JourneyDetail() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {journeyStations.map((station, index) => {
                 const stationActivities = activities.filter(a => a.station_id === station.id);
+                const stationProgress = getStationProgress(user.id, station.id);
 
                 return (
                   <Card 
@@ -250,11 +252,17 @@ export default function JourneyDetail() {
                         </div>
                       </div>
 
-                      {/* Content - Only title and activity count */}
-                      <CardContent className="p-4">
+                      {/* Content - Activity count and progress bar */}
+                      <CardContent className="p-4 space-y-3">
                         <p className="text-xs text-muted-foreground">
                           {stationActivities.length} {stationActivities.length === 1 ? 'atividade' : 'atividades'}
                         </p>
+                        
+                        {/* Progress bar */}
+                        <div className="space-y-1">
+                          <Progress value={stationProgress} className="h-2" />
+                          <p className="text-xs font-medium text-right text-primary">{stationProgress}%</p>
+                        </div>
                       </CardContent>
                     </div>
                   </Card>

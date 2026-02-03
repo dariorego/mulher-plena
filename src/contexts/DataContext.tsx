@@ -33,9 +33,9 @@ interface DataContextType {
   awardBadge: (userId: string, badgeId: string) => Promise<void>;
   getJourneyProgress: (userId: string, journeyId: string) => number;
   getUserStats: (userId: string) => { totalPoints: number; completedActivities: number; averageScore: number };
-  markStationStepComplete: (stationId: string, step: 'video' | 'supplementary', completed: boolean) => Promise<void>;
+  markStationStepComplete: (stationId: string, step: 'video' | 'supplementary' | 'podcast', completed: boolean) => Promise<void>;
   getStationProgress: (userId: string, stationId: string) => number;
-  isStepCompleted: (userId: string, stationId: string, step: 'video' | 'supplementary' | 'activity') => boolean;
+  isStepCompleted: (userId: string, stationId: string, step: 'video' | 'supplementary' | 'activity' | 'podcast') => boolean;
   addScheduledEvent: (event: Omit<ScheduledEvent, 'id' | 'created_at' | 'updated_at'>) => Promise<ScheduledEvent | null>;
   updateScheduledEvent: (id: string, event: Partial<ScheduledEvent>) => Promise<void>;
   deleteScheduledEvent: (id: string) => Promise<void>;
@@ -45,7 +45,7 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const { videoPercentage, activityPercentage, supplementaryPercentage } = useSettings();
+  const { videoPercentage, activityPercentage, supplementaryPercentage, podcastPercentage } = useSettings();
   const [journeys, setJourneys] = useState<Journey[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -367,7 +367,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   // Check if a specific step is completed for a station
-  const isStepCompleted = useCallback((userId: string, stationId: string, step: 'video' | 'supplementary' | 'activity'): boolean => {
+  const isStepCompleted = useCallback((userId: string, stationId: string, step: 'video' | 'supplementary' | 'activity' | 'podcast'): boolean => {
     const station = stations.find(s => s.id === stationId);
     if (!station) return false;
 
@@ -379,7 +379,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       );
     }
 
-    // For video and supplementary, check progress with step_type
+    // For video, supplementary, and podcast, check progress with step_type
     return progress.some(p =>
       p.user_id === userId &&
       p.station_id === stationId &&
@@ -389,7 +389,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [stations, activities, submissions, progress]);
 
   // Mark a station step as complete
-  const markStationStepComplete = async (stationId: string, step: 'video' | 'supplementary', completed: boolean) => {
+  const markStationStepComplete = async (stationId: string, step: 'video' | 'supplementary' | 'podcast', completed: boolean) => {
     if (!user) return;
 
     const station = stations.find(s => s.id === stationId);
@@ -442,10 +442,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // Check podcast/audio
+    if (station.audio_url) {
+      maxPossible += podcastPercentage;
+      if (isStepCompleted(userId, stationId, 'podcast')) {
+        total += podcastPercentage;
+      }
+    }
+
     // Normalize to 100% based on available content
     if (maxPossible === 0) return 0;
     return Math.round((total / maxPossible) * 100);
-  }, [stations, activities, videoPercentage, activityPercentage, supplementaryPercentage, isStepCompleted]);
+  }, [stations, activities, videoPercentage, activityPercentage, supplementaryPercentage, podcastPercentage, isStepCompleted]);
 
   // Computed values
   const getJourneyProgress = useCallback((userId: string, journeyId: string): number => {

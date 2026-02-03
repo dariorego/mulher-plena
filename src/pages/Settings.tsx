@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useSettings } from '@/contexts/SettingsContext';
-import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, CheckCircle, AlertCircle } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -16,20 +16,23 @@ export default function Settings() {
     videoPercentage,
     activityPercentage,
     supplementaryPercentage,
+    podcastPercentage,
     updateSettings 
   } = useSettings();
 
   const [localVideo, setLocalVideo] = useState(videoPercentage);
   const [localActivity, setLocalActivity] = useState(activityPercentage);
   const [localSupplementary, setLocalSupplementary] = useState(supplementaryPercentage);
+  const [localPodcast, setLocalPodcast] = useState(podcastPercentage);
 
   useEffect(() => {
     setLocalVideo(videoPercentage);
     setLocalActivity(activityPercentage);
     setLocalSupplementary(supplementaryPercentage);
-  }, [videoPercentage, activityPercentage, supplementaryPercentage]);
+    setLocalPodcast(podcastPercentage);
+  }, [videoPercentage, activityPercentage, supplementaryPercentage, podcastPercentage]);
 
-  const total = localVideo + localActivity + localSupplementary;
+  const total = localVideo + localActivity + localSupplementary + localPodcast;
   const isValid = total === 100;
 
   const handleScoreToggle = (checked: boolean) => {
@@ -42,21 +45,23 @@ export default function Settings() {
     toast.success(checked ? 'Feedback visível para participantes' : 'Feedback oculto para participantes');
   };
 
-  const handlePercentageChange = (field: 'video' | 'activity' | 'supplementary', value: string) => {
+  const handlePercentageChange = (field: 'video' | 'activity' | 'supplementary' | 'podcast', value: string) => {
     const numValue = Math.max(0, Math.min(100, parseInt(value) || 0));
     
     if (field === 'video') setLocalVideo(numValue);
     if (field === 'activity') setLocalActivity(numValue);
     if (field === 'supplementary') setLocalSupplementary(numValue);
+    if (field === 'podcast') setLocalPodcast(numValue);
   };
 
   const handlePercentageBlur = () => {
-    const newTotal = localVideo + localActivity + localSupplementary;
+    const newTotal = localVideo + localActivity + localSupplementary + localPodcast;
     if (newTotal === 100) {
       updateSettings({
         videoPercentage: localVideo,
         activityPercentage: localActivity,
         supplementaryPercentage: localSupplementary,
+        podcastPercentage: localPodcast,
       });
       toast.success('Percentuais de conclusão salvos');
     }
@@ -194,6 +199,28 @@ export default function Settings() {
                     max="100"
                     value={localSupplementary}
                     onChange={(e) => handlePercentageChange('supplementary', e.target.value)}
+                    onBlur={handlePercentageBlur}
+                    className="w-20 text-center"
+                  />
+                  <span className="text-muted-foreground">%</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Headphones className="h-5 w-5 text-primary" />
+                  <Label htmlFor="podcast-percentage" className="text-base font-medium">
+                    Podcast
+                  </Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="podcast-percentage"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={localPodcast}
+                    onChange={(e) => handlePercentageChange('podcast', e.target.value)}
                     onBlur={handlePercentageBlur}
                     className="w-20 text-center"
                   />

@@ -29,7 +29,7 @@ export default function StationDetail() {
     getStationProgress, 
     isStepCompleted 
   } = useData();
-  const { videoPercentage, activityPercentage, supplementaryPercentage } = useSettings();
+  const { videoPercentage, activityPercentage, supplementaryPercentage, podcastPercentage } = useSettings();
   const navigate = useNavigate();
   const { sizeClass: fontSizeClass } = useFontSize();
 
@@ -44,6 +44,7 @@ export default function StationDetail() {
   const videoCompleted = user && station ? isStepCompleted(user.id, station.id, 'video') : false;
   const activityCompleted = user && station ? isStepCompleted(user.id, station.id, 'activity') : false;
   const supplementaryCompleted = user && station ? isStepCompleted(user.id, station.id, 'supplementary') : false;
+  const podcastCompleted = user && station ? isStepCompleted(user.id, station.id, 'podcast') : false;
 
   // Celebrate when reaching 100%
   useEffect(() => {
@@ -155,10 +156,16 @@ export default function StationDetail() {
     toast.success(checked ? 'Material complementar marcado como visto' : 'Marcação do material removida');
   };
 
+  const handlePodcastComplete = async (checked: boolean) => {
+    await markStationStepComplete(station.id, 'podcast', checked);
+    toast.success(checked ? 'Podcast marcado como ouvido' : 'Marcação do podcast removida');
+  };
+
   // Calculate which sections are present for percentage display
   const hasVideo = !!station.video_url;
   const hasActivity = stationActivities.length > 0;
   const hasSupplementary = !!station.supplementary_url;
+  const hasPodcast = !!station.audio_url;
 
   return (
     <AppLayout>
@@ -318,8 +325,8 @@ export default function StationDetail() {
                 Áudio da Estação
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
                 Ouça a reflexão desta estação
               </p>
               <audio 
@@ -327,6 +334,27 @@ export default function StationDetail() {
                 controls 
                 className="w-full rounded-lg"
               />
+              
+              {/* Podcast Completion Checkbox */}
+              <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${podcastCompleted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted/50'}`}>
+                <div className="flex items-center gap-3">
+                  <Checkbox 
+                    id="podcast-complete"
+                    checked={podcastCompleted}
+                    onCheckedChange={handlePodcastComplete}
+                  />
+                  <label 
+                    htmlFor="podcast-complete" 
+                    className="text-sm font-medium cursor-pointer flex items-center gap-2"
+                  >
+                    {podcastCompleted && <CheckCircle className="h-4 w-4 text-green-600" />}
+                    Marcar como ouvido
+                  </label>
+                </div>
+                <span className={`text-sm font-semibold ${podcastCompleted ? 'text-green-600' : 'text-muted-foreground'}`}>
+                  +{podcastPercentage}%
+                </span>
+              </div>
             </CardContent>
           </Card>
         )}
