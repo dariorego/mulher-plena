@@ -216,97 +216,104 @@ function AncestralTreeVisualization({
   };
 
   return (
-    <div 
-      ref={containerRef}
-      className="relative overflow-visible"
-      style={{
-        background: 'linear-gradient(180deg, #2E7D32 0%, #1B5E20 40%, #0D4A0D 100%)',
-        padding: '35px 15px 40px 15px',
-        borderRadius: '50% 50% 48% 48% / 35% 35% 55% 55%',
-        border: '4px solid #5D4037',
-        boxShadow: 'inset 0 0 30px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.2)',
-        outline: '3px solid #8D6E63',
-        outlineOffset: '2px',
-      }}
-    >
-      {/* Connection Lines */}
-      <ConnectionLinesSVG 
-        containerRef={containerRef}
-        nodeRefs={nodeRefs}
-        ancestors={ancestors}
+    <div className="relative">
+      {/* Triangular border wrapper */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(180deg, #5D4037 0%, #3E2723 100%)',
+          clipPath: 'polygon(50% 0%, 3% 100%, 97% 100%)',
+        }}
       />
+      <div 
+        ref={containerRef}
+        className="relative overflow-visible"
+        style={{
+          background: 'linear-gradient(180deg, #2E7D32 0%, #1B5E20 40%, #0D4A0D 100%)',
+          padding: '50px 30px 60px 30px',
+          clipPath: 'polygon(50% 1%, 5% 99%, 95% 99%)',
+          boxShadow: 'inset 0 0 40px rgba(0,0,0,0.3)',
+        }}
+      >
+        {/* Connection Lines */}
+        <ConnectionLinesSVG 
+          containerRef={containerRef}
+          nodeRefs={nodeRefs}
+          ancestors={ancestors}
+        />
 
-      <div className="relative flex flex-col items-center gap-3" style={{ zIndex: 2 }}>
-        {/* Star decoration at top */}
-        <div className="text-amber-300 text-3xl -mt-2">⭐</div>
+        <div className="relative flex flex-col items-center gap-6" style={{ zIndex: 2 }}>
+          {/* Star decoration at top */}
+          <div className="text-amber-300 text-4xl -mt-3 drop-shadow-lg">⭐</div>
 
-        {/* Level 0 - Você (1) - Top of tree */}
-        <div className="flex flex-col items-center">
-          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-green-600/80 mb-1">
-            Você
-          </span>
-          <div className="flex justify-center">
-            {getByLevel(0).map(ancestor => (
-              <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
-                <TreeNode 
-                  ancestor={ancestor} 
-                  isHighlighted={activeId === ancestor.id}
-                  isRoot={true}
-                />
-              </div>
-            ))}
+          {/* Level 0 - Você (1) - Top of tree */}
+          <div className="flex flex-col items-center">
+            <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-green-600/80 mb-1">
+              Você
+            </span>
+            <div className="flex justify-center">
+              {getByLevel(0).map(ancestor => (
+                <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
+                  <TreeNode 
+                    ancestor={ancestor} 
+                    isHighlighted={activeId === ancestor.id}
+                    isRoot={true}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Level 1 - Pais (2) */}
-        <div className="flex flex-col items-center mt-2">
-          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-orange-500/80 mb-1">
-            Pais
-          </span>
-          <div className="flex justify-center gap-6">
-            {getByLevel(1).map(ancestor => (
-              <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
-                <TreeNode 
-                  ancestor={ancestor} 
-                  isHighlighted={activeId === ancestor.id}
-                />
-              </div>
-            ))}
+          {/* Level 1 - Pais (2) */}
+          <div className="flex flex-col items-center mt-5">
+            <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-orange-500/80 mb-1">
+              Pais
+            </span>
+            <div className="flex justify-center gap-8">
+              {getByLevel(1).map(ancestor => (
+                <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
+                  <TreeNode 
+                    ancestor={ancestor} 
+                    isHighlighted={activeId === ancestor.id}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Level 2 - Avós (4) */}
-        <div className="flex flex-col items-center mt-2">
-          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-blue-500/80 mb-1">
-            Avós
-          </span>
-          <div className="flex justify-center gap-2">
-            {getByLevel(2).map(ancestor => (
-              <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
-                <TreeNode 
-                  ancestor={ancestor} 
-                  isHighlighted={activeId === ancestor.id}
-                />
-              </div>
-            ))}
+          {/* Level 2 - Avós (4) */}
+          <div className="flex flex-col items-center mt-5">
+            <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-blue-500/80 mb-1">
+              Avós
+            </span>
+            <div className="flex justify-center gap-3">
+              {getByLevel(2).map(ancestor => (
+                <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
+                  <TreeNode 
+                    ancestor={ancestor} 
+                    isHighlighted={activeId === ancestor.id}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Level 3 - Bisavós (8) - Base of tree (widest) */}
-        <div className="flex flex-col items-center mt-1">
-          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-purple-500/80 mb-1">
-            Bisavós
-          </span>
-          <div className="flex justify-center gap-0.5 flex-nowrap">
-            {getByLevel(3).map(ancestor => (
-              <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
-                <TreeNode 
-                  ancestor={ancestor} 
-                  isHighlighted={activeId === ancestor.id}
-                  isSmall={true}
-                />
-              </div>
-            ))}
+          {/* Level 3 - Bisavós (8) - Base of tree (widest) */}
+          <div className="flex flex-col items-center mt-4">
+            <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold text-white bg-purple-500/80 mb-1">
+              Bisavós
+            </span>
+            <div className="flex justify-center gap-0.5 flex-nowrap">
+              {getByLevel(3).map(ancestor => (
+                <div key={ancestor.id} ref={setNodeRef(ancestor.id)}>
+                  <TreeNode 
+                    ancestor={ancestor} 
+                    isHighlighted={activeId === ancestor.id}
+                    isSmall={true}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
