@@ -1,98 +1,104 @@
 
-# Plano: Adicionar Podcast ao Cálculo de Progresso e Exibir Percentual por Estação
+# Plano: Adicionar Funcionalidade de Excluir Posts do Fórum na Página de Avaliações
 
-## Resumo
-Adicionar o **Podcast** como quarta etapa de conclusão (junto com Vídeo, Atividade e Material Complementar) e exibir a **barra de progresso individual de cada Estação** nos cards da página de Jornada.
+## Problema Identificado
+Os posts do fórum são armazenados em uma tabela separada chamada `forum_posts`, diferente das outras atividades que usam `activity_submissions`. Quando se exclui submissões na página de Avaliações, os posts do fórum permanecem intactos.
 
----
+## Situação Atual
+| Tipo de Atividade | Tabela de Dados | Excluído ao Limpar? |
+|-------------------|-----------------|---------------------|
+| Quiz, Essay, Upload, Gamificada | activity_submissions | Sim |
+| Fórum Colaborativo | forum_posts | Não |
 
-## O que será implementado
+## Solução Proposta
+Adicionar uma seção ou funcionalidade na área administrativa para gerenciar/excluir posts do fórum.
 
-### 1. Exibir Progresso de Cada Estação na Página da Jornada
-Na página `JourneyDetail`, cada card de estação (visão do aluno) passará a mostrar uma barra de progresso com o percentual concluído daquela estação específica.
+### Opção 1: Botão de Excluir no Próprio Post (já existe para o autor)
+O componente `ForumBoard.tsx` já permite que o **próprio autor** exclua seus posts (linha 286-294). Porém, admins/professores não conseguem excluir posts de outros usuários.
 
-**Visual proposto:**
-```text
-┌─────────────────────────┐
-│ [Imagem da Estação]     │
-│     #1                  │
-├─────────────────────────┤
-│ 2 atividades            │
-│ ▓▓▓▓▓▓▓░░░░░░░░░ 45%   │
-└─────────────────────────┘
+### Opção 2: Permitir que Admins/Professores Excluam Qualquer Post
+Modificar a lógica do `ForumBoard.tsx` para permitir que admins e professores também vejam e usem o botão de excluir em qualquer post.
+
+## Alterações Propostas
+
+### 1. Atualizar RLS no Supabase (já pode existir, mas confirmar)
+Garantir que admins e professores possam excluir posts do fórum.
+
+**Arquivo**: Nova migration SQL
+```sql
+CREATE POLICY "Admins and professors can delete any forum post"
+ON public.forum_posts
+FOR DELETE
+USING (
+  has_role(auth.uid(), 'admin'::app_role) OR 
+  has_role(auth.uid(), 'professor'::app_role)
+);
 ```
 
-### 2. Adicionar Podcast ao Sistema de Progresso
-O áudio/podcast que já existe nas estações passará a contribuir para o percentual de conclusão.
+### 2. Modificar ForumBoard.tsx
+Alterar a condição de exibição do botão de excluir para incluir admins e professores.
 
-**Novo cálculo de progresso:**
-- Vídeo: X%
-- Atividade: Y%
-- Material Complementar: Z%
-- **Podcast: W%** (novo)
-- Total: 100%
+**Arquivo**: `src/components/activities/ForumBoard.tsx`
 
-### 3. Atualizar Configurações
-A página de Configurações receberá um novo campo para definir o percentual do Podcast.
+```typescript
+// De:
+{user?.id === post.user_id && (
 
----
+// Para:
+{(user?.id === post.user_id || user?.role === 'admin' || user?.role === 'professor') && (
+```
 
 ## Arquivos a Modificar
+1. `supabase/migrations/` - Nova migration para política RLS
+2. `src/components/activities/ForumBoard.tsx` - Permitir admins/professores excluírem posts
 
-| Arquivo | Alteração |
-|---------|-----------|
-| `src/contexts/SettingsContext.tsx` | Adicionar `podcastPercentage` |
-| `src/pages/Settings.tsx` | Adicionar input para configurar % do Podcast |
-| `src/contexts/DataContext.tsx` | Incluir podcast no cálculo de `getStationProgress` e `isStepCompleted` |
-| `src/pages/StationDetail.tsx` | Adicionar checkbox "Marcar podcast como ouvido" e exibir +X% |
-| `src/pages/JourneyDetail.tsx` | Exibir barra de progresso em cada card de estação |
-
----
+## Fluxo do Usuário Atualizado
+1. Admin/Professor acessa a atividade de Fórum
+2. Vê todos os posts no mural
+3. Passa o mouse sobre qualquer post → botão de lixeira aparece
+4. Clica na lixeira → post é excluído
+5. Toast de confirmação: "Post excluído"
 
 ## Detalhes Técnicos
 
-### SettingsContext.tsx
-Adicionar nova propriedade ao contexto:
-- `podcastPercentage: number` (valor padrão: 10)
-- Ajustar valores padrões para somar 100 (ex: 35+35+20+10=100)
+### Modificação no ForumBoard.tsx
+Na linha 286, alterar a condição:
 
-### DataContext.tsx
-Modificar as funções:
-- `isStepCompleted`: aceitar `'podcast'` como step válido
-- `getStationProgress`: verificar se `station.audio_url` existe e se foi marcado como concluído
-- `markStationStepComplete`: permitir marcar podcast como concluído
+```typescript
+// Antes
+{user?.id === post.user_id && (
+  <button
+    onClick={() => handleDelete(post)}
+    ...
+  >
+    <Trash2 className="h-3.5 w-3.5" />
+  </button>
+)}
 
-### StationDetail.tsx
-Na seção de Áudio (já existente), adicionar:
-- Checkbox similar ao do vídeo e material complementar
-- Mostrar `+X%` quando marcado
-- Fundo verde quando concluído
+// Depois
+{(user?.id === post.user_id || user?.role === 'admin' || user?.role === 'professor') && (
+  <button
+    onClick={() => handleDelete(post)}
+    ...
+  >
+    <Trash2 className="h-3.5 w-3.5" />
+  </button>
+)}
+```
 
-### JourneyDetail.tsx
-Nos cards de estação (visão aluno):
-- Importar `getStationProgress` do DataContext
-- Adicionar componente `<Progress>` abaixo da contagem de atividades
-- Mostrar percentual em texto
+### Nova Migration SQL
+```sql
+-- Permitir que admins e professores excluam qualquer post do fórum
+CREATE POLICY "Admins and professors can delete any forum post"
+ON public.forum_posts
+FOR DELETE
+USING (
+  has_role(auth.uid(), 'admin'::app_role) OR 
+  has_role(auth.uid(), 'professor'::app_role)
+);
+```
 
----
-
-## Valores Padrão Propostos
-Para manter compatibilidade, os novos valores padrão serão:
-- Vídeo: 35%
-- Atividade: 35%
-- Material Complementar: 20%
-- Podcast: 10%
-
-Esses valores serão configuráveis na página de Configurações.
-
----
-
-## Fluxo do Usuário Atualizado
-1. Usuário acessa uma Jornada
-2. Vê todas as Estações com suas respectivas barras de progresso
-3. Clica em uma Estação
-4. Assiste o vídeo → marca checkbox → +35%
-5. Ouve o podcast → marca checkbox → +10%
-6. Faz a atividade → enviada automaticamente → +35%
-7. Assiste material complementar → marca checkbox → +20%
-8. Estação 100% → confetes e parabéns!
+## Benefícios
+- Admins e professores podem moderar o fórum
+- Mantém a consistência com a lógica de exclusão de submissões
+- Usuários ainda podem excluir seus próprios posts
