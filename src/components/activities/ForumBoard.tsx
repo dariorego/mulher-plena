@@ -283,7 +283,7 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
                 className={`${post.color} border-2 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow animate-fade-in relative group`}
               >
                 {/* Delete Button */}
-                {user?.id === post.user_id && (
+                {(user?.id === post.user_id || user?.role === 'admin' || user?.role === 'professor') && (
                   <button
                     onClick={() => handleDelete(post)}
                     className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 hover:bg-red-100 text-muted-foreground hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all"
