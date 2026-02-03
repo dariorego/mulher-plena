@@ -1,104 +1,129 @@
 
-# Plano: Adicionar Funcionalidade de Excluir Posts do Fórum na Página de Avaliações
+# Plano: Tornar a Árvore Genealógica Mais Triangular e Comprida
 
-## Problema Identificado
-Os posts do fórum são armazenados em uma tabela separada chamada `forum_posts`, diferente das outras atividades que usam `activity_submissions`. Quando se exclui submissões na página de Avaliações, os posts do fórum permanecem intactos.
+## Objetivo
+Modificar a visualização da árvore para ter um formato **triangular** (estreito no topo, expandindo para a base) e **mais comprida** (maior altura vertical).
 
-## Situação Atual
-| Tipo de Atividade | Tabela de Dados | Excluído ao Limpar? |
-|-------------------|-----------------|---------------------|
-| Quiz, Essay, Upload, Gamificada | activity_submissions | Sim |
-| Fórum Colaborativo | forum_posts | Não |
+---
 
-## Solução Proposta
-Adicionar uma seção ou funcionalidade na área administrativa para gerenciar/excluir posts do fórum.
+## Alterações Visuais
 
-### Opção 1: Botão de Excluir no Próprio Post (já existe para o autor)
-O componente `ForumBoard.tsx` já permite que o **próprio autor** exclua seus posts (linha 286-294). Porém, admins/professores não conseguem excluir posts de outros usuários.
+### Antes (Atual)
+- Formato: Oval/elíptico (quase circular)
+- BorderRadius: Arredondado em todas as direções
+- Espaçamento vertical: Pequeno entre níveis
 
-### Opção 2: Permitir que Admins/Professores Excluam Qualquer Post
-Modificar a lógica do `ForumBoard.tsx` para permitir que admins e professores também vejam e usem o botão de excluir em qualquer post.
+### Depois (Proposto)
+- Formato: Triangular (pinheiro/árvore de Natal)
+- Largura: Estreito no topo → largo na base
+- Altura: Aumentada com mais espaço entre níveis
 
-## Alterações Propostas
+---
 
-### 1. Atualizar RLS no Supabase (já pode existir, mas confirmar)
-Garantir que admins e professores possam excluir posts do fórum.
+## Arquivo a Modificar
 
-**Arquivo**: Nova migration SQL
-```sql
-CREATE POLICY "Admins and professors can delete any forum post"
-ON public.forum_posts
-FOR DELETE
-USING (
-  has_role(auth.uid(), 'admin'::app_role) OR 
-  has_role(auth.uid(), 'professor'::app_role)
-);
+**`src/components/activities/FamilyTreeActivity.tsx`**
+
+### 1. Mudar o Formato do Container (linha 218-230)
+```css
+/* De: oval arredondado */
+borderRadius: '50% 50% 48% 48% / 35% 35% 55% 55%'
+
+/* Para: triangular com clip-path */
+clipPath: 'polygon(50% 0%, 8% 100%, 92% 100%)'
+borderRadius: '0'
 ```
 
-### 2. Modificar ForumBoard.tsx
-Alterar a condição de exibição do botão de excluir para incluir admins e professores.
+### 2. Aumentar o Padding Vertical
+```css
+/* De */
+padding: '35px 15px 40px 15px'
 
-**Arquivo**: `src/components/activities/ForumBoard.tsx`
-
-```typescript
-// De:
-{user?.id === post.user_id && (
-
-// Para:
-{(user?.id === post.user_id || user?.role === 'admin' || user?.role === 'professor') && (
+/* Para */
+padding: '40px 20px 50px 20px'
 ```
 
-## Arquivos a Modificar
-1. `supabase/migrations/` - Nova migration para política RLS
-2. `src/components/activities/ForumBoard.tsx` - Permitir admins/professores excluírem posts
+### 3. Aumentar o Gap Entre Níveis
+```css
+/* De */
+gap-3, mt-2, mt-1
 
-## Fluxo do Usuário Atualizado
-1. Admin/Professor acessa a atividade de Fórum
-2. Vê todos os posts no mural
-3. Passa o mouse sobre qualquer post → botão de lixeira aparece
-4. Clica na lixeira → post é excluído
-5. Toast de confirmação: "Post excluído"
+/* Para */
+gap-5, mt-4, mt-3
+```
+
+### 4. Ajustar os Gaps Horizontais por Nível
+Para manter o formato triangular, cada nível terá gaps específicos:
+- Nível 0 (Você): centralizado
+- Nível 1 (Pais): gap pequeno
+- Nível 2 (Avós): gap menor
+- Nível 3 (Bisavós): gap mínimo
+
+---
 
 ## Detalhes Técnicos
 
-### Modificação no ForumBoard.tsx
-Na linha 286, alterar a condição:
+### Container Principal (AncestralTreeVisualization)
+Substituir `borderRadius` por `clipPath` com formato de triângulo:
 
 ```typescript
-// Antes
-{user?.id === post.user_id && (
-  <button
-    onClick={() => handleDelete(post)}
-    ...
-  >
-    <Trash2 className="h-3.5 w-3.5" />
-  </button>
-)}
-
-// Depois
-{(user?.id === post.user_id || user?.role === 'admin' || user?.role === 'professor') && (
-  <button
-    onClick={() => handleDelete(post)}
-    ...
-  >
-    <Trash2 className="h-3.5 w-3.5" />
-  </button>
-)}
+style={{
+  background: 'linear-gradient(180deg, #2E7D32 0%, #1B5E20 40%, #0D4A0D 100%)',
+  padding: '45px 25px 55px 25px',
+  clipPath: 'polygon(50% 0%, 5% 100%, 95% 100%)',
+  border: 'none',
+  boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
+}}
 ```
 
-### Nova Migration SQL
-```sql
--- Permitir que admins e professores excluam qualquer post do fórum
-CREATE POLICY "Admins and professors can delete any forum post"
-ON public.forum_posts
-FOR DELETE
-USING (
-  has_role(auth.uid(), 'admin'::app_role) OR 
-  has_role(auth.uid(), 'professor'::app_role)
-);
+### Ajustar Espaçamentos Verticais
+```typescript
+<div className="relative flex flex-col items-center gap-5" style={{ zIndex: 2 }}>
+  {/* Level 0 */}
+  <div className="flex flex-col items-center">...</div>
+  
+  {/* Level 1 */}
+  <div className="flex flex-col items-center mt-4">...</div>
+  
+  {/* Level 2 */}
+  <div className="flex flex-col items-center mt-4">...</div>
+  
+  {/* Level 3 */}
+  <div className="flex flex-col items-center mt-3">...</div>
+</div>
 ```
 
-## Benefícios
-- Admins e professores podem moderar o fórum
-- Mantém a consistência com a lógica de exclusão de submissões
-- Usuários ainda podem excluir seus próprios posts
+### Adicionar Borda Triangular
+Como `clipPath` remove bordas, criar um wrapper com SVG ou pseudo-elemento para a borda marrom.
+
+---
+
+## Visual Esperado
+
+```text
+        ⭐
+       /  \
+      / Você \
+     /   []   \
+    /  Pais    \
+   /  []  []    \
+  /    Avós      \
+ / [] [] [] []    \
+/    Bisavós       \
+[][][][][][][][][]
+------------------
+       |||
+      =====
+```
+
+---
+
+## Resumo das Alterações
+
+| Aspecto | Atual | Novo |
+|---------|-------|------|
+| Forma | Oval | Triangular |
+| Altura | ~350px | ~420px |
+| Gap vertical | 12px | 20px |
+| Borda | Oval marrom | Triangular marrom |
+| Estrela | Dentro | No topo do triângulo |
