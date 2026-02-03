@@ -1,129 +1,60 @@
 
-# Plano: Tornar a Árvore Genealógica Mais Triangular e Comprida
+# Plano: Remover Título da Estação para Participantes
 
 ## Objetivo
-Modificar a visualização da árvore para ter um formato **triangular** (estreito no topo, expandindo para a base) e **mais comprida** (maior altura vertical).
+Ocultar o título das estações em todas as visualizações para participantes (alunos e professores), mantendo a identidade visual baseada nas capas/imagens.
 
 ---
 
-## Alterações Visuais
+## Locais a Modificar
 
-### Antes (Atual)
-- Formato: Oval/elíptico (quase circular)
-- BorderRadius: Arredondado em todas as direções
-- Espaçamento vertical: Pequeno entre níveis
-
-### Depois (Proposto)
-- Formato: Triangular (pinheiro/árvore de Natal)
-- Largura: Estreito no topo → largo na base
-- Altura: Aumentada com mais espaço entre níveis
-
----
-
-## Arquivo a Modificar
-
-**`src/components/activities/FamilyTreeActivity.tsx`**
-
-### 1. Mudar o Formato do Container (linha 218-230)
-```css
-/* De: oval arredondado */
-borderRadius: '50% 50% 48% 48% / 35% 35% 55% 55%'
-
-/* Para: triangular com clip-path */
-clipPath: 'polygon(50% 0%, 8% 100%, 92% 100%)'
-borderRadius: '0'
-```
-
-### 2. Aumentar o Padding Vertical
-```css
-/* De */
-padding: '35px 15px 40px 15px'
-
-/* Para */
-padding: '40px 20px 50px 20px'
-```
-
-### 3. Aumentar o Gap Entre Níveis
-```css
-/* De */
-gap-3, mt-2, mt-1
-
-/* Para */
-gap-5, mt-4, mt-3
-```
-
-### 4. Ajustar os Gaps Horizontais por Nível
-Para manter o formato triangular, cada nível terá gaps específicos:
-- Nível 0 (Você): centralizado
-- Nível 1 (Pais): gap pequeno
-- Nível 2 (Avós): gap menor
-- Nível 3 (Bisavós): gap mínimo
-
----
-
-## Detalhes Técnicos
-
-### Container Principal (AncestralTreeVisualization)
-Substituir `borderRadius` por `clipPath` com formato de triângulo:
+### 1. ActivityPage.tsx (linha 254)
+**Situação atual**: Exibe `{journey?.title} • {station.title}`
+**Alteração**: Remover a parte `• {station.title}`, mantendo apenas o título da jornada
 
 ```typescript
-style={{
-  background: 'linear-gradient(180deg, #2E7D32 0%, #1B5E20 40%, #0D4A0D 100%)',
-  padding: '45px 25px 55px 25px',
-  clipPath: 'polygon(50% 0%, 5% 100%, 95% 100%)',
-  border: 'none',
-  boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
-}}
+// De:
+{journey?.title} • {station.title}
+
+// Para:
+{journey?.title}
 ```
 
-### Ajustar Espaçamentos Verticais
+### 2. Dashboard.tsx (linha 273)
+**Situação atual**: Exibe `{journey.title} > {station.title}` na seção de submissões recentes (admin/professor)
+**Alteração**: Remover a parte `> {station.title}`, mantendo apenas o título da jornada
+
 ```typescript
-<div className="relative flex flex-col items-center gap-5" style={{ zIndex: 2 }}>
-  {/* Level 0 */}
-  <div className="flex flex-col items-center">...</div>
-  
-  {/* Level 1 */}
-  <div className="flex flex-col items-center mt-4">...</div>
-  
-  {/* Level 2 */}
-  <div className="flex flex-col items-center mt-4">...</div>
-  
-  {/* Level 3 */}
-  <div className="flex flex-col items-center mt-3">...</div>
-</div>
-```
+// De:
+{journey.title} &gt; {station.title}
 
-### Adicionar Borda Triangular
-Como `clipPath` remove bordas, criar um wrapper com SVG ou pseudo-elemento para a borda marrom.
+// Para:
+{journey.title}
+```
 
 ---
 
-## Visual Esperado
+## Arquivos Já Corretos (Não Precisam de Alteração)
 
-```text
-        ⭐
-       /  \
-      / Você \
-     /   []   \
-    /  Pais    \
-   /  []  []    \
-  /    Avós      \
- / [] [] [] []    \
-/    Bisavós       \
-[][][][][][][][][]
-------------------
-       |||
-      =====
-```
+| Arquivo | Status |
+|---------|--------|
+| StationDetail.tsx | Título já oculto para alunos/professores (linha 192-195) |
+| JourneyDetail.tsx | Cards de estação não exibem título para alunos/professores |
+| StationCard.tsx | Componente administrativo - título deve aparecer para gerenciamento |
+| Evaluations.tsx | Dropdown de filtro para admin - título necessário para seleção |
 
 ---
 
 ## Resumo das Alterações
 
-| Aspecto | Atual | Novo |
+| Arquivo | Linha | Ação |
 |---------|-------|------|
-| Forma | Oval | Triangular |
-| Altura | ~350px | ~420px |
-| Gap vertical | 12px | 20px |
-| Borda | Oval marrom | Triangular marrom |
-| Estrela | Dentro | No topo do triângulo |
+| `src/pages/ActivityPage.tsx` | 254 | Remover `• {station.title}` |
+| `src/pages/Dashboard.tsx` | 273 | Remover `> {station.title}` |
+
+---
+
+## Resultado Esperado
+- Na página de atividade: apenas o nome da jornada será exibido
+- No dashboard (submissões recentes): apenas o nome da jornada será exibido
+- Manter consistência com a regra de ocultar títulos de estações para participantes
