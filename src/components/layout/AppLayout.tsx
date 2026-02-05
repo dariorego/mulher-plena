@@ -31,6 +31,7 @@ import {
   ChevronDown,
   ImageIcon,
   Calendar,
+  HelpCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -61,11 +62,13 @@ const navItems: Record<string, NavEntry[]> = {
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/jornadas', label: 'Jornadas', icon: BookOpen },
     { path: '/conquistas', label: 'Conquistas', icon: Trophy },
+    { path: '/suporte', label: 'Suporte', icon: HelpCircle },
   ],
   professor: [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/jornadas', label: 'Jornadas', icon: BookOpen },
     { path: '/avaliacoes', label: 'Avaliações', icon: ClipboardCheck },
+    { path: '/suporte', label: 'Suporte', icon: HelpCircle },
   ],
   admin: [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -86,6 +89,7 @@ const navItems: Record<string, NavEntry[]> = {
         { path: '/usuarios', label: 'Usuários', icon: Users },
         { path: '/calendario', label: 'Calendário', icon: Calendar },
         { path: '/imagens', label: 'Repositório de Imagens', icon: ImageIcon },
+        { path: '/suporte', label: 'Suporte', icon: HelpCircle },
         { path: '/configuracoes', label: 'Configurações', icon: Settings },
       ],
     },

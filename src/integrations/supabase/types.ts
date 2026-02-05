@@ -392,6 +392,48 @@ export type Database = {
           },
         ]
       }
+      support_tickets: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          responded_at: string | null
+          responded_by: string | null
+          response: string | null
+          status: Database["public"]["Enums"]["support_ticket_status"]
+          title: string
+          type: Database["public"]["Enums"]["support_ticket_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          response?: string | null
+          status?: Database["public"]["Enums"]["support_ticket_status"]
+          title: string
+          type?: Database["public"]["Enums"]["support_ticket_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          response?: string | null
+          status?: Database["public"]["Enums"]["support_ticket_status"]
+          title?: string
+          type?: Database["public"]["Enums"]["support_ticket_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -513,6 +555,8 @@ export type Database = {
     Enums: {
       activity_type: "quiz" | "upload" | "essay" | "gamified" | "forum"
       app_role: "admin" | "professor" | "aluno"
+      support_ticket_status: "open" | "in_progress" | "resolved" | "closed"
+      support_ticket_type: "bug" | "improvement"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -642,6 +686,8 @@ export const Constants = {
     Enums: {
       activity_type: ["quiz", "upload", "essay", "gamified", "forum"],
       app_role: ["admin", "professor", "aluno"],
+      support_ticket_status: ["open", "in_progress", "resolved", "closed"],
+      support_ticket_type: ["bug", "improvement"],
     },
   },
 } as const
