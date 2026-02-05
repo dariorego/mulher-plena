@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuth } from '@/contexts/AuthContext';
+import { useData } from '@/contexts/DataContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/components/ui/use-toast';
-import { Plus, Bug, Lightbulb, MessageSquare, Trash2, Clock, CheckCircle2, Circle, Loader2, Paperclip, X, Image, FileText, ExternalLink } from 'lucide-react';
+import { Plus, Bug, Lightbulb, MessageSquare, Trash2, Clock, CheckCircle2, Circle, Loader2, Paperclip, X, Image, FileText, ExternalLink, MapPin, Route } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -30,9 +31,13 @@ interface SupportTicket {
   responded_by?: string;
   responded_at?: string;
   attachment_url?: string;
+  journey_id?: string;
+  station_id?: string;
   created_at: string;
   updated_at: string;
   user_name?: string;
+  journey_title?: string;
+  station_title?: string;
 }
 
 const statusLabels: Record<SupportTicketStatus, string> = {
@@ -65,6 +70,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export default function SupportPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { journeys, stations } = useData();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,6 +89,8 @@ export default function SupportPage() {
     type: 'bug' as SupportTicketType,
     title: '',
     description: '',
+    journey_id: '',
+    station_id: '',
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -94,6 +102,12 @@ export default function SupportPage() {
   });
 
   const isAdmin = user?.role === 'admin';
+
+  // Filter stations based on selected journey
+  const filteredStations = useMemo(() => {
+    if (!newTicket.journey_id) return [];
+    return stations.filter(s => s.journey_id === newTicket.journey_id).sort((a, b) => a.order_index - b.order_index);
+  }, [newTicket.journey_id, stations]);
 
   const fetchTickets = async () => {
     if (!user) return;
@@ -107,8 +121,8 @@ export default function SupportPage() {
 
       if (error) throw error;
 
-      // Fetch user names for admin view
-      if (data && isAdmin) {
+      // Fetch user names for admin view and add journey/station titles
+      if (data) {
         const userIds = [...new Set(data.map(t => t.user_id))];
         const { data: profiles } = await supabase
           .from('profiles')
@@ -116,13 +130,18 @@ export default function SupportPage() {
           .in('id', userIds);
 
         const profileMap = new Map(profiles?.map(p => [p.id, p.name]) || []);
-        const ticketsWithNames = data.map(t => ({
+        
+        // Create maps for journey and station titles
+        const journeyMap = new Map(journeys.map(j => [j.id, j.title]));
+        const stationMap = new Map(stations.map(s => [s.id, s.title]));
+        
+        const ticketsWithData = data.map(t => ({
           ...t,
-          user_name: profileMap.get(t.user_id) || 'Usuário desconhecido',
+          user_name: isAdmin ? (profileMap.get(t.user_id) || 'Usuário desconhecido') : undefined,
+          journey_title: t.journey_id ? journeyMap.get(t.journey_id) : undefined,
+          station_title: t.station_id ? stationMap.get(t.station_id) : undefined,
         }));
-        setTickets(ticketsWithNames as SupportTicket[]);
-      } else {
-        setTickets((data || []) as SupportTicket[]);
+        setTickets(ticketsWithData as SupportTicket[]);
       }
     } catch (error) {
       console.error('Error fetching tickets:', error);
@@ -138,7 +157,7 @@ export default function SupportPage() {
 
   useEffect(() => {
     fetchTickets();
-  }, [user]);
+  }, [user, journeys, stations]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -242,6 +261,8 @@ export default function SupportPage() {
           description: newTicket.description.trim(),
           type: newTicket.type,
           attachment_url: attachmentUrl,
+          journey_id: newTicket.journey_id || null,
+          station_id: newTicket.station_id || null,
         });
 
       if (error) throw error;
@@ -251,7 +272,7 @@ export default function SupportPage() {
         description: 'Sua solicitação foi enviada com sucesso.',
       });
 
-      setNewTicket({ type: 'bug', title: '', description: '' });
+      setNewTicket({ type: 'bug', title: '', description: '', journey_id: '', station_id: '' });
       setSelectedFile(null);
       setFilePreview(null);
       setIsDialogOpen(false);
@@ -388,7 +409,7 @@ export default function SupportPage() {
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) {
-              setNewTicket({ type: 'bug', title: '', description: '' });
+              setNewTicket({ type: 'bug', title: '', description: '', journey_id: '', station_id: '' });
               removeSelectedFile();
             }
           }}>
@@ -438,6 +459,63 @@ export default function SupportPage() {
                     onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
                   />
                 </div>
+
+                {/* Journey and Station Selection */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Route className="h-4 w-4" />
+                      Jornada (opcional)
+                    </Label>
+                    <Select
+                      value={newTicket.journey_id || '__none__'}
+                      onValueChange={(value) => setNewTicket({ 
+                        ...newTicket, 
+                        journey_id: value === '__none__' ? '' : value,
+                        station_id: '' // Reset station when journey changes
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Nenhuma</SelectItem>
+                        {journeys.map((journey) => (
+                          <SelectItem key={journey.id} value={journey.id}>
+                            {journey.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Estação (opcional)
+                    </Label>
+                    <Select
+                      value={newTicket.station_id || '__none__'}
+                      onValueChange={(value) => setNewTicket({ 
+                        ...newTicket, 
+                        station_id: value === '__none__' ? '' : value 
+                      })}
+                      disabled={!newTicket.journey_id}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={newTicket.journey_id ? "Selecione" : "Selecione uma jornada primeiro"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Nenhuma</SelectItem>
+                        {filteredStations.map((station) => (
+                          <SelectItem key={station.id} value={station.id}>
+                            {station.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="description">Descrição</Label>
                   <Textarea
@@ -599,6 +677,24 @@ export default function SupportPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Journey and Station Info */}
+                  {(ticket.journey_title || ticket.station_title) && (
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      {ticket.journey_title && (
+                        <span className="flex items-center gap-1">
+                          <Route className="h-4 w-4" />
+                          {ticket.journey_title}
+                        </span>
+                      )}
+                      {ticket.station_title && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4" />
+                          {ticket.station_title}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
                   <p className="text-sm whitespace-pre-wrap">{ticket.description}</p>
                   
                   {/* Attachment display */}
