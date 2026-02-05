@@ -398,9 +398,11 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          journey_id: string | null
           responded_at: string | null
           responded_by: string | null
           response: string | null
+          station_id: string | null
           status: Database["public"]["Enums"]["support_ticket_status"]
           title: string
           type: Database["public"]["Enums"]["support_ticket_type"]
@@ -412,9 +414,11 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          journey_id?: string | null
           responded_at?: string | null
           responded_by?: string | null
           response?: string | null
+          station_id?: string | null
           status?: Database["public"]["Enums"]["support_ticket_status"]
           title: string
           type?: Database["public"]["Enums"]["support_ticket_type"]
@@ -426,16 +430,33 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          journey_id?: string | null
           responded_at?: string | null
           responded_by?: string | null
           response?: string | null
+          station_id?: string | null
           status?: Database["public"]["Enums"]["support_ticket_status"]
           title?: string
           type?: Database["public"]["Enums"]["support_ticket_type"]
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_badges: {
         Row: {
