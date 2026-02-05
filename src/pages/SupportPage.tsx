@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/components/ui/use-toast';
-import { Plus, Bug, Lightbulb, MessageSquare, Trash2, Clock, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { Plus, Bug, Lightbulb, MessageSquare, Trash2, Clock, CheckCircle2, Circle, Loader2, Paperclip, X, Image, FileText, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -29,6 +29,7 @@ interface SupportTicket {
   response?: string;
   responded_by?: string;
   responded_at?: string;
+  attachment_url?: string;
   created_at: string;
   updated_at: string;
   user_name?: string;
@@ -48,17 +49,27 @@ const statusColors: Record<SupportTicketStatus, string> = {
   closed: 'bg-muted text-muted-foreground',
 };
 
-const typeLabels: Record<SupportTicketType, string> = {
-  bug: 'Bug',
-  improvement: 'Melhoria',
-};
+const ALLOWED_FILE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'application/pdf',
+  'text/plain',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export default function SupportPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [respondDialogOpen, setRespondDialogOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
@@ -73,6 +84,8 @@ export default function SupportPage() {
     title: '',
     description: '',
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
   
   // Response form (admin)
   const [responseForm, setResponseForm] = useState({
@@ -127,6 +140,82 @@ export default function SupportPage() {
     fetchTickets();
   }, [user]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      toast({
+        title: 'Tipo de arquivo não permitido',
+        description: 'Envie imagens (JPG, PNG, GIF, WEBP) ou documentos (PDF, TXT, DOC, DOCX).',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: 'Arquivo muito grande',
+        description: 'O tamanho máximo é 10MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('support-attachments')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('support-attachments')
+        .getPublicUrl(fileName);
+
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: 'Erro no upload',
+        description: 'Não foi possível enviar o arquivo.',
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleCreateTicket = async () => {
     if (!user || !newTicket.title.trim() || !newTicket.description.trim()) {
       toast({
@@ -139,6 +228,12 @@ export default function SupportPage() {
 
     setIsSubmitting(true);
     try {
+      let attachmentUrl: string | null = null;
+      
+      if (selectedFile) {
+        attachmentUrl = await uploadFile(selectedFile);
+      }
+
       const { error } = await supabase
         .from('support_tickets')
         .insert({
@@ -146,6 +241,7 @@ export default function SupportPage() {
           title: newTicket.title.trim(),
           description: newTicket.description.trim(),
           type: newTicket.type,
+          attachment_url: attachmentUrl,
         });
 
       if (error) throw error;
@@ -156,6 +252,8 @@ export default function SupportPage() {
       });
 
       setNewTicket({ type: 'bug', title: '', description: '' });
+      setSelectedFile(null);
+      setFilePreview(null);
       setIsDialogOpen(false);
       fetchTickets();
     } catch (error) {
@@ -266,6 +364,15 @@ export default function SupportPage() {
     }
   };
 
+  const isImageUrl = (url: string) => {
+    return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  };
+
+  const getFileName = (url: string) => {
+    const parts = url.split('/');
+    return parts[parts.length - 1];
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -278,14 +385,20 @@ export default function SupportPage() {
                 : 'Reporte problemas ou sugira melhorias'}
             </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              setNewTicket({ type: 'bug', title: '', description: '' });
+              removeSelectedFile();
+            }
+          }}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Ticket
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>Novo Ticket de Suporte</DialogTitle>
                 <DialogDescription>
@@ -335,14 +448,73 @@ export default function SupportPage() {
                     onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
                   />
                 </div>
+                
+                {/* File Upload Section */}
+                <div className="space-y-2">
+                  <Label>Anexo (opcional)</Label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,.pdf,.txt,.doc,.docx"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  
+                  {!selectedFile ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Paperclip className="h-4 w-4 mr-2" />
+                      Anexar arquivo ou imagem
+                    </Button>
+                  ) : (
+                    <div className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          {selectedFile.type.startsWith('image/') ? (
+                            <Image className="h-4 w-4 text-primary" />
+                          ) : (
+                            <FileText className="h-4 w-4 text-primary" />
+                          )}
+                          <span className="truncate max-w-[200px]">{selectedFile.name}</span>
+                          <span className="text-muted-foreground">
+                            ({(selectedFile.size / 1024).toFixed(1)} KB)
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={removeSelectedFile}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {filePreview && (
+                        <img
+                          src={filePreview}
+                          alt="Preview"
+                          className="max-h-32 rounded-md object-contain"
+                        />
+                      )}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Formatos aceitos: imagens (JPG, PNG, GIF, WEBP) e documentos (PDF, TXT, DOC, DOCX). Máx: 10MB
+                  </p>
+                </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleCreateTicket} disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Enviar Ticket
+                <Button onClick={handleCreateTicket} disabled={isSubmitting || isUploading}>
+                  {(isSubmitting || isUploading) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {isUploading ? 'Enviando arquivo...' : 'Enviar Ticket'}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -428,6 +600,41 @@ export default function SupportPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm whitespace-pre-wrap">{ticket.description}</p>
+                  
+                  {/* Attachment display */}
+                  {ticket.attachment_url && (
+                    <div className="border rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
+                        <Paperclip className="h-4 w-4" />
+                        Anexo
+                      </div>
+                      {isImageUrl(ticket.attachment_url) ? (
+                        <a
+                          href={ticket.attachment_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <img
+                            src={ticket.attachment_url}
+                            alt="Anexo"
+                            className="max-h-48 rounded-md object-contain hover:opacity-90 transition-opacity cursor-pointer"
+                          />
+                        </a>
+                      ) : (
+                        <a
+                          href={ticket.attachment_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-primary hover:underline"
+                        >
+                          <FileText className="h-4 w-4" />
+                          {getFileName(ticket.attachment_url)}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+                  )}
                   
                   {ticket.response && (
                     <div className="bg-muted/50 rounded-lg p-4 border-l-4 border-primary">

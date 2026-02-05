@@ -170,6 +170,7 @@ export interface SupportTicket {
   response?: string;
   responded_by?: string;
   responded_at?: string;
+  attachment_url?: string;
   created_at: string;
   updated_at: string;
   user_name?: string;
