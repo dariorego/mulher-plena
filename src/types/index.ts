@@ -156,3 +156,21 @@ export interface ScheduledEvent {
   created_at: string;
   updated_at: string;
 }
+
+export type SupportTicketType = 'bug' | 'improvement';
+export type SupportTicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+
+export interface SupportTicket {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  type: SupportTicketType;
+  status: SupportTicketStatus;
+  response?: string;
+  responded_by?: string;
+  responded_at?: string;
+  created_at: string;
+  updated_at: string;
+  user_name?: string;
+}
