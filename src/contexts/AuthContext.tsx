@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { User, UserRole } from '@/types';
-import { logActivityDirect } from '@/hooks/useActivityLogger';
 
 interface AuthContextType {
   user: User | null;
@@ -123,7 +122,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     if (user) {
-      await logActivityDirect(user.id, 'logout', 'platform');
+      // Log logout directly to avoid circular dependency with useActivityLogger
+      supabase
+        .from('user_activity_logs')
+        .insert([{ user_id: user.id, action: 'logout', resource_type: 'platform', metadata: {} }])
+        .then(({ error }) => {
+          if (error) console.error('Error logging logout:', error);
+        });
     }
     await supabase.auth.signOut();
     setUser(null);
