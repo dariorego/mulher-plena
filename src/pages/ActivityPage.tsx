@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,7 @@ export default function ActivityPage() {
   const [editDescription, setEditDescription] = useState('');
   const [isSavingActivity, setIsSavingActivity] = useState(false);
   const { sizeClass: fontSizeClass } = useFontSize();
+  const { logAction } = useActivityLogger();
   
   // Estado para Lista de Gratidão
   const [gratitudeItems, setGratitudeItems] = useState<Array<{aspect: string, meaning: string}>>([
@@ -106,6 +108,21 @@ export default function ActivityPage() {
       cancelled = true;
     };
   }, [user?.id, id, refreshData]);
+
+  // Log activity view
+  useEffect(() => {
+    if (user && id) {
+      const act = activities.find(a => a.id === id);
+      const st = act ? stations.find(s => s.id === act.station_id) : null;
+      logAction('view_activity', 'activity', {
+        resourceId: id,
+        activityId: id,
+        stationId: st?.id,
+        journeyId: st ? journeys.find(j => j.id === st.journey_id)?.id : undefined,
+        metadata: { title: act?.title, type: act?.type },
+      });
+    }
+  }, [id]);
 
   if (!user || !id) return null;
 
@@ -204,6 +221,15 @@ export default function ActivityPage() {
         toast.success('🎯 Conquista desbloqueada: Primeira Atividade!');
       }
     }
+
+    // Log submission
+    logAction('submit_activity', 'activity', {
+      resourceId: activity.id,
+      activityId: activity.id,
+      stationId: station?.id,
+      journeyId: journey?.id,
+      metadata: { title: activity.title, type: activity.type },
+    });
 
     toast.success('Atividade enviada com sucesso!');
     setIsSubmitting(false);

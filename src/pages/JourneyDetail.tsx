@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,10 +45,22 @@ export default function JourneyDetail() {
   const [deletingStation, setDeletingStation] = useState<Station | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const { sizeClass: fontSizeClass } = useFontSize();
-
-  if (!user || !id) return null;
+  const { logAction } = useActivityLogger();
 
   const journey = journeys.find(j => j.id === id);
+
+  // Log journey view
+  useEffect(() => {
+    if (journey && user) {
+      logAction('view_journey', 'journey', {
+        resourceId: journey.id,
+        journeyId: journey.id,
+        metadata: { title: journey.title },
+      });
+    }
+  }, [journey?.id]);
+
+  if (!user || !id) return null;
   if (!journey) {
     return (
       <AppLayout>

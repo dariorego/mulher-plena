@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +33,7 @@ export default function StationDetail() {
   const { videoPercentage, activityPercentage, supplementaryPercentage, podcastPercentage } = useSettings();
   const navigate = useNavigate();
   const { sizeClass: fontSizeClass } = useFontSize();
+  const { logAction } = useActivityLogger();
 
   // Track if celebration was already shown - must be before any conditional returns
   const celebrationShown = useRef(false);
@@ -92,6 +94,19 @@ export default function StationDetail() {
     celebrationShown.current = false;
   }, [id]);
 
+  // Log station view
+  useEffect(() => {
+    if (user && station) {
+      const journey = stations.find(s => s.id === id);
+      logAction('view_station', 'station', {
+        resourceId: station.id,
+        stationId: station.id,
+        journeyId: station.journey_id,
+        metadata: { title: station.title },
+      });
+    }
+  }, [id]);
+
   // Early returns after all hooks
   if (!user || !id) return null;
 
@@ -148,16 +163,37 @@ export default function StationDetail() {
 
   const handleVideoComplete = async (checked: boolean) => {
     await markStationStepComplete(station.id, 'video', checked);
+    if (checked) {
+      logAction('mark_video_complete', 'station', {
+        stationId: station.id,
+        journeyId: station.journey_id,
+        metadata: { title: station.title },
+      });
+    }
     toast.success(checked ? 'Vídeo marcado como assistido' : 'Marcação do vídeo removida');
   };
 
   const handleSupplementaryComplete = async (checked: boolean) => {
     await markStationStepComplete(station.id, 'supplementary', checked);
+    if (checked) {
+      logAction('mark_supplementary_complete', 'station', {
+        stationId: station.id,
+        journeyId: station.journey_id,
+        metadata: { title: station.title },
+      });
+    }
     toast.success(checked ? 'Material complementar marcado como visto' : 'Marcação do material removida');
   };
 
   const handlePodcastComplete = async (checked: boolean) => {
     await markStationStepComplete(station.id, 'podcast', checked);
+    if (checked) {
+      logAction('mark_podcast_complete', 'station', {
+        stationId: station.id,
+        journeyId: station.journey_id,
+        metadata: { title: station.title },
+      });
+    }
     toast.success(checked ? 'Podcast marcado como ouvido' : 'Marcação do podcast removida');
   };
 

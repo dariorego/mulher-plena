@@ -461,6 +461,45 @@ export type Database = {
           },
         ]
       }
+      user_activity_logs: {
+        Row: {
+          action: string
+          activity_id: string | null
+          created_at: string
+          id: string
+          journey_id: string | null
+          metadata: Json | null
+          resource_id: string | null
+          resource_type: string
+          station_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          activity_id?: string | null
+          created_at?: string
+          id?: string
+          journey_id?: string | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+          station_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          activity_id?: string | null
+          created_at?: string
+          id?: string
+          journey_id?: string | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+          station_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
