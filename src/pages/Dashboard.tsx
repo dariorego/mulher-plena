@@ -8,15 +8,18 @@ import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { UpcomingEvents } from '@/components/calendar/UpcomingEvents';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { journeys, stations, activities, submissions, userBadges, badges, scheduledEvents, getJourneyProgress, getUserStats, refreshData } = useData();
   const [profiles, setProfiles] = useState<Record<string, string>>({});
+  const { logAction } = useActivityLogger();
 
   // Sincroniza dados do banco ao abrir o Dashboard
   useEffect(() => {
     refreshData();
+    logAction('view_dashboard', 'platform');
   }, [refreshData]);
 
   // Fetch profiles for participant names

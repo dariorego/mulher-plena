@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -71,6 +72,7 @@ export default function SupportPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { journeys, stations } = useData();
+  const { logAction } = useActivityLogger();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -266,6 +268,13 @@ export default function SupportPage() {
         });
 
       if (error) throw error;
+
+      // Log ticket creation
+      logAction('create_support_ticket', 'platform', {
+        journeyId: newTicket.journey_id || undefined,
+        stationId: newTicket.station_id || undefined,
+        metadata: { title: newTicket.title, type: newTicket.type },
+      });
 
       toast({
         title: 'Ticket criado',

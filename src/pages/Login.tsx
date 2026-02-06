@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { GraduationCap, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import bgLogin from '@/assets/bg-login.png';
+import { supabase } from '@/integrations/supabase/client';
+import { logActivityDirect } from '@/hooks/useActivityLogger';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -23,6 +25,11 @@ export default function Login() {
     const { error } = await login(email, password);
     
     if (!error) {
+      // Log login action
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        logActivityDirect(session.user.id, 'login', 'platform');
+      }
       toast.success('Login realizado com sucesso!');
       navigate('/dashboard');
     } else {

@@ -32,6 +32,7 @@ import {
   ImageIcon,
   Calendar,
   HelpCircle,
+  Activity,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -89,6 +90,7 @@ const navItems: Record<string, NavEntry[]> = {
         { path: '/usuarios', label: 'Usuários', icon: Users },
         { path: '/calendario', label: 'Calendário', icon: Calendar },
         { path: '/imagens', label: 'Repositório de Imagens', icon: ImageIcon },
+        { path: '/logs', label: 'Logs de Atividade', icon: Activity },
         { path: '/suporte', label: 'Suporte', icon: HelpCircle },
         { path: '/configuracoes', label: 'Configurações', icon: Settings },
       ],

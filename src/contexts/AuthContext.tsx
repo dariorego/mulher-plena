@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { User, UserRole } from '@/types';
+import { logActivityDirect } from '@/hooks/useActivityLogger';
 
 interface AuthContextType {
   user: User | null;
@@ -121,6 +122,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    if (user) {
+      await logActivityDirect(user.id, 'logout', 'platform');
+    }
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
