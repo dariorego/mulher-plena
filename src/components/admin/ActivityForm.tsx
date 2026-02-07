@@ -99,7 +99,7 @@ export function ActivityForm({ stationId, activity, onSubmit, onCancel }: Activi
         </Select>
         {activityType === 'essay' && (
           <p className="text-xs text-muted-foreground">
-            💡 Para usar a "Árvore da Gratidão", use exatamente esse título
+            💡 Títulos especiais: <strong>"Árvore da Gratidão"</strong>, <strong>"Lista de Gratidão"</strong>, <strong>"Linha da Vida"</strong> ou <strong>"Manifesto"</strong> ativam interfaces interativas exclusivas.
           </p>
         )}
       </div>
