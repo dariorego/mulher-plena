@@ -1,190 +1,158 @@
 
-# Plano: Sistema de Logs de Atividades e Acessos
+# Plano: Atividade "Linha da Vida" - Timeline Interativa
 
 ## Objetivo
-Criar um sistema completo de auditoria que registre, de forma detalhada, todos os acessos e ações realizados por alunos e professores na plataforma, permitindo rastreabilidade completa da navegacao.
+Criar uma atividade especial chamada "Linha da Vida" com um mecanismo interativo de construcao de linha do tempo, onde o aluno indica pelo menos 5 momentos positivos e marcantes da sua vida, organizados cronologicamente com datas/anos.
 
 ---
 
-## Estrutura do Banco de Dados
+## Como Funciona (Padrao Existente)
 
-### Nova Tabela: `user_activity_logs`
+O sistema ja possui atividades especiais que sao ativadas automaticamente pelo titulo exato da atividade. Exemplos existentes:
+- **"Arvore da Gratidao"** -> Renderiza o componente FamilyTreeActivity
+- **"Lista de Gratidao"** -> Renderiza formulario especifico de gratidao
+- **"Afirmacao de Potencial"** -> Renderiza a Roleta de Palavras
+- **"Manifesto"** -> Renderiza formulario com compartilhamento no mural
 
-| Coluna | Tipo | Descricao |
-|--------|------|-----------|
-| id | uuid | Identificador unico (PK) |
-| user_id | uuid | ID do usuario que realizou a acao |
-| action | text | Tipo da acao (login, view_journey, view_station, submit_activity, etc.) |
-| resource_type | text | Tipo do recurso (platform, journey, station, activity, file) |
-| resource_id | uuid | ID do recurso acessado (opcional) |
-| journey_id | uuid | Jornada vinculada (opcional) |
-| station_id | uuid | Estacao vinculada (opcional) |
-| activity_id | uuid | Atividade vinculada (opcional) |
-| metadata | jsonb | Dados adicionais em formato livre (titulo, tipo, detalhes) |
-| created_at | timestamp | Data e hora do registro |
-
-### Tipos de Acoes Registradas
-
-| Acao | Descricao | resource_type |
-|------|-----------|---------------|
-| `login` | Usuario fez login na plataforma | platform |
-| `logout` | Usuario fez logout | platform |
-| `view_dashboard` | Acesso ao dashboard | platform |
-| `view_journey` | Acessou uma jornada | journey |
-| `view_station` | Acessou uma estacao | station |
-| `view_activity` | Acessou uma atividade | activity |
-| `submit_activity` | Enviou resposta de uma atividade | activity |
-| `mark_video_complete` | Marcou video como assistido | station |
-| `mark_podcast_complete` | Marcou podcast como ouvido | station |
-| `mark_supplementary_complete` | Marcou material complementar | station |
-| `upload_file` | Fez upload de arquivo | activity |
-| `create_support_ticket` | Criou ticket de suporte | platform |
-
-### Politicas RLS
-
-- Usuarios podem inserir seus proprios logs (INSERT com user_id = auth.uid())
-- Admins podem visualizar todos os logs (SELECT com has_role('admin'))
-- Usuarios podem ver seus proprios logs (SELECT com user_id = auth.uid())
-- Ninguem pode atualizar ou deletar logs (imutabilidade)
+A nova atividade "Linha da Vida" seguira este mesmo padrao.
 
 ---
 
-## Arquivos a Criar
+## Componente Visual: TimelineActivity
 
-### 1. `src/hooks/useActivityLogger.ts`
-Hook centralizado para registrar logs. Todas as paginas usarao esse hook para inserir registros na tabela.
+A interface sera inspirada na imagem de referencia fornecida, com:
+
+### Visualizacao da Linha do Tempo
+- Linha horizontal dourada conectando circulos coloridos
+- Cada momento representado por um circulo com cor distinta
+- Ano/data exibido acima de cada circulo
+- Titulo e descricao abaixo de cada circulo
+- Layout responsivo (horizontal em desktop, vertical em mobile)
+
+### Formulario de Entrada
+- Minimo de 5 momentos (ja iniciados vazios)
+- Botao para adicionar mais momentos
+- Cada momento possui: Ano (obrigatorio), Titulo (obrigatorio), Descricao (opcional)
+- Botao para remover momentos extras (alem dos 5 obrigatorios)
+- Ordenacao automatica por ano ao visualizar
+
+### Fluxo do Usuario
+1. Aluno ve a orientacao da atividade
+2. Preenche os momentos nos campos do formulario
+3. A visualizacao da timeline atualiza em tempo real
+4. Quando tiver pelo menos 5 momentos completos, o botao de enviar e habilitado
+5. Ao enviar, os dados sao formatados e salvos como submissao
+
+---
+
+## Estrutura da Interface
 
 ```text
-Funcoes expostas:
-- logAction(action, resourceType, options?) -> registra a acao no banco
-  options: { resourceId, journeyId, stationId, activityId, metadata }
-```
-
-O hook usara o usuario logado do AuthContext para preencher automaticamente o user_id.
-
-### 2. `src/pages/ActivityLogsPage.tsx`
-Pagina de visualizacao de logs para administradores com:
-- Tabela com todos os registros de log
-- Filtros por: usuario, tipo de acao, jornada, estacao, periodo (data inicio/fim)
-- Informacoes detalhadas: usuario, acao, recurso, jornada, estacao, data/hora
-- Paginacao para grandes volumes de dados
-- Exportacao visual com totais e resumos
-
----
-
-## Arquivos a Modificar
-
-### 1. `src/pages/Login.tsx`
-Registrar log de `login` apos autenticacao bem-sucedida.
-
-### 2. `src/contexts/AuthContext.tsx`
-Registrar log de `logout` na funcao de saida.
-
-### 3. `src/pages/Dashboard.tsx`
-Registrar log de `view_dashboard` ao acessar o painel.
-
-### 4. `src/pages/JourneyDetail.tsx`
-Registrar log de `view_journey` ao abrir a pagina de uma jornada.
-
-### 5. `src/pages/StationDetail.tsx`
-- Registrar log de `view_station` ao abrir uma estacao
-- Registrar log de `mark_video_complete`, `mark_podcast_complete`, `mark_supplementary_complete` ao marcar checkboxes
-
-### 6. `src/pages/ActivityPage.tsx`
-- Registrar log de `view_activity` ao abrir uma atividade
-- Registrar log de `submit_activity` ao enviar respostas
-- Registrar log de `upload_file` ao fazer upload de arquivo
-
-### 7. `src/pages/SupportPage.tsx`
-Registrar log de `create_support_ticket` ao criar ticket de suporte.
-
-### 8. `src/components/layout/AppLayout.tsx`
-Adicionar "Logs" no menu de administracao.
-
-### 9. `src/App.tsx`
-Adicionar rota `/logs` para a pagina de logs.
-
----
-
-## Interface do Administrador - Pagina de Logs
-
-```text
-+-----------------------------------------------------------+
-| Logs de Atividade                                         |
-| Historico de acessos e acoes na plataforma                |
-+-----------------------------------------------------------+
-| Filtros:                                                  |
-| [Usuario v] [Acao v] [Jornada v] [De: __] [Ate: __]      |
-|                                          [Filtrar] [Limpar]|
-+-----------------------------------------------------------+
-| Usuario       | Acao              | Recurso    | Jornada   |
-|               |                   |            | > Estacao |
-|               |                   |            |           |
-| Data/Hora     |                   |            |           |
-+---------------+-------------------+------------+-----------+
-| Joao Silva    | Acessou Estacao   | Estacao 2  | Jornada 1 |
-| 06/02/2026    |                   |            | > Est. 2  |
-| 14:32         |                   |            |           |
-+---------------+-------------------+------------+-----------+
-| Maria Lima    | Enviou Atividade  | Quiz 1     | Jornada 1 |
-| 06/02/2026    |                   |            | > Est. 1  |
-| 13:15         |                   |            |           |
-+---------------+-------------------+------------+-----------+
-| Pedro Santos  | Fez Login         | Plataforma | -         |
-| 06/02/2026    |                   |            |           |
-| 10:00         |                   |            |           |
-+---------------+-------------------+------------+-----------+
-|              [< Anterior]  Pag 1 de 5  [Proximo >]        |
-+-----------------------------------------------------------+
++--------------------------------------------------+
+| LINHA DA VIDA                                     |
++--------------------------------------------------+
+| ORIENTACAO                                        |
+| Indique pelo menos cinco momentos positivos...    |
++--------------------------------------------------+
+|                                                   |
+| VISUALIZACAO DA LINHA DO TEMPO                    |
+|                                                   |
+|  1998      2005      2012      2018      2023     |
+|   O---------O---------O---------O---------O       |
+|  Nasc.   Formou   Casou    Filha    Promo.        |
+|  Desc..  Desc..   Desc..   Desc..   Desc..        |
+|                                                   |
++--------------------------------------------------+
+| SEUS MOMENTOS                                     |
+|                                                   |
+| [1] Ano: [____] Titulo: [____________]            |
+|     Descricao: [_________________________]        |
+|                                                   |
+| [2] Ano: [____] Titulo: [____________]            |
+|     Descricao: [_________________________]        |
+|                                                   |
+| ... (5 a N momentos)                              |
+|                                                   |
+| [+ Adicionar Momento]                             |
+|                                                   |
+| 5/5 momentos preenchidos                          |
+| [======= Enviar Atividade =======]                |
++--------------------------------------------------+
 ```
 
 ---
 
-## Migracao SQL
+## Alteracoes Necessarias
 
-```sql
-CREATE TABLE user_activity_logs (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  action text NOT NULL,
-  resource_type text NOT NULL DEFAULT 'platform',
-  resource_id uuid,
-  journey_id uuid,
-  station_id uuid,
-  activity_id uuid,
-  metadata jsonb DEFAULT '{}',
-  created_at timestamp with time zone NOT NULL DEFAULT now()
-);
+### 1. Criar `src/components/activities/TimelineActivity.tsx`
 
--- Indice para consultas por usuario
-CREATE INDEX idx_activity_logs_user_id ON user_activity_logs(user_id);
+Componente principal com:
+- Props: `description`, `onSubmit`, `isSubmitting`, `fontSizeClass` (mesmo padrao do FamilyTreeActivity)
+- Estado interno para lista de momentos: `{ year: string, title: string, description: string }[]`
+- Visualizacao horizontal/vertical responsiva da timeline
+- Formulario de entrada para cada momento
+- Validacao (minimo 5 momentos com ano e titulo preenchidos)
+- Formatacao do conteudo para submissao (markdown)
+- Cores: paleta de cores variadas para cada circulo (similar a imagem de referencia)
 
--- Indice para consultas por data
-CREATE INDEX idx_activity_logs_created_at ON user_activity_logs(created_at DESC);
+### 2. Modificar `src/pages/ActivityPage.tsx`
 
--- Indice para consultas por acao
-CREATE INDEX idx_activity_logs_action ON user_activity_logs(action);
+- Adicionar import do `TimelineActivity`
+- Adicionar funcao de deteccao: `isTimelineActivity = (title) => title.toLowerCase().includes('linha da vida')`
+- Adicionar bloco de renderizacao condicional (igual ao padrao da FamilyTreeActivity)
+- Adicionar exclusao no bloco de orientacao generica (para evitar duplicidade)
+- Adicionar exclusao no footer de submit (o componente tera seu proprio botao)
 
--- Habilitar RLS
-ALTER TABLE user_activity_logs ENABLE ROW LEVEL SECURITY;
+### 3. Migracao SQL - Criar a atividade no banco
 
--- Usuarios podem inserir seus proprios logs
-CREATE POLICY "Users can insert own logs"
-  ON user_activity_logs
-  FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+Inserir o registro da atividade na tabela `activities` vinculada a Estacao 1 da Jornada 2:
+- station_id: `584db9f1-1d6e-4109-ae4a-4b14a92a88c3` (Estacao 1 - Construindo a consciencia de si)
+- title: "Linha da Vida"
+- type: "essay" (seguindo o padrao das atividades especiais baseadas em titulo)
+- description: Orientacao completa da atividade
+- points: 10
 
--- Admins podem ver todos os logs
-CREATE POLICY "Admins can view all logs"
-  ON user_activity_logs
-  FOR SELECT
-  USING (has_role(auth.uid(), 'admin'));
+### 4. Modificar `src/components/admin/ActivityForm.tsx`
 
--- Usuarios podem ver seus proprios logs
-CREATE POLICY "Users can view own logs"
-  ON user_activity_logs
-  FOR SELECT
-  USING (auth.uid() = user_id);
+Adicionar dica no formulario de admin sobre o titulo "Linha da Vida" (similar a dica existente da "Arvore da Gratidao").
+
+---
+
+## Detalhes Tecnicos
+
+### Cores dos Circulos da Timeline
+Paleta alternada para cada momento, inspirada na imagem de referencia:
+- Dourado (#C9A84C)
+- Rosa (#C94C6E)
+- Azul (#4C7BC9)
+- Roxo (#9B59B6)
+- Verde (#27AE60)
+- Laranja (#E67E22)
+- Vermelho (#E74C3C)
+- Turquesa (#1ABC9C)
+
+### Responsividade
+- Desktop: Timeline horizontal com scroll se necessario
+- Mobile: Timeline vertical (circulos empilhados com linha vertical)
+
+### Formato de Submissao
+O conteudo sera formatado em markdown:
+```
+### Linha da Vida
+
+**1998 - Nascimento**
+Momento especial que marcou o inicio da minha jornada.
+
+**2005 - Formatura**
+Concluir o ensino fundamental foi um marco importante.
+
+...
+```
+
+### Deteccao no ActivityPage
+```typescript
+const isTimelineActivity = (title: string) =>
+  title.toLowerCase().includes('linha da vida');
 ```
 
 ---
@@ -193,43 +161,18 @@ CREATE POLICY "Users can view own logs"
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| Nova migracao SQL | Criar | Tabela `user_activity_logs` com indices e RLS |
-| `src/hooks/useActivityLogger.ts` | Criar | Hook centralizado para registrar logs |
-| `src/pages/ActivityLogsPage.tsx` | Criar | Pagina de visualizacao de logs (admin) |
-| `src/pages/Login.tsx` | Modificar | Registrar log de login |
-| `src/contexts/AuthContext.tsx` | Modificar | Registrar log de logout |
-| `src/pages/Dashboard.tsx` | Modificar | Registrar log de acesso ao dashboard |
-| `src/pages/JourneyDetail.tsx` | Modificar | Registrar log de acesso a jornada |
-| `src/pages/StationDetail.tsx` | Modificar | Registrar logs de acesso e interacoes |
-| `src/pages/ActivityPage.tsx` | Modificar | Registrar logs de acesso e submissao |
-| `src/pages/SupportPage.tsx` | Modificar | Registrar log de criacao de ticket |
-| `src/components/layout/AppLayout.tsx` | Modificar | Adicionar "Logs" no menu admin |
-| `src/App.tsx` | Modificar | Adicionar rota /logs |
+| `src/components/activities/TimelineActivity.tsx` | Criar | Componente interativo da Linha da Vida |
+| `src/pages/ActivityPage.tsx` | Modificar | Integrar o componente TimelineActivity |
+| `src/components/admin/ActivityForm.tsx` | Modificar | Adicionar dica sobre titulo "Linha da Vida" |
+| Nova migracao SQL | Criar | Inserir atividade na Estacao 1 da Jornada 2 |
 
 ---
 
-## Detalhes de Implementacao
+## Resultado Esperado
 
-### Hook `useActivityLogger`
-- Usa o `supabase` client diretamente para INSERT na tabela `user_activity_logs`
-- Obtem o `user` do `useAuth()` para preencher o `user_id` automaticamente
-- Funcao `logAction` e assincrona mas nao bloqueia a interface (fire-and-forget)
-- Erros de log sao silenciosos (console.error) para nao impactar a experiencia do usuario
-
-### Pagina de Logs (Admin)
-- Busca dados diretamente do Supabase com paginacao (50 registros por pagina)
-- Faz JOIN com `profiles` para exibir nome do usuario
-- Faz JOIN com `journeys`, `stations` e `activities` para exibir nomes dos recursos
-- Filtros aplicados via query parameters do Supabase
-- Labels em portugues para cada tipo de acao
-
-### Pontos de Integracao
-Cada pagina recebera chamadas discretas ao `logAction` nos momentos adequados:
-
-1. **Login.tsx**: apos `login()` retornar sem erro
-2. **AuthContext.tsx**: antes de chamar `signOut()`
-3. **Dashboard.tsx**: em um `useEffect` ao montar a pagina
-4. **JourneyDetail.tsx**: em um `useEffect` quando a jornada e carregada
-5. **StationDetail.tsx**: em um `useEffect` ao montar + nos handlers de checkbox
-6. **ActivityPage.tsx**: em um `useEffect` ao montar + no `handleSubmit`
-7. **SupportPage.tsx**: apos criar o ticket com sucesso
+- Ao acessar a Estacao 1 da Jornada 2, o aluno vera a atividade "Linha da Vida"
+- A interface exibira uma timeline visual interativa com circulos coloridos conectados por uma linha
+- O aluno preenchera pelo menos 5 momentos com ano, titulo e descricao
+- A timeline se atualiza visualmente em tempo real conforme o aluno preenche
+- Ao enviar, os dados sao salvos como submissao da atividade
+- Administradores podem ver o conteudo formatado na pagina de avaliacoes
