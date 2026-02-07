@@ -20,6 +20,7 @@ import { VisionBoardCanvas } from '@/components/activities/VisionBoardCanvas';
 import { ForumBoard } from '@/components/activities/ForumBoard';
 import { WordRoulette } from '@/components/activities/WordRoulette';
 import { FamilyTreeActivity } from '@/components/activities/FamilyTreeActivity';
+import { TimelineActivity } from '@/components/activities/TimelineActivity';
 import { supabase } from '@/integrations/supabase/client';
 
 const activityIcons = {
@@ -83,6 +84,7 @@ export default function ActivityPage() {
   const isAffirmationActivity = (title: string) => title === 'Afirmação de Potencial';
   const isManifestoActivity = (title: string) => title.toLowerCase().includes('manifesto');
   const isFamilyTreeActivity = (title: string) => title.toLowerCase().includes('árvore da gratidão') || title.toLowerCase().includes('arvore da gratidao');
+  const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
 
   // Estado para compartilhar manifesto no mural
   const [shareManifesto, setShareManifesto] = useState(false);
@@ -382,7 +384,7 @@ export default function ActivityPage() {
             
             <CardContent className="pt-8 space-y-6">
               {/* Orientation Section - Skip for gamified, forum, Lista de Gratidão, Árvore da Gratidão, and Manifesto which handle their own */}
-              {activity.description && activity.type !== 'gamified' && activity.type !== 'forum' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && (
+              {activity.description && activity.type !== 'gamified' && activity.type !== 'forum' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && (
                 <div className="space-y-6">
                   {/* Orientation Label with Font Size Control */}
                   <div className="flex items-center justify-between">
@@ -619,8 +621,30 @@ export default function ActivityPage() {
                 />
               )}
 
-              {/* Essay - Genérico (não é Gratidão, Manifesto ou Árvore) */}
-              {activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && (
+              {/* Essay - Linha da Vida (Timeline) */}
+              {activity.type === 'essay' && isTimelineActivity(activity.title) && (
+                <TimelineActivity
+                  description={activity.description}
+                  onSubmit={async (content) => {
+                    setIsSubmitting(true);
+                    await submitActivity({
+                      activity_id: activity.id,
+                      user_id: user.id,
+                      content,
+                    });
+                    toast.success('Linha da Vida enviada com sucesso!');
+                    setIsSubmitting(false);
+                    if (journey) {
+                      navigate(`/jornadas/${journey.id}`);
+                    }
+                  }}
+                  isSubmitting={isSubmitting}
+                  fontSizeClass={fontSizeClass}
+                />
+              )}
+
+              {/* Essay - Genérico (não é Gratidão, Manifesto, Árvore ou Linha da Vida) */}
+              {activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sua Resposta</span>
@@ -766,7 +790,7 @@ export default function ActivityPage() {
             </CardContent>
             
             {/* Footer with submit button - hide for gamified, forum, and family tree since they have their own */}
-            {activity.type !== 'gamified' && activity.type !== 'forum' && !isFamilyTreeActivity(activity.title) && (
+            {activity.type !== 'gamified' && activity.type !== 'forum' && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && (
               <CardFooter className="bg-cream/30 border-t border-primary/10 py-6">
                 <Button
                   onClick={() => handleSubmit()}
@@ -774,7 +798,7 @@ export default function ActivityPage() {
                     (activity.type === 'quiz' && quizAnswers.length !== activityQuestions.length) ||
                     (activity.type === 'essay' && isGratitudeActivity(activity.title) && !isGratitudeComplete) ||
                     (activity.type === 'essay' && isManifestoActivity(activity.title) && essayContent.length < 150) ||
-                    (activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && essayContent.length < 100) ||
+                    (activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && essayContent.length < 100) ||
                     (activity.type === 'upload' && !uploadFile)
                   )}
                   className="w-full bg-accent hover:bg-accent/90 text-primary font-semibold py-6 text-lg"
