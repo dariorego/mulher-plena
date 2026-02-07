@@ -1,114 +1,107 @@
 
 
-# Plano: Atividade "Farol das Acoes nos Relacionamentos" - Semaforo Interativo
+# Plano: Atividade "Diario de Papeis" - Estacao 3, Jornada 2
 
 ## Objetivo
-Criar uma atividade especial com interface de semaforo (vermelho/amarelo/verde) para a Estacao 2 da Jornada 2 ("Construindo relacionamentos saudaveis"). O participante reflete sobre seus relacionamentos mais importantes e, para cada um, preenche acoes associadas a cada cor do semaforo.
+Criar a atividade "Diario de Papeis" para a Estacao 3 ("Multiplicidade de papeis: impactos na rotina e nos projetos de vida") da Jornada 2. A participante registra os papeis que desempenha ao longo de um dia, o sentimento associado e como vivenciou cada experiencia, preenchendo uma tabela interativa.
 
 ---
 
 ## Como Funciona
 
-Para cada relacionamento importante (familia, amigos, colegas, etc.), o participante:
-1. Nomeia o relacionamento (ex: "Familia", "Amigos do trabalho")
-2. Escolhe uma palavra que traduz sua vivencia/sentimento naquele relacionamento
-3. Preenche o semaforo:
-   - **Vermelho** (Parar): algo que precisa parar de fazer
-   - **Amarelo** (Atencao): algo para prestar mais atencao
-   - **Verde** (Seguir): algo para continuar fazendo
+A participante preenche uma tabela com no minimo 3 linhas contendo:
+1. **Papel** - O papel desempenhado (ex: Mae/cuidadora, Profissional/Lider, Esposa)
+2. **Sentimento** - Uma palavra que traduz o sentimento (ex: Amor, Confiante, Gratidao)
+3. **Como vivenciei essa experiencia** - Descricao de como vivenciou aquele papel
 
-Minimo de 3 relacionamentos para enviar.
+Minimo de 3 papeis preenchidos para enviar.
 
 ---
 
 ## Estrutura da Interface
 
 ```text
-+--------------------------------------------------+
-| FAROL DAS ACOES NOS RELACIONAMENTOS              |
-+--------------------------------------------------+
-| ORIENTACAO                                        |
-| Pense nos seus relacionamentos mais importantes.. |
-+--------------------------------------------------+
-|                                                   |
-| RELACIONAMENTO 1                                  |
-| Nome: [Familia__________]                         |
-| Palavra-chave: [Amor___________]                  |
-|                                                   |
-|  [O] VERMELHO - Algo para PARAR                   |
-|  [__________________________________]             |
-|                                                   |
-|  [O] AMARELO - Algo para PRESTAR ATENCAO          |
-|  [__________________________________]             |
-|                                                   |
-|  [O] VERDE - Algo para SEGUIR                     |
-|  [__________________________________]             |
-|                                                   |
-+--------------------------------------------------+
-| [+ Adicionar Relacionamento]                      |
-|                                                   |
-| 3/3 relacionamentos preenchidos                   |
-| [======= Enviar Atividade =======]                |
-+--------------------------------------------------+
++------------------------------------------------------+
+| DIARIO DE PAPEIS                                      |
++------------------------------------------------------+
+| ORIENTACAO                                            |
+| Registre, ao longo de um dia, os papeis que voce      |
+| desempenhou e como se sentiu ao realizar cada um...   |
++------------------------------------------------------+
+|                                                       |
+| +----------+-----------+----------------------------+ |
+| | PAPEL    |SENTIMENTO | COMO VIVENCIEI...          | |
+| +----------+-----------+----------------------------+ |
+| | [______] | [_______] | [________________________] | |
+| +----------+-----------+----------------------------+ |
+| | [______] | [_______] | [________________________] | |
+| +----------+-----------+----------------------------+ |
+| | [______] | [_______] | [________________________] | |
+| +----------+-----------+----------------------------+ |
+|                                                       |
+| [+ Adicionar Papel]                                   |
+|                                                       |
+| 3/3 papeis preenchidos                                |
+| [======= Enviar Atividade =======]                    |
++------------------------------------------------------+
 ```
 
 ---
 
 ## Visualizacao da Submissao
 
-Apos o envio, a visualizacao formatada mostrara cada relacionamento como um cartao com um semaforo visual (circulos vermelho, amarelo e verde) ao lado das respectivas acoes.
+Apos o envio, a submissao sera exibida como uma tabela formatada com os dados preenchidos, tanto para a aluna quanto para o avaliador.
 
 ---
 
 ## Alteracoes Necessarias
 
-### 1. Criar `src/components/activities/TrafficLightActivity.tsx`
+### 1. Criar `src/components/activities/RoleDiaryActivity.tsx`
 
-Componente principal com:
-- Props: `description`, `onSubmit`, `isSubmitting`, `fontSizeClass` (mesmo padrao das outras atividades especiais)
-- Estado interno para lista de relacionamentos: `{ name: string, keyword: string, red: string, yellow: string, green: string }[]`
-- Interface de semaforo visual com circulos coloridos (vermelho, amarelo, verde)
-- Minimo de 3 relacionamentos preenchidos para habilitar envio
-- Botao para adicionar/remover relacionamentos
-- Formatacao do conteudo em markdown para submissao
+Componente principal do formulario com:
+- Props: `description`, `onSubmit`, `isSubmitting`, `fontSizeClass` (mesmo padrao)
+- Estado interno: lista de entradas `{ role: string, feeling: string, experience: string }[]`
+- Comeca com 3 linhas vazias
+- Tabela responsiva: em desktop exibe como tabela real, em mobile exibe como cartoes empilhados
+- Botao para adicionar/remover entradas
+- Minimo de 3 entradas completas para habilitar envio
+- Formatacao em markdown para armazenamento
 
-### 2. Criar `src/components/activities/SubmittedTrafficLightView.tsx`
+### 2. Criar `src/components/activities/SubmittedRoleDiaryView.tsx`
 
 Componente para exibir a submissao formatada:
-- Parser de markdown para extrair dados dos relacionamentos
-- Exibicao visual com semaforo (circulos coloridos)
-- Cartoes para cada relacionamento com a palavra-chave e as 3 acoes
-- Dialog popup ao clicar em um cartao para ver detalhes (mesmo padrao da Linha da Vida)
+- Parser de markdown para extrair dados dos papeis
+- Exibicao como tabela estilizada
+- Dialog popup ao clicar em uma linha para ver detalhes completos
 
 ### 3. Modificar `src/pages/ActivityPage.tsx`
 
-- Adicionar import do `TrafficLightActivity` e `SubmittedTrafficLightView`
-- Adicionar funcao de deteccao: `isTrafficLightActivity = (title) => title.toLowerCase().includes('farol')`
-- Adicionar bloco de renderizacao para submissao existente (secao "Already Submitted")
-- Adicionar bloco de renderizacao do componente no formulario
+- Adicionar import de `RoleDiaryActivity` e `SubmittedRoleDiaryView`
+- Adicionar funcao de deteccao: `isDiaryActivity = (title) => title.toLowerCase().includes('diário de papéis') || title.toLowerCase().includes('diario de papeis')`
+- Adicionar bloco de renderizacao para submissao existente (Already Submitted)
+- Adicionar bloco de renderizacao do componente no formulario de preenchimento
 - Excluir da orientacao generica e do footer de submit
 
 ### 4. Modificar `src/pages/Evaluations.tsx`
 
-- Importar `SubmittedTrafficLightView`
-- Adicionar deteccao do titulo "Farol" no modal de avaliacao
-- Renderizar a view formatada no lugar de texto puro
+- Importar `SubmittedRoleDiaryView`
+- Adicionar deteccao e renderizacao formatada no modal de avaliacao
 
 ### 5. Modificar `src/pages/SubmissionView.tsx`
 
-- Importar `SubmittedTrafficLightView`
+- Importar `SubmittedRoleDiaryView`
 - Adicionar deteccao e renderizacao formatada
 
 ### 6. Modificar `src/components/admin/ActivityForm.tsx`
 
-- Adicionar "Farol" na lista de titulos especiais na dica do formulario de admin
+- Adicionar "Diario de Papeis" na lista de titulos especiais na dica do formulario de admin
 
 ### 7. Migracao SQL - Inserir atividade no banco
 
-- station_id: `a07699ad-ae70-4785-8f3e-a15192eb85a2` (Estacao 2 - Construindo relacionamentos saudaveis)
-- title: "Farol das ações nos Relacionamentos"
-- type: `essay` (padrao das atividades especiais)
-- description: "Pense nos seus relacionamentos mais importantes, com a familia, amigos, colegas de trabalho... Para cada um, escolha uma palavra que traduza sua vivencia ou sentimento. Em seguida, preencha o semaforo: Vermelho (algo para parar), Amarelo (algo para prestar atencao) e Verde (algo para seguir)."
+- station_id: `8d259d03-211f-40f3-8b0c-c0196ac13c9b` (Estacao 3 - Multiplicidade de papeis)
+- title: "Diário de Papéis"
+- type: `essay`
+- description: texto de orientacao
 - points: 10
 
 ---
@@ -116,42 +109,51 @@ Componente para exibir a submissao formatada:
 ## Detalhes Tecnicos
 
 ### Formato de Submissao (Markdown)
+
 ```
-### Farol das Acoes nos Relacionamentos
+### Diario de Papeis
 
 ---
 
-**Relacionamento: Familia**
-**Palavra-chave:** Amor
-
-- Vermelho (Parar): Deixar de ser impaciente nas conversas
-- Amarelo (Atencao): Ouvir mais antes de responder
-- Verde (Seguir): Continuar demonstrando carinho diariamente
+**Papel:** Mae / cuidadora
+**Sentimento:** Amor
+**Como vivenciei:** Senti-me amorosa e realizada por cuidar de quem amo, mas tambem um pouco cansada pela correria.
 
 ---
 
-**Relacionamento: Amigos**
-**Palavra-chave:** Lealdade
+**Papel:** Profissional / Lider
+**Sentimento:** Confiante
+**Como vivenciei:** Me senti animada e inspirada ao perceber que minhas ideias contribuiram para o grupo.
 
-- Vermelho (Parar): Cancelar encontros de ultima hora
-- Amarelo (Atencao): Prestar mais atencao nas necessidades deles
-- Verde (Seguir): Manter o habito de ligar toda semana
+---
+
+**Papel:** Esposa
+**Sentimento:** Gratidao
+**Como vivenciei:** Acolhida e amada, me senti alegre por compartilhar momentos simples com o meu marido.
 ```
 
 ### Deteccao no ActivityPage
+
 ```typescript
-const isTrafficLightActivity = (title: string) =>
-  title.toLowerCase().includes('farol');
+const isDiaryActivity = (title: string) =>
+  title.toLowerCase().includes('diário de papéis') ||
+  title.toLowerCase().includes('diario de papeis');
 ```
 
-### Cores do Semaforo
-- Vermelho: `#EF4444` (bg-red-500)
-- Amarelo: `#EAB308` (bg-yellow-500)
-- Verde: `#22C55E` (bg-green-500)
+### Interface da Tabela
 
-### Responsividade
-- Desktop: Cartoes lado a lado em grid de 2 colunas
-- Mobile: Cartoes empilhados em coluna unica
+- Desktop: Tabela HTML estilizada com 3 colunas (Papel, Sentimento, Como vivenciei)
+- Mobile: Cartoes empilhados com os 3 campos
+- Cabecalho da tabela em cor primaria
+- Linhas alternadas com fundo suave
+- Inputs/textareas inline na tabela
+
+### Cores e Estilo
+
+- Cabecalho: `bg-primary text-accent` (consistente com o restante da aplicacao)
+- Linhas pares: `bg-cream/30`
+- Linhas impares: `bg-background`
+- Botao adicionar: tracejado, estilo outline
 
 ---
 
@@ -159,21 +161,21 @@ const isTrafficLightActivity = (title: string) =>
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| `src/components/activities/TrafficLightActivity.tsx` | Criar | Componente interativo do semaforo |
-| `src/components/activities/SubmittedTrafficLightView.tsx` | Criar | Visualizacao formatada da submissao |
+| `src/components/activities/RoleDiaryActivity.tsx` | Criar | Formulario interativo com tabela |
+| `src/components/activities/SubmittedRoleDiaryView.tsx` | Criar | Visualizacao formatada como tabela |
 | `src/pages/ActivityPage.tsx` | Modificar | Integrar ambos componentes |
-| `src/pages/Evaluations.tsx` | Modificar | Exibir view formatada no modal de avaliacao |
-| `src/pages/SubmissionView.tsx` | Modificar | Exibir view formatada na pagina de submissao |
-| `src/components/admin/ActivityForm.tsx` | Modificar | Adicionar "Farol" na dica de titulos especiais |
-| Nova migracao SQL | Criar | Inserir atividade na Estacao 2 da Jornada 2 |
+| `src/pages/Evaluations.tsx` | Modificar | Exibir view formatada no modal |
+| `src/pages/SubmissionView.tsx` | Modificar | Exibir view formatada na pagina |
+| `src/components/admin/ActivityForm.tsx` | Modificar | Adicionar dica de titulo especial |
+| Nova migracao SQL | Criar | Inserir atividade na Estacao 3 |
 
 ---
 
 ## Resultado Esperado
 
-- Ao acessar a Estacao 2 da Jornada 2 ("Construindo relacionamentos saudaveis"), o aluno vera a atividade "Farol das acoes nos Relacionamentos"
-- A interface exibira campos para nomear relacionamentos, escolher uma palavra-chave e preencher as 3 acoes do semaforo
-- Minimo de 3 relacionamentos completos para enviar
-- Apos o envio, a submissao sera exibida com semaforos visuais tanto para o aluno quanto para o avaliador
-- Administradores e professores verao a mesma visualizacao formatada nas paginas de avaliacao e submissao
+- Ao acessar a Estacao 3 da Jornada 2, a aluna vera a atividade "Diario de Papeis"
+- A interface exibira uma tabela interativa com 3 colunas para preencher
+- Minimo de 3 papeis completos para enviar
+- Apos o envio, a submissao sera exibida como tabela formatada
+- Administradores e professores verao a mesma visualizacao nas paginas de avaliacao e submissao
 
