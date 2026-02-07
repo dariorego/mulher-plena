@@ -22,6 +22,8 @@ import { WordRoulette } from '@/components/activities/WordRoulette';
 import { FamilyTreeActivity } from '@/components/activities/FamilyTreeActivity';
 import { TimelineActivity } from '@/components/activities/TimelineActivity';
 import { SubmittedTimelineView } from '@/components/activities/SubmittedTimelineView';
+import { TrafficLightActivity } from '@/components/activities/TrafficLightActivity';
+import { SubmittedTrafficLightView } from '@/components/activities/SubmittedTrafficLightView';
 import { supabase } from '@/integrations/supabase/client';
 
 const activityIcons = {
@@ -86,6 +88,7 @@ export default function ActivityPage() {
   const isManifestoActivity = (title: string) => title.toLowerCase().includes('manifesto');
   const isFamilyTreeActivity = (title: string) => title.toLowerCase().includes('árvore da gratidão') || title.toLowerCase().includes('arvore da gratidao');
   const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
+  const isTrafficLightActivity = (title: string) => title.toLowerCase().includes('farol');
 
   // Estado para compartilhar manifesto no mural
   const [shareManifesto, setShareManifesto] = useState(false);
@@ -386,8 +389,49 @@ export default function ActivityPage() {
           </Card>
         )}
 
-        {/* Already Submitted - Other types (not gamified image, not timeline) */}
-        {existingSubmission && !(activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/')) && !isTimelineActivity(activity.title) && (
+        {/* Already Submitted - Traffic Light (Farol) */}
+        {existingSubmission && isTrafficLightActivity(activity.title) && (
+          <Card className="border-primary/20 overflow-hidden">
+            <div className="bg-primary py-6 px-6">
+              <h1 className="text-2xl md:text-3xl font-cinzel text-accent text-center tracking-wide">
+                {activity.title}
+              </h1>
+            </div>
+            <CardContent className="pt-6 space-y-6">
+              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-green-800">Atividade enviada com sucesso!</p>
+                  <p className="text-sm text-green-700">
+                    Enviada em {new Date(existingSubmission.submitted_at).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              </div>
+
+              {existingSubmission.content && (
+                <SubmittedTrafficLightView content={existingSubmission.content} />
+              )}
+
+              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+                <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
+                  <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
+                  <p className="text-muted-foreground">{existingSubmission.feedback}</p>
+                </div>
+              )}
+
+              {user.role === 'aluno' && (
+                <div className="flex justify-end">
+                  <Button variant="outline" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
+                    {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Already Submitted - Other types (not gamified image, not timeline, not traffic light) */}
+        {existingSubmission && !(activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/')) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && (
           <Card className="border-green-500/50 bg-green-50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
@@ -429,7 +473,7 @@ export default function ActivityPage() {
             
             <CardContent className="pt-8 space-y-6">
               {/* Orientation Section - Skip for gamified, forum, Lista de Gratidão, Árvore da Gratidão, and Manifesto which handle their own */}
-              {activity.description && activity.type !== 'gamified' && activity.type !== 'forum' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && (
+              {activity.description && activity.type !== 'gamified' && activity.type !== 'forum' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && (
                 <div className="space-y-6">
                   {/* Orientation Label with Font Size Control */}
                   <div className="flex items-center justify-between">
@@ -688,8 +732,30 @@ export default function ActivityPage() {
                 />
               )}
 
-              {/* Essay - Genérico (não é Gratidão, Manifesto, Árvore ou Linha da Vida) */}
-              {activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && (
+              {/* Essay - Farol das Ações (Traffic Light) */}
+              {activity.type === 'essay' && isTrafficLightActivity(activity.title) && (
+                <TrafficLightActivity
+                  description={activity.description}
+                  onSubmit={async (content) => {
+                    setIsSubmitting(true);
+                    await submitActivity({
+                      activity_id: activity.id,
+                      user_id: user.id,
+                      content,
+                    });
+                    toast.success('Farol dos Relacionamentos enviado com sucesso!');
+                    setIsSubmitting(false);
+                    if (station) {
+                      navigate(`/estacao/${station.id}`);
+                    }
+                  }}
+                  isSubmitting={isSubmitting}
+                  fontSizeClass={fontSizeClass}
+                />
+              )}
+
+              {/* Essay - Genérico (não é Gratidão, Manifesto, Árvore, Linha da Vida ou Farol) */}
+              {activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sua Resposta</span>
@@ -835,7 +901,7 @@ export default function ActivityPage() {
             </CardContent>
             
             {/* Footer with submit button - hide for gamified, forum, and family tree since they have their own */}
-            {activity.type !== 'gamified' && activity.type !== 'forum' && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && (
+            {activity.type !== 'gamified' && activity.type !== 'forum' && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && (
               <CardFooter className="bg-cream/30 border-t border-primary/10 py-6">
                 <Button
                   onClick={() => handleSubmit()}
@@ -843,7 +909,7 @@ export default function ActivityPage() {
                     (activity.type === 'quiz' && quizAnswers.length !== activityQuestions.length) ||
                     (activity.type === 'essay' && isGratitudeActivity(activity.title) && !isGratitudeComplete) ||
                     (activity.type === 'essay' && isManifestoActivity(activity.title) && essayContent.length < 150) ||
-                    (activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && essayContent.length < 100) ||
+                    (activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && essayContent.length < 100) ||
                     (activity.type === 'upload' && !uploadFile)
                   )}
                   className="w-full bg-accent hover:bg-accent/90 text-primary font-semibold py-6 text-lg"
