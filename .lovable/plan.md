@@ -1,96 +1,54 @@
 
 
-# Plano: Atividade "Ensaio Reflexivo" - Estacao 4, Jornada 2
+# Plano: Atividade Forum "A Mulher que eu Quero Ser" - Estacao 5, Jornada 2
 
 ## Objetivo
-Criar a atividade "Ensaio Reflexivo" para a Estacao 4 ("Maternidade: missao ou opcao?") da Jornada 2. A participante escreve um breve texto sobre o que a maternidade representa para ela, com opcao de compartilhar no mural coletivo.
+Criar a atividade "Forum: A Mulher que eu Quero Ser" para a Estacao 5 ("A mulher dos novos tempos") da Jornada 2. E uma atividade colaborativa (Padlet) onde as participantes compartilham imagens ou frases sobre a forca feminina que as inspira.
 
 ---
 
 ## Como Funciona
 
-- A participante ve a orientacao e uma caixa de texto para escrever seu ensaio
-- Abaixo do campo de texto, ha um checkbox opcional para compartilhar a resposta no mural coletivo
-- Minimo de 100 caracteres para enviar
-- Apos o envio, redireciona para a pagina da estacao
-
----
-
-## Estrutura da Interface
-
-```text
-+--------------------------------------------------+
-| ENSAIO REFLEXIVO                                  |
-+--------------------------------------------------+
-| ORIENTACAO                                        |
-| Escreva um breve texto ou faca um desenho sobre   |
-| o que a maternidade representa para voce,         |
-| independentemente de ser mae ou nao.              |
-+--------------------------------------------------+
-|                                                   |
-| SUA RESPOSTA                                      |
-| +----------------------------------------------+ |
-| |                                              | |
-| |  [caixa de texto]                            | |
-| |                                              | |
-| +----------------------------------------------+ |
-| Minimo de 100 caracteres. Atual: 0               |
-|                                                   |
-| [ ] Compartilhar minha resposta no mural coletivo |
-|                                                   |
-| [======= Enviar Atividade =======]                |
-+--------------------------------------------------+
-```
+- A atividade utiliza o tipo `forum` (Foro Colaborativo), que ja existe na aplicacao
+- O componente `ForumBoard` ja implementa toda a funcionalidade de Padlet: posts coloridos, texto, audio, exclusao, visualizacao em grid e atualizacao em tempo real
+- A participante ve a orientacao e pode postar reflexoes no mural coletivo
+- Todos os posts sao visiveis para todas as participantes em tempo real
 
 ---
 
 ## Abordagem
 
-Esta atividade usa o formulario generico de ensaio ("essay") que ja existe na aplicacao. As unicas mudancas necessarias sao:
-
-1. Adicionar o checkbox de compartilhamento opcional no formulario generico de essay, condicionado ao titulo da atividade
-2. Inserir a atividade no banco de dados
+Esta atividade nao requer nenhuma alteracao de codigo. O tipo `forum` ja e renderizado automaticamente pelo `ForumBoard` no `ActivityPage.tsx` (linhas 978-984). Basta inserir a atividade no banco de dados com o tipo correto.
 
 ---
 
-## Alteracoes Necessarias
+## Alteracao Necessaria
 
-### 1. Modificar `src/pages/ActivityPage.tsx`
+### Migracao SQL - Inserir atividade no banco
 
-**Deteccao da atividade:**
-- Adicionar funcao: `isEssayReflexivo = (title) => title.toLowerCase().includes('ensaio reflexivo')`
-- Reutilizar o estado `shareManifesto` (ja existente) para controlar o checkbox de compartilhamento
-
-**Bloco do essay generico (linhas 823-841):**
-- Adicionar, logo abaixo do campo de texto e do contador de caracteres, um checkbox opcional de compartilhamento no mural coletivo (mesmo estilo visual do Manifesto), visivel apenas quando a atividade for "Ensaio Reflexivo"
-
-**Logica de submit (funcao handleSubmit, linhas 173-249):**
-- Adicionar condicao para postar no forum_posts quando `isEssayReflexivo` e `shareManifesto` estiver marcado, identico ao padrao ja usado para o Manifesto
-
-### 2. Migracao SQL - Inserir atividade no banco
-
-- station_id: `c852c067-e364-4b55-a430-d4285c3a940f` (Estacao 4 - Maternidade: missao ou opcao?)
-- title: "Ensaio Reflexivo"
-- type: `essay`
-- description: "Escreva um breve texto ou faca um desenho sobre o que a maternidade representa para voce, independentemente de ser mae ou nao."
-- points: 10
+- **station_id:** `a7243ecb-3494-4677-b6c7-e9e5c0a343d7` (Estacao 5 - A mulher dos novos tempos)
+- **title:** "Fórum: A Mulher que eu Quero Ser"
+- **type:** `forum`
+- **description:** Texto de orientacao com a instrucao da atividade
+- **points:** 10
 
 ---
 
-## Resumo das Alteracoes
+## Resumo
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| `src/pages/ActivityPage.tsx` | Modificar | Adicionar checkbox de compartilhamento no essay generico e logica de post no forum |
-| Nova migracao SQL | Criar | Inserir atividade na Estacao 4 da Jornada 2 |
+| Nova migracao SQL | Criar | Inserir atividade do tipo `forum` na Estacao 5 |
+
+Nenhuma alteracao de codigo e necessaria, pois o componente ForumBoard ja suporta todo o fluxo de atividades do tipo forum automaticamente.
 
 ---
 
 ## Resultado Esperado
 
-- Ao acessar a Estacao 4 da Jornada 2, a aluna vera a atividade "Ensaio Reflexivo"
-- A orientacao sera exibida normalmente pelo fluxo generico de essay
-- A caixa de texto permitira escrever o ensaio (minimo 100 caracteres)
-- Um checkbox opcional permite compartilhar a resposta no mural coletivo
-- Apos o envio, a participante retorna para a pagina da estacao
+- Ao acessar a Estacao 5 da Jornada 2, a aluna vera a atividade "Forum: A Mulher que eu Quero Ser"
+- A orientacao sera exibida no topo do mural
+- A participante podera compartilhar textos e audios com cores personalizadas
+- Todos os posts serao visiveis em tempo real para todas as participantes
+- Professores e admins podem excluir posts
 
