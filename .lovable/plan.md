@@ -1,47 +1,23 @@
 
-# Plano: Atividade "Linha da Vida" - Timeline Interativa
+
+# Plano: Atividade "Farol das Acoes nos Relacionamentos" - Semaforo Interativo
 
 ## Objetivo
-Criar uma atividade especial chamada "Linha da Vida" com um mecanismo interativo de construcao de linha do tempo, onde o aluno indica pelo menos 5 momentos positivos e marcantes da sua vida, organizados cronologicamente com datas/anos.
+Criar uma atividade especial com interface de semaforo (vermelho/amarelo/verde) para a Estacao 2 da Jornada 2 ("Construindo relacionamentos saudaveis"). O participante reflete sobre seus relacionamentos mais importantes e, para cada um, preenche acoes associadas a cada cor do semaforo.
 
 ---
 
-## Como Funciona (Padrao Existente)
+## Como Funciona
 
-O sistema ja possui atividades especiais que sao ativadas automaticamente pelo titulo exato da atividade. Exemplos existentes:
-- **"Arvore da Gratidao"** -> Renderiza o componente FamilyTreeActivity
-- **"Lista de Gratidao"** -> Renderiza formulario especifico de gratidao
-- **"Afirmacao de Potencial"** -> Renderiza a Roleta de Palavras
-- **"Manifesto"** -> Renderiza formulario com compartilhamento no mural
+Para cada relacionamento importante (familia, amigos, colegas, etc.), o participante:
+1. Nomeia o relacionamento (ex: "Familia", "Amigos do trabalho")
+2. Escolhe uma palavra que traduz sua vivencia/sentimento naquele relacionamento
+3. Preenche o semaforo:
+   - **Vermelho** (Parar): algo que precisa parar de fazer
+   - **Amarelo** (Atencao): algo para prestar mais atencao
+   - **Verde** (Seguir): algo para continuar fazendo
 
-A nova atividade "Linha da Vida" seguira este mesmo padrao.
-
----
-
-## Componente Visual: TimelineActivity
-
-A interface sera inspirada na imagem de referencia fornecida, com:
-
-### Visualizacao da Linha do Tempo
-- Linha horizontal dourada conectando circulos coloridos
-- Cada momento representado por um circulo com cor distinta
-- Ano/data exibido acima de cada circulo
-- Titulo e descricao abaixo de cada circulo
-- Layout responsivo (horizontal em desktop, vertical em mobile)
-
-### Formulario de Entrada
-- Minimo de 5 momentos (ja iniciados vazios)
-- Botao para adicionar mais momentos
-- Cada momento possui: Ano (obrigatorio), Titulo (obrigatorio), Descricao (opcional)
-- Botao para remover momentos extras (alem dos 5 obrigatorios)
-- Ordenacao automatica por ano ao visualizar
-
-### Fluxo do Usuario
-1. Aluno ve a orientacao da atividade
-2. Preenche os momentos nos campos do formulario
-3. A visualizacao da timeline atualiza em tempo real
-4. Quando tiver pelo menos 5 momentos completos, o botao de enviar e habilitado
-5. Ao enviar, os dados sao formatados e salvos como submissao
+Minimo de 3 relacionamentos para enviar.
 
 ---
 
@@ -49,111 +25,133 @@ A interface sera inspirada na imagem de referencia fornecida, com:
 
 ```text
 +--------------------------------------------------+
-| LINHA DA VIDA                                     |
+| FAROL DAS ACOES NOS RELACIONAMENTOS              |
 +--------------------------------------------------+
 | ORIENTACAO                                        |
-| Indique pelo menos cinco momentos positivos...    |
+| Pense nos seus relacionamentos mais importantes.. |
 +--------------------------------------------------+
 |                                                   |
-| VISUALIZACAO DA LINHA DO TEMPO                    |
+| RELACIONAMENTO 1                                  |
+| Nome: [Familia__________]                         |
+| Palavra-chave: [Amor___________]                  |
 |                                                   |
-|  1998      2005      2012      2018      2023     |
-|   O---------O---------O---------O---------O       |
-|  Nasc.   Formou   Casou    Filha    Promo.        |
-|  Desc..  Desc..   Desc..   Desc..   Desc..        |
+|  [O] VERMELHO - Algo para PARAR                   |
+|  [__________________________________]             |
+|                                                   |
+|  [O] AMARELO - Algo para PRESTAR ATENCAO          |
+|  [__________________________________]             |
+|                                                   |
+|  [O] VERDE - Algo para SEGUIR                     |
+|  [__________________________________]             |
 |                                                   |
 +--------------------------------------------------+
-| SEUS MOMENTOS                                     |
+| [+ Adicionar Relacionamento]                      |
 |                                                   |
-| [1] Ano: [____] Titulo: [____________]            |
-|     Descricao: [_________________________]        |
-|                                                   |
-| [2] Ano: [____] Titulo: [____________]            |
-|     Descricao: [_________________________]        |
-|                                                   |
-| ... (5 a N momentos)                              |
-|                                                   |
-| [+ Adicionar Momento]                             |
-|                                                   |
-| 5/5 momentos preenchidos                          |
+| 3/3 relacionamentos preenchidos                   |
 | [======= Enviar Atividade =======]                |
 +--------------------------------------------------+
 ```
 
 ---
 
+## Visualizacao da Submissao
+
+Apos o envio, a visualizacao formatada mostrara cada relacionamento como um cartao com um semaforo visual (circulos vermelho, amarelo e verde) ao lado das respectivas acoes.
+
+---
+
 ## Alteracoes Necessarias
 
-### 1. Criar `src/components/activities/TimelineActivity.tsx`
+### 1. Criar `src/components/activities/TrafficLightActivity.tsx`
 
 Componente principal com:
-- Props: `description`, `onSubmit`, `isSubmitting`, `fontSizeClass` (mesmo padrao do FamilyTreeActivity)
-- Estado interno para lista de momentos: `{ year: string, title: string, description: string }[]`
-- Visualizacao horizontal/vertical responsiva da timeline
-- Formulario de entrada para cada momento
-- Validacao (minimo 5 momentos com ano e titulo preenchidos)
-- Formatacao do conteudo para submissao (markdown)
-- Cores: paleta de cores variadas para cada circulo (similar a imagem de referencia)
+- Props: `description`, `onSubmit`, `isSubmitting`, `fontSizeClass` (mesmo padrao das outras atividades especiais)
+- Estado interno para lista de relacionamentos: `{ name: string, keyword: string, red: string, yellow: string, green: string }[]`
+- Interface de semaforo visual com circulos coloridos (vermelho, amarelo, verde)
+- Minimo de 3 relacionamentos preenchidos para habilitar envio
+- Botao para adicionar/remover relacionamentos
+- Formatacao do conteudo em markdown para submissao
 
-### 2. Modificar `src/pages/ActivityPage.tsx`
+### 2. Criar `src/components/activities/SubmittedTrafficLightView.tsx`
 
-- Adicionar import do `TimelineActivity`
-- Adicionar funcao de deteccao: `isTimelineActivity = (title) => title.toLowerCase().includes('linha da vida')`
-- Adicionar bloco de renderizacao condicional (igual ao padrao da FamilyTreeActivity)
-- Adicionar exclusao no bloco de orientacao generica (para evitar duplicidade)
-- Adicionar exclusao no footer de submit (o componente tera seu proprio botao)
+Componente para exibir a submissao formatada:
+- Parser de markdown para extrair dados dos relacionamentos
+- Exibicao visual com semaforo (circulos coloridos)
+- Cartoes para cada relacionamento com a palavra-chave e as 3 acoes
+- Dialog popup ao clicar em um cartao para ver detalhes (mesmo padrao da Linha da Vida)
 
-### 3. Migracao SQL - Criar a atividade no banco
+### 3. Modificar `src/pages/ActivityPage.tsx`
 
-Inserir o registro da atividade na tabela `activities` vinculada a Estacao 1 da Jornada 2:
-- station_id: `584db9f1-1d6e-4109-ae4a-4b14a92a88c3` (Estacao 1 - Construindo a consciencia de si)
-- title: "Linha da Vida"
-- type: "essay" (seguindo o padrao das atividades especiais baseadas em titulo)
-- description: Orientacao completa da atividade
+- Adicionar import do `TrafficLightActivity` e `SubmittedTrafficLightView`
+- Adicionar funcao de deteccao: `isTrafficLightActivity = (title) => title.toLowerCase().includes('farol')`
+- Adicionar bloco de renderizacao para submissao existente (secao "Already Submitted")
+- Adicionar bloco de renderizacao do componente no formulario
+- Excluir da orientacao generica e do footer de submit
+
+### 4. Modificar `src/pages/Evaluations.tsx`
+
+- Importar `SubmittedTrafficLightView`
+- Adicionar deteccao do titulo "Farol" no modal de avaliacao
+- Renderizar a view formatada no lugar de texto puro
+
+### 5. Modificar `src/pages/SubmissionView.tsx`
+
+- Importar `SubmittedTrafficLightView`
+- Adicionar deteccao e renderizacao formatada
+
+### 6. Modificar `src/components/admin/ActivityForm.tsx`
+
+- Adicionar "Farol" na lista de titulos especiais na dica do formulario de admin
+
+### 7. Migracao SQL - Inserir atividade no banco
+
+- station_id: `a07699ad-ae70-4785-8f3e-a15192eb85a2` (Estacao 2 - Construindo relacionamentos saudaveis)
+- title: "Farol das ações nos Relacionamentos"
+- type: `essay` (padrao das atividades especiais)
+- description: "Pense nos seus relacionamentos mais importantes, com a familia, amigos, colegas de trabalho... Para cada um, escolha uma palavra que traduza sua vivencia ou sentimento. Em seguida, preencha o semaforo: Vermelho (algo para parar), Amarelo (algo para prestar atencao) e Verde (algo para seguir)."
 - points: 10
-
-### 4. Modificar `src/components/admin/ActivityForm.tsx`
-
-Adicionar dica no formulario de admin sobre o titulo "Linha da Vida" (similar a dica existente da "Arvore da Gratidao").
 
 ---
 
 ## Detalhes Tecnicos
 
-### Cores dos Circulos da Timeline
-Paleta alternada para cada momento, inspirada na imagem de referencia:
-- Dourado (#C9A84C)
-- Rosa (#C94C6E)
-- Azul (#4C7BC9)
-- Roxo (#9B59B6)
-- Verde (#27AE60)
-- Laranja (#E67E22)
-- Vermelho (#E74C3C)
-- Turquesa (#1ABC9C)
-
-### Responsividade
-- Desktop: Timeline horizontal com scroll se necessario
-- Mobile: Timeline vertical (circulos empilhados com linha vertical)
-
-### Formato de Submissao
-O conteudo sera formatado em markdown:
+### Formato de Submissao (Markdown)
 ```
-### Linha da Vida
+### Farol das Acoes nos Relacionamentos
 
-**1998 - Nascimento**
-Momento especial que marcou o inicio da minha jornada.
+---
 
-**2005 - Formatura**
-Concluir o ensino fundamental foi um marco importante.
+**Relacionamento: Familia**
+**Palavra-chave:** Amor
 
-...
+- Vermelho (Parar): Deixar de ser impaciente nas conversas
+- Amarelo (Atencao): Ouvir mais antes de responder
+- Verde (Seguir): Continuar demonstrando carinho diariamente
+
+---
+
+**Relacionamento: Amigos**
+**Palavra-chave:** Lealdade
+
+- Vermelho (Parar): Cancelar encontros de ultima hora
+- Amarelo (Atencao): Prestar mais atencao nas necessidades deles
+- Verde (Seguir): Manter o habito de ligar toda semana
 ```
 
 ### Deteccao no ActivityPage
 ```typescript
-const isTimelineActivity = (title: string) =>
-  title.toLowerCase().includes('linha da vida');
+const isTrafficLightActivity = (title: string) =>
+  title.toLowerCase().includes('farol');
 ```
+
+### Cores do Semaforo
+- Vermelho: `#EF4444` (bg-red-500)
+- Amarelo: `#EAB308` (bg-yellow-500)
+- Verde: `#22C55E` (bg-green-500)
+
+### Responsividade
+- Desktop: Cartoes lado a lado em grid de 2 colunas
+- Mobile: Cartoes empilhados em coluna unica
 
 ---
 
@@ -161,18 +159,21 @@ const isTimelineActivity = (title: string) =>
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| `src/components/activities/TimelineActivity.tsx` | Criar | Componente interativo da Linha da Vida |
-| `src/pages/ActivityPage.tsx` | Modificar | Integrar o componente TimelineActivity |
-| `src/components/admin/ActivityForm.tsx` | Modificar | Adicionar dica sobre titulo "Linha da Vida" |
-| Nova migracao SQL | Criar | Inserir atividade na Estacao 1 da Jornada 2 |
+| `src/components/activities/TrafficLightActivity.tsx` | Criar | Componente interativo do semaforo |
+| `src/components/activities/SubmittedTrafficLightView.tsx` | Criar | Visualizacao formatada da submissao |
+| `src/pages/ActivityPage.tsx` | Modificar | Integrar ambos componentes |
+| `src/pages/Evaluations.tsx` | Modificar | Exibir view formatada no modal de avaliacao |
+| `src/pages/SubmissionView.tsx` | Modificar | Exibir view formatada na pagina de submissao |
+| `src/components/admin/ActivityForm.tsx` | Modificar | Adicionar "Farol" na dica de titulos especiais |
+| Nova migracao SQL | Criar | Inserir atividade na Estacao 2 da Jornada 2 |
 
 ---
 
 ## Resultado Esperado
 
-- Ao acessar a Estacao 1 da Jornada 2, o aluno vera a atividade "Linha da Vida"
-- A interface exibira uma timeline visual interativa com circulos coloridos conectados por uma linha
-- O aluno preenchera pelo menos 5 momentos com ano, titulo e descricao
-- A timeline se atualiza visualmente em tempo real conforme o aluno preenche
-- Ao enviar, os dados sao salvos como submissao da atividade
-- Administradores podem ver o conteudo formatado na pagina de avaliacoes
+- Ao acessar a Estacao 2 da Jornada 2 ("Construindo relacionamentos saudaveis"), o aluno vera a atividade "Farol das acoes nos Relacionamentos"
+- A interface exibira campos para nomear relacionamentos, escolher uma palavra-chave e preencher as 3 acoes do semaforo
+- Minimo de 3 relacionamentos completos para enviar
+- Apos o envio, a submissao sera exibida com semaforos visuais tanto para o aluno quanto para o avaliador
+- Administradores e professores verao a mesma visualizacao formatada nas paginas de avaliacao e submissao
+
