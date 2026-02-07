@@ -78,8 +78,8 @@ export function SubmittedTimelineView({ content }: { content: string }) {
         </div>
       ) : (
         /* ── Desktop: full-width horizontal timeline ── */
-        <div className="relative py-6">
-          <div className="grid" style={{ gridTemplateColumns: `repeat(${moments.length}, 1fr)` }}>
+        <div className="relative py-6 overflow-x-auto">
+          <div className="grid min-w-0" style={{ gridTemplateColumns: `repeat(${moments.length}, minmax(120px, 1fr))` }}>
             {moments.map((m, i) => (
               <div key={i} className="flex flex-col items-center">
                 {/* Year */}
