@@ -17,6 +17,7 @@ import { CheckCircle, Clock, ExternalLink, User, Filter, CalendarIcon, X, Trash2
 import { Link } from 'react-router-dom';
 import { SubmittedTimelineView } from '@/components/activities/SubmittedTimelineView';
 import { SubmittedTrafficLightView } from '@/components/activities/SubmittedTrafficLightView';
+import { SubmittedRoleDiaryView } from '@/components/activities/SubmittedRoleDiaryView';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { ActivitySubmission } from '@/types';
@@ -467,7 +468,7 @@ export default function Evaluations() {
         <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
           <DialogContent className={cn(
             "max-h-[90vh] flex flex-col",
-            (activity?.title?.toLowerCase().includes('linha da vida') || activity?.title?.toLowerCase().includes('farol')) ? 'sm:max-w-4xl' : ''
+            (activity?.title?.toLowerCase().includes('linha da vida') || activity?.title?.toLowerCase().includes('farol') || activity?.title?.toLowerCase().includes('diário de papéis') || activity?.title?.toLowerCase().includes('diario de papeis')) ? 'sm:max-w-4xl' : ''
           )}>
             <DialogHeader>
               <DialogTitle>Avaliar: {activity?.title}</DialogTitle>
@@ -484,6 +485,8 @@ export default function Evaluations() {
                 </div>
                 {activity?.title?.toLowerCase().includes('farol') && submission?.content ? (
                   <SubmittedTrafficLightView content={submission.content} />
+                ) : (activity?.title?.toLowerCase().includes('diário de papéis') || activity?.title?.toLowerCase().includes('diario de papeis')) && submission?.content ? (
+                  <SubmittedRoleDiaryView content={submission.content} />
                 ) : activity?.title?.toLowerCase().includes('linha da vida') && submission?.content ? (
                   <SubmittedTimelineView content={submission.content} />
                 ) : submission?.content?.startsWith('data:image') ? (
