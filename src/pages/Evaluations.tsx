@@ -15,6 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { CheckCircle, Clock, ExternalLink, User, Filter, CalendarIcon, X, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SubmittedTimelineView } from '@/components/activities/SubmittedTimelineView';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { ActivitySubmission } from '@/types';
@@ -463,12 +464,12 @@ export default function Evaluations() {
         </div>
 
         <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
-          <DialogContent>
+          <DialogContent className={activity?.title?.toLowerCase().includes('linha da vida') ? 'sm:max-w-3xl' : ''}>
             <DialogHeader>
               <DialogTitle>Avaliar: {activity?.title}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="p-3 bg-muted rounded-lg max-h-48 overflow-auto">
+              <div className="p-3 bg-muted rounded-lg max-h-[400px] overflow-auto">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium">Resposta do aluno:</p>
                   <Link to={`/submissao/${selectedSubmission}`} target="_blank">
@@ -477,7 +478,9 @@ export default function Evaluations() {
                     </Button>
                   </Link>
                 </div>
-                {submission?.content?.startsWith('data:image') ? (
+                {activity?.title?.toLowerCase().includes('linha da vida') && submission?.content ? (
+                  <SubmittedTimelineView content={submission.content} />
+                ) : submission?.content?.startsWith('data:image') ? (
                   <img 
                     src={submission.content} 
                     alt="Resposta do aluno" 
