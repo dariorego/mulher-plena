@@ -92,6 +92,7 @@ export default function ActivityPage() {
   const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
   const isTrafficLightActivity = (title: string) => title.toLowerCase().includes('farol');
   const isDiaryActivity = (title: string) => title.toLowerCase().includes('diário de papéis') || title.toLowerCase().includes('diario de papeis');
+  const isEssayReflexivo = (title: string) => title.toLowerCase().includes('ensaio reflexivo');
 
   // Estado para compartilhar manifesto no mural
   const [shareManifesto, setShareManifesto] = useState(false);
@@ -206,8 +207,8 @@ export default function ActivityPage() {
       score: activity.type === 'quiz' ? score : undefined,
     });
 
-    // Se é manifesto e a opção de compartilhar está marcada, postar no mural
-    if (activity.type === 'essay' && isManifestoActivity(activity.title) && shareManifesto) {
+    // Se é manifesto ou ensaio reflexivo e a opção de compartilhar está marcada, postar no mural
+    if (activity.type === 'essay' && (isManifestoActivity(activity.title) || isEssayReflexivo(activity.title)) && shareManifesto) {
       try {
         await supabase.from('forum_posts').insert({
           activity_id: activity.id,
@@ -215,9 +216,11 @@ export default function ActivityPage() {
           content: essayContent,
           color: 'bg-accent/10',
         });
-        toast.success('Seu manifesto foi compartilhado no mural coletivo!');
+        toast.success(isEssayReflexivo(activity.title) 
+          ? 'Sua resposta foi compartilhada no mural coletivo!' 
+          : 'Seu manifesto foi compartilhado no mural coletivo!');
       } catch (error) {
-        console.error('Error sharing manifesto to forum:', error);
+        console.error('Error sharing to forum:', error);
       }
     }
 
@@ -837,6 +840,21 @@ export default function ActivityPage() {
                   <p className="text-xs text-muted-foreground">
                     Mínimo de 100 caracteres. Atual: <span className={essayContent.length >= 100 ? 'text-green-600 font-medium' : ''}>{essayContent.length}</span>
                   </p>
+
+                  {/* Checkbox de compartilhamento para Ensaio Reflexivo */}
+                  {isEssayReflexivo(activity.title) && (
+                    <label className="flex items-center gap-3 p-4 bg-accent/5 border border-accent/20 rounded-lg cursor-pointer hover:bg-accent/10 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={shareManifesto}
+                        onChange={(e) => setShareManifesto(e.target.checked)}
+                        className="w-5 h-5 rounded border-primary/30 text-accent focus:ring-accent/50"
+                      />
+                      <span className="text-sm text-foreground">
+                        Compartilhar minha resposta no <strong className="text-primary">mural coletivo</strong> <span className="text-muted-foreground">(opcional)</span>
+                      </span>
+                    </label>
+                  )}
                 </div>
               )}
 
