@@ -3,9 +3,11 @@ import { useData } from '@/contexts/DataContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { SubmittedTimelineView } from '@/components/activities/SubmittedTimelineView';
+import { SubmittedTrafficLightView } from '@/components/activities/SubmittedTrafficLightView';
 import { ArrowLeft } from 'lucide-react';
 
 const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
+const isTrafficLightActivity = (title: string) => title.toLowerCase().includes('farol');
 
 export default function SubmissionView() {
   const { id } = useParams();
@@ -29,6 +31,7 @@ export default function SubmissionView() {
   }
 
   const isTimeline = activity && isTimelineActivity(activity.title);
+  const isTrafficLight = activity && isTrafficLightActivity(activity.title);
 
   return (
     <AppLayout>
@@ -47,7 +50,9 @@ export default function SubmissionView() {
 
         <div className="bg-muted/50 rounded-lg p-6">
           <p className="text-sm font-medium mb-4">Resposta do aluno:</p>
-          {isTimeline && submission.content ? (
+          {isTrafficLight && submission.content ? (
+            <SubmittedTrafficLightView content={submission.content} />
+          ) : isTimeline && submission.content ? (
             <SubmittedTimelineView content={submission.content} />
           ) : submission.content?.startsWith('data:image') ? (
             <img 
