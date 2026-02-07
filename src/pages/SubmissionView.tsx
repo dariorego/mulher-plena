@@ -4,10 +4,12 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { SubmittedTimelineView } from '@/components/activities/SubmittedTimelineView';
 import { SubmittedTrafficLightView } from '@/components/activities/SubmittedTrafficLightView';
+import { SubmittedRoleDiaryView } from '@/components/activities/SubmittedRoleDiaryView';
 import { ArrowLeft } from 'lucide-react';
 
 const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
 const isTrafficLightActivity = (title: string) => title.toLowerCase().includes('farol');
+const isDiaryActivity = (title: string) => title.toLowerCase().includes('diário de papéis') || title.toLowerCase().includes('diario de papeis');
 
 export default function SubmissionView() {
   const { id } = useParams();
@@ -32,6 +34,7 @@ export default function SubmissionView() {
 
   const isTimeline = activity && isTimelineActivity(activity.title);
   const isTrafficLight = activity && isTrafficLightActivity(activity.title);
+  const isDiary = activity && isDiaryActivity(activity.title);
 
   return (
     <AppLayout>
@@ -52,6 +55,8 @@ export default function SubmissionView() {
           <p className="text-sm font-medium mb-4">Resposta do aluno:</p>
           {isTrafficLight && submission.content ? (
             <SubmittedTrafficLightView content={submission.content} />
+          ) : isDiary && submission.content ? (
+            <SubmittedRoleDiaryView content={submission.content} />
           ) : isTimeline && submission.content ? (
             <SubmittedTimelineView content={submission.content} />
           ) : submission.content?.startsWith('data:image') ? (
