@@ -464,12 +464,15 @@ export default function Evaluations() {
         </div>
 
         <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
-          <DialogContent className={activity?.title?.toLowerCase().includes('linha da vida') ? 'sm:max-w-3xl' : ''}>
+          <DialogContent className={cn(
+            "max-h-[90vh] flex flex-col",
+            activity?.title?.toLowerCase().includes('linha da vida') ? 'sm:max-w-4xl' : ''
+          )}>
             <DialogHeader>
               <DialogTitle>Avaliar: {activity?.title}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="p-3 bg-muted rounded-lg max-h-[400px] overflow-auto">
+            <div className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-1">
+              <div className="p-3 bg-muted rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium">Resposta do aluno:</p>
                   <Link to={`/submissao/${selectedSubmission}`} target="_blank">
@@ -499,7 +502,7 @@ export default function Evaluations() {
                 <Textarea value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Comentários..." />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="flex-shrink-0">
               <Button variant="outline" onClick={() => setSelectedSubmission(null)}>Cancelar</Button>
               <Button onClick={handleEvaluate} disabled={!score}>Enviar Avaliação</Button>
             </DialogFooter>
