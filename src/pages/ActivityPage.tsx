@@ -21,6 +21,7 @@ import { ForumBoard } from '@/components/activities/ForumBoard';
 import { WordRoulette } from '@/components/activities/WordRoulette';
 import { FamilyTreeActivity } from '@/components/activities/FamilyTreeActivity';
 import { TimelineActivity } from '@/components/activities/TimelineActivity';
+import { SubmittedTimelineView } from '@/components/activities/SubmittedTimelineView';
 import { supabase } from '@/integrations/supabase/client';
 
 const activityIcons = {
@@ -341,8 +342,52 @@ export default function ActivityPage() {
           </Card>
         )}
 
-        {/* Already Submitted - Other types */}
-        {existingSubmission && !(activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/')) && (
+        {/* Already Submitted - Timeline (Linha da Vida) */}
+        {existingSubmission && isTimelineActivity(activity.title) && (
+          <Card className="border-primary/20 overflow-hidden">
+            <div className="bg-primary py-6 px-6">
+              <h1 className="text-2xl md:text-3xl font-cinzel text-accent text-center tracking-wide">
+                {activity.title}
+              </h1>
+            </div>
+            <CardContent className="pt-6 space-y-6">
+              {/* Success Badge */}
+              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-green-800">Linha da Vida enviada com sucesso!</p>
+                  <p className="text-sm text-green-700">
+                    Enviada em {new Date(existingSubmission.submitted_at).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Rendered Timeline from submission content */}
+              {existingSubmission.content && (
+                <SubmittedTimelineView content={existingSubmission.content} />
+              )}
+
+              {/* Feedback */}
+              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+                <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
+                  <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
+                  <p className="text-muted-foreground">{existingSubmission.feedback}</p>
+                </div>
+              )}
+
+              {user.role === 'aluno' && (
+                <div className="flex justify-end">
+                  <Button variant="outline" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
+                    {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Already Submitted - Other types (not gamified image, not timeline) */}
+        {existingSubmission && !(activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/')) && !isTimelineActivity(activity.title) && (
           <Card className="border-green-500/50 bg-green-50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">

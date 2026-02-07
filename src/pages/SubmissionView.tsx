@@ -2,7 +2,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '@/contexts/DataContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
+import { SubmittedTimelineView } from '@/components/activities/SubmittedTimelineView';
 import { ArrowLeft } from 'lucide-react';
+
+const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
 
 export default function SubmissionView() {
   const { id } = useParams();
@@ -25,6 +28,8 @@ export default function SubmissionView() {
     );
   }
 
+  const isTimeline = activity && isTimelineActivity(activity.title);
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -42,7 +47,9 @@ export default function SubmissionView() {
 
         <div className="bg-muted/50 rounded-lg p-6">
           <p className="text-sm font-medium mb-4">Resposta do aluno:</p>
-          {submission.content?.startsWith('data:image') ? (
+          {isTimeline && submission.content ? (
+            <SubmittedTimelineView content={submission.content} />
+          ) : submission.content?.startsWith('data:image') ? (
             <img 
               src={submission.content} 
               alt="Resposta do aluno" 
