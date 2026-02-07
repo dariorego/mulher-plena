@@ -28,6 +28,7 @@ import { RoleDiaryActivity } from '@/components/activities/RoleDiaryActivity';
 import { SubmittedRoleDiaryView } from '@/components/activities/SubmittedRoleDiaryView';
 import { BalancedLifeMapActivity } from '@/components/activities/BalancedLifeMapActivity';
 import { SubmittedBalancedLifeMapView } from '@/components/activities/SubmittedBalancedLifeMapView';
+import { UnsentLetterActivity } from '@/components/activities/UnsentLetterActivity';
 import { supabase } from '@/integrations/supabase/client';
 
 const activityIcons = {
@@ -50,7 +51,7 @@ export default function ActivityPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { activities, stations, journeys, submissions, quizQuestions, submitActivity, awardBadge, userBadges, updateActivity, refreshData } = useData();
+  const { activities, stations, journeys, submissions, quizQuestions, submitActivity, deleteSubmission, updateSubmissionContent, awardBadge, userBadges, updateActivity, refreshData } = useData();
   const { showScoreToStudents, showFeedbackToStudents } = useSettings();
   const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
   const [essayContent, setEssayContent] = useState('');
@@ -96,6 +97,7 @@ export default function ActivityPage() {
   const isDiaryActivity = (title: string) => title.toLowerCase().includes('diário de papéis') || title.toLowerCase().includes('diario de papeis');
   const isBalancedLifeMap = (title: string) => title.toLowerCase().includes('mapa de vida equilibrada');
   const isEssayReflexivo = (title: string) => title.toLowerCase().includes('ensaio reflexivo');
+  const isUnsentLetter = (title: string) => title.toLowerCase().includes('carta n') && title.toLowerCase().includes('enviada');
 
   // Estado para compartilhar manifesto no mural
   const [shareManifesto, setShareManifesto] = useState(false);
@@ -521,8 +523,47 @@ export default function ActivityPage() {
           </Card>
         )}
 
+        {/* Carta Não Enviada - Full lifecycle (handles both writing and post-submit) */}
+        {isUnsentLetter(activity.title) && user.role === 'aluno' && (
+          <Card className="border-primary/20 overflow-hidden">
+            <div className="bg-primary py-6 px-6">
+              <h1 className="text-2xl md:text-3xl font-cinzel text-accent text-center tracking-wide">
+                {activity.title}
+              </h1>
+            </div>
+            <CardContent className="pt-8 space-y-6">
+              <UnsentLetterActivity
+                description={activity.description}
+                submission={existingSubmission ?? null}
+                onSubmit={async (content) => {
+                  setIsSubmitting(true);
+                  await submitActivity({
+                    activity_id: activity.id,
+                    user_id: user.id,
+                    content,
+                  });
+                  logAction('submit_activity', 'activity', {
+                    resourceId: activity.id,
+                    activityId: activity.id,
+                    stationId: station?.id,
+                    journeyId: journey?.id,
+                    metadata: { title: activity.title, type: activity.type },
+                  });
+                  toast.success('Carta enviada com sucesso!');
+                  setIsSubmitting(false);
+                  await refreshData();
+                }}
+                onDeleteSubmission={deleteSubmission}
+                onUpdateContent={updateSubmissionContent}
+                isSubmitting={isSubmitting}
+                fontSizeClass={fontSizeClass}
+              />
+            </CardContent>
+          </Card>
+        )}
+
         {/* Already Submitted - Other types (not gamified image, not timeline, not traffic light, not diary, not balanced life map) */}
-        {existingSubmission && !(activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/')) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && (
+        {existingSubmission && !(activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/')) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isUnsentLetter(activity.title) && (
           <Card className="border-green-500/50 bg-green-50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
@@ -553,7 +594,7 @@ export default function ActivityPage() {
         )}
 
         {/* Activity Content - Forum always shows, others only if not submitted */}
-        {((!existingSubmission || activity.type === 'forum') && user.role === 'aluno') && (
+        {((!existingSubmission || activity.type === 'forum') && user.role === 'aluno' && !isUnsentLetter(activity.title)) && (
           <Card className="border-primary/20 overflow-hidden">
             {/* Activity Title Banner */}
             <div className="bg-primary py-6 px-6">

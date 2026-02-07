@@ -28,6 +28,7 @@ interface DataContextType {
   addQuizQuestion: (question: Omit<QuizQuestion, 'id'>) => Promise<QuizQuestion | null>;
   submitActivity: (submission: Omit<ActivitySubmission, 'id' | 'submitted_at'>) => Promise<void>;
   deleteSubmission: (id: string) => Promise<void>;
+  updateSubmissionContent: (id: string, newContent: string) => Promise<void>;
   evaluateSubmission: (id: string, score: number, feedback: string, evaluatorId: string) => Promise<void>;
   updateProgress: (progressData: Omit<UserProgress, 'id'>) => Promise<void>;
   awardBadge: (userId: string, badgeId: string) => Promise<void>;
@@ -279,6 +280,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
       throw error;
     }
     setSubmissions(prev => prev.filter(s => s.id !== id));
+  };
+
+  const updateSubmissionContent = async (id: string, newContent: string) => {
+    const { error } = await supabase
+      .from('activity_submissions')
+      .update({ content: newContent })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating submission content:', error);
+      return;
+    }
+    setSubmissions(prev => prev.map(s => s.id === id ? { ...s, content: newContent } : s));
   };
 
   const evaluateSubmission = async (id: string, score: number, feedback: string, evaluatorId: string) => {
@@ -549,6 +563,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addQuizQuestion,
       submitActivity,
       deleteSubmission,
+      updateSubmissionContent,
       evaluateSubmission,
       updateProgress,
       awardBadge,
