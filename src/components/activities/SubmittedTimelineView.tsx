@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
-import { Clock } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Clock, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface ParsedMoment {
   year: string;
@@ -15,7 +16,6 @@ const TIMELINE_COLORS = [
 
 function parseMarkdownTimeline(content: string): ParsedMoment[] {
   const moments: ParsedMoment[] = [];
-  // Match pattern: **YEAR - TITLE**\nOptional description
   const regex = /\*\*(\d{4})\s*-\s*(.+?)\*\*(?:\n([^*]*?))?(?=\n\n\*\*|\s*$)/gs;
   let match;
   while ((match = regex.exec(content)) !== null) {
@@ -32,6 +32,7 @@ export function SubmittedTimelineView({ content }: { content: string }) {
   const isMobile = useIsMobile();
   const moments = useMemo(() => parseMarkdownTimeline(content), [content]);
   const getColor = (i: number) => TIMELINE_COLORS[i % TIMELINE_COLORS.length];
+  const [selectedMoment, setSelectedMoment] = useState<{ moment: ParsedMoment; index: number } | null>(null);
 
   if (moments.length === 0) {
     return (
@@ -50,20 +51,25 @@ export function SubmittedTimelineView({ content }: { content: string }) {
       </div>
 
       {isMobile ? (
+        /* ── Mobile: vertical timeline ── */
         <div className="relative pl-8 py-2">
           <div className="absolute left-[14px] top-4 bottom-4 w-[3px] bg-accent/40 rounded-full" />
           <div className="space-y-5">
             {moments.map((m, i) => (
-              <div key={i} className="relative flex items-start gap-4">
+              <div
+                key={i}
+                className="relative flex items-start gap-4 cursor-pointer group"
+                onClick={() => setSelectedMoment({ moment: m, index: i })}
+              >
                 <div
-                  className="absolute left-[-22px] top-0.5 w-6 h-6 rounded-full border-[3px] border-background shadow-md z-10"
+                  className="absolute left-[-22px] top-0.5 w-6 h-6 rounded-full border-[3px] border-background shadow-md z-10 transition-transform group-hover:scale-125"
                   style={{ backgroundColor: getColor(i) }}
                 />
                 <div className="flex-1 min-w-0">
                   <span className="text-xs font-bold text-accent">{m.year}</span>
                   <p className="text-sm font-semibold text-foreground leading-tight">{m.title}</p>
                   {m.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{m.description}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{m.description}</p>
                   )}
                 </div>
               </div>
@@ -71,28 +77,41 @@ export function SubmittedTimelineView({ content }: { content: string }) {
           </div>
         </div>
       ) : (
-        <div className="relative overflow-x-auto py-4">
-          <div className="flex items-start gap-0 min-w-max px-4">
+        /* ── Desktop: full-width horizontal timeline ── */
+        <div className="relative py-6">
+          <div className="grid" style={{ gridTemplateColumns: `repeat(${moments.length}, 1fr)` }}>
             {moments.map((m, i) => (
-              <div key={i} className="flex flex-col items-center" style={{ minWidth: 140 }}>
-                <span className="text-xs font-bold text-primary mb-2">{m.year}</span>
-                <div className="relative flex items-center w-full justify-center">
+              <div key={i} className="flex flex-col items-center">
+                {/* Year */}
+                <span className="text-xs font-bold text-primary mb-3">{m.year}</span>
+
+                {/* Circle + connector row */}
+                <div className="relative flex items-center w-full justify-center h-8">
+                  {/* Left connector */}
                   {i > 0 && (
                     <div className="absolute right-1/2 top-1/2 -translate-y-1/2 h-[3px] w-1/2 bg-accent/60" />
                   )}
+                  {/* Right connector */}
                   {i < moments.length - 1 && (
                     <div className="absolute left-1/2 top-1/2 -translate-y-1/2 h-[3px] w-1/2 bg-accent/60" />
                   )}
-                  <div
-                    className="relative z-10 w-7 h-7 rounded-full border-[3px] border-white shadow-md"
+
+                  {/* Clickable circle */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMoment({ moment: m, index: i })}
+                    className="relative z-10 w-8 h-8 rounded-full border-[3px] border-white shadow-md cursor-pointer transition-all hover:scale-125 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-accent/50"
                     style={{ backgroundColor: getColor(i) }}
+                    title={`${m.year} – ${m.title}`}
                   />
                 </div>
-                <span className="text-xs font-semibold text-foreground mt-2 text-center max-w-[130px] truncate">
+
+                {/* Title & description preview */}
+                <span className="text-xs font-semibold text-foreground mt-3 text-center px-2 truncate max-w-full">
                   {m.title}
                 </span>
                 {m.description && (
-                  <span className="text-[10px] text-muted-foreground mt-0.5 text-center max-w-[130px] line-clamp-2">
+                  <span className="text-[10px] text-muted-foreground mt-0.5 text-center px-2 line-clamp-2 max-w-full">
                     {m.description}
                   </span>
                 )}
@@ -101,6 +120,41 @@ export function SubmittedTimelineView({ content }: { content: string }) {
           </div>
         </div>
       )}
+
+      {/* ── Detail Pop-up ── */}
+      <Dialog open={!!selectedMoment} onOpenChange={() => setSelectedMoment(null)}>
+        <DialogContent className="sm:max-w-md border-primary/20 overflow-hidden p-0">
+          {selectedMoment && (
+            <>
+              {/* Colored header */}
+              <div
+                className="px-6 py-5 flex items-center gap-3"
+                style={{ backgroundColor: getColor(selectedMoment.index) + '18' }}
+              >
+                <div
+                  className="w-10 h-10 rounded-full border-[3px] border-white shadow-md flex-shrink-0"
+                  style={{ backgroundColor: getColor(selectedMoment.index) }}
+                />
+                <DialogHeader className="flex-1 space-y-0 text-left">
+                  <p className="text-xs font-bold text-accent">{selectedMoment.moment.year}</p>
+                  <DialogTitle className="text-lg font-semibold text-primary leading-tight">
+                    {selectedMoment.moment.title}
+                  </DialogTitle>
+                </DialogHeader>
+              </div>
+
+              {/* Content body */}
+              <div className="px-6 pb-6 pt-4">
+                {selectedMoment.moment.description ? (
+                  <p className="text-foreground leading-relaxed">{selectedMoment.moment.description}</p>
+                ) : (
+                  <p className="text-muted-foreground italic">Nenhuma descrição adicionada para este momento.</p>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
