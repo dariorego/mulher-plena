@@ -19,6 +19,7 @@ import { SubmittedTimelineView } from '@/components/activities/SubmittedTimeline
 import { SubmittedTrafficLightView } from '@/components/activities/SubmittedTrafficLightView';
 import { SubmittedRoleDiaryView } from '@/components/activities/SubmittedRoleDiaryView';
 import { SubmittedBalancedLifeMapView } from '@/components/activities/SubmittedBalancedLifeMapView';
+import { SubmittedLoveActionView } from '@/components/activities/SubmittedLoveActionView';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { ActivitySubmission } from '@/types';
@@ -469,7 +470,7 @@ export default function Evaluations() {
         <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
           <DialogContent className={cn(
             "max-h-[90vh] flex flex-col",
-            (activity?.title?.toLowerCase().includes('linha da vida') || activity?.title?.toLowerCase().includes('farol') || activity?.title?.toLowerCase().includes('diário de papéis') || activity?.title?.toLowerCase().includes('diario de papeis') || activity?.title?.toLowerCase().includes('mapa de vida equilibrada')) ? 'sm:max-w-4xl' : ''
+            (activity?.title?.toLowerCase().includes('diário de papéis') || activity?.title?.toLowerCase().includes('diario de papeis') || activity?.title?.toLowerCase().includes('acao de amor') || activity?.title?.toLowerCase().includes('ação de amor') || activity?.title?.toLowerCase().includes('mapa de vida equilibrada')) ? 'sm:max-w-4xl' : ''
           )}>
             <DialogHeader>
               <DialogTitle>Avaliar: {activity?.title}</DialogTitle>
@@ -484,7 +485,9 @@ export default function Evaluations() {
                     </Button>
                   </Link>
                 </div>
-                {activity?.title?.toLowerCase().includes('mapa de vida equilibrada') && submission?.content ? (
+                {(activity?.title?.toLowerCase().includes('acao de amor') || activity?.title?.toLowerCase().includes('ação de amor')) && submission?.content ? (
+                  <SubmittedLoveActionView content={submission.content} />
+                ) : activity?.title?.toLowerCase().includes('mapa de vida equilibrada') && submission?.content ? (
                   <SubmittedBalancedLifeMapView content={submission.content} />
                 ) : activity?.title?.toLowerCase().includes('farol') && submission?.content ? (
                   <SubmittedTrafficLightView content={submission.content} />
