@@ -1,109 +1,54 @@
 
-# Plano: Atividade "Farol da Minha Vida" - Estacao Integracao, Jornada 6
+# Plano: Atividade "Registro de Inspiracao" - Estacao 1, Jornada 7
 
 ## Objetivo
 
-Criar a atividade de integracao "Farol da Minha Vida" para a Estacao de Integracao da Jornada 6 ("Saude da Mulher"). A participante reflete sobre sua vida nas dimensoes fisica, mental e espiritual usando a metafora do semaforo, registrando o que precisa parar (vermelho), o que exige atencao (amarelo) e o que deve continuar fortalecendo (verde).
+Criar a atividade "Registro de Inspiracao" para a Estacao 1 ("A mulher que transforma o lar e a sociedade") da Jornada 7 ("Mulher da Nova Civilizacao"). As participantes compartilham exemplos concretos de transformacao positiva no lar ou na sociedade em um mural colaborativo (Padlet).
 
 ---
 
-## Diferenca em relacao ao "Farol dos Relacionamentos"
+## Como Funciona
 
-Ja existe uma atividade chamada "Farol das Acoes nos Relacionamentos" (TrafficLightActivity), que permite registrar **multiplos relacionamentos** (minimo 3), cada um com nome, palavra-chave e tres cores. Esta nova atividade e diferente:
+Esta e uma atividade do tipo `forum` (mural interativo estilo Padlet), que ja esta totalmente implementada no sistema. Nao requer nenhum componente novo — o `ForumBoard` existente cuida de tudo.
 
-- **Farol dos Relacionamentos**: Multiplos relacionamentos, cada um com nome + palavra-chave + vermelho/amarelo/verde
-- **Farol da Minha Vida**: Uma unica reflexao pessoal com apenas 3 campos de texto (vermelho, amarelo, verde), focada na vida como um todo
-
-Como os formatos sao diferentes, sera criado um componente dedicado. O detector existente (`isTrafficLightActivity`) que usa `includes('farol')` sera ajustado para nao capturar "Farol da Minha Vida".
+- A participante ve a orientacao sobre como descrever a transformacao
+- Escreve seu registro de inspiracao no mural
+- Pode opcionalmente gravar um audio
+- O post e compartilhado no mural coletivo em cartoes coloridos
+- Todas as participantes visualizam os registros umas das outras em tempo real
 
 ---
 
-## Alteracoes Necessarias
+## Alteracao Necessaria
 
-### 1. Novo Componente: `LifeTrafficLightActivity.tsx`
+### Migracao SQL (unica alteracao)
 
-Criar `src/components/activities/LifeTrafficLightActivity.tsx` contendo:
+Inserir a atividade no banco de dados:
 
-- **LifeTrafficLightActivity** - Componente de preenchimento:
-  - Exibe a orientacao formatada em HTML (as instrucoes sobre as tres luzes e o convite a reflexao)
-  - Tres campos de texto grandes (Textarea), cada um acompanhado de um indicador visual colorido:
-    - Vermelho: "Pare e Reavalie" - comportamentos a interromper
-    - Amarelo: "Atencao e Ajuste" - o que precisa de cuidado e equilibrio
-    - Verde: "Siga Fortalecendo" - praticas e atitudes a manter
-  - Botao de envio habilitado apenas quando os 3 campos estiverem preenchidos
-  - Layout visual com circulos coloridos e sombra brilhante, seguindo o estilo visual do semaforo ja existente
-
-- **SubmittedLifeTrafficLightView** - Componente de visualizacao pos-envio:
-  - Exibe um unico semaforo central com as tres luzes
-  - Cada luz e clicavel e abre um dialog com a reflexao correspondente
-  - Reutiliza o mesmo estilo visual do SubmittedTrafficLightView (pole com luzes brilhantes)
-
-### 2. Atualizar detectores no `ActivityPage.tsx`
-
-- Adicionar funcao detectora `isLifeTrafficLight` que verifica se o titulo contem "farol da minha vida"
-- **Atualizar** `isTrafficLightActivity` para excluir "farol da minha vida":
-  ```
-  const isTrafficLightActivity = (title: string) => 
-    title.toLowerCase().includes('farol') && !title.toLowerCase().includes('farol da minha vida');
-  ```
-- Adicionar bloco "Already Submitted" com SubmittedLifeTrafficLightView
-- Adicionar bloco de renderizacao do componente na secao essay
-- Excluir das renderizacoes genericas (submitted, orientation, essay textarea, footer)
-
-### 3. Atualizar detectores no `SubmissionView.tsx`
-
-- Importar SubmittedLifeTrafficLightView
-- Adicionar `isLifeTrafficLight` detector
-- Adicionar renderizacao condicional (antes do isTrafficLight generico)
-- **Atualizar** `isTrafficLightActivity` no SubmissionView tambem
-
-### 4. Migracao SQL
-
-- **station_id:** `8d116768-25f2-474d-a072-6f490a2e0f1d` (Farol da Minha Vida - Estacao Integracao)
-- **title:** "Farol da Minha Vida"
-- **type:** `essay`
+- **station_id:** `137c81bd-11cb-4ee1-b54c-b99212bc61b7` (Estacao 1 - A mulher que transforma o lar e a sociedade)
+- **title:** "Registro de Inspiracao"
+- **type:** `forum`
 - **points:** 10
-- **description:** Orientacao formatada em HTML com o convite a reflexao, as tres luzes (vermelha, amarela, verde) e as instrucoes de registro
+- **description:** Orientacao formatada em HTML explicando que a participante deve apresentar um exemplo concreto de transformacao positiva (contexto inicial, atitude/mudanca adotada e efeitos positivos percebidos)
+
+Nenhuma alteracao em codigo e necessaria — o componente ForumBoard ja renderiza automaticamente todas as atividades do tipo `forum`.
 
 ---
 
-## Formato de Armazenamento
-
-O conteudo sera salvo em formato Markdown estruturado para facil parsing:
-
-```
-### Farol da Minha Vida
-
----
-
-- Vermelho (Parar): [texto da participante]
-- Amarelo (Atencao): [texto da participante]
-- Verde (Seguir): [texto da participante]
-```
-
-### 5. Formato de Visualizacao pos-envio
-
-A visualizacao exibira um unico semaforo central (nao multiplos como no Farol dos Relacionamentos). Ao clicar em cada luz, um dialog mostra a reflexao completa da participante para aquela cor.
-
----
-
-## Resumo das Alteracoes
+## Resumo
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| `src/components/activities/LifeTrafficLightActivity.tsx` | Criar | Componente de reflexao pessoal (3 textareas) + visualizacao com semaforo |
-| `src/pages/ActivityPage.tsx` | Editar | Detector + renderizacao + ajuste no detector existente |
-| `src/pages/SubmissionView.tsx` | Editar | Detector + renderizacao + ajuste no detector existente |
-| Nova migracao SQL | Criar | Inserir atividade essay na Estacao Integracao da Jornada 6 |
+| Nova migracao SQL | Criar | Inserir atividade forum na Estacao 1 da Jornada 7 |
+
+Nenhum arquivo de codigo sera alterado.
 
 ---
 
 ## Resultado Esperado
 
-- Ao acessar a Estacao "Farol da Minha Vida" da Jornada 6, a aluna vera a atividade com orientacao detalhada
-- Tres campos de texto grandes com indicadores coloridos (vermelho, amarelo, verde)
-- O envio so sera possivel com os 3 campos preenchidos
-- Apos o envio, um semaforo visual centralizado mostrara as reflexoes ao clicar nas luzes
-- Professores e admins poderao ver as submissoes formatadas
-- A atividade existente "Farol dos Relacionamentos" continuara funcionando normalmente
+- Ao acessar a Estacao 1 da Jornada 7, a aluna vera a atividade "Registro de Inspiracao"
+- A orientacao sera exibida explicando como descrever a transformacao positiva
+- O mural interativo permitira compartilhar textos e audios em cartoes coloridos
+- Todas as participantes poderao ver os registros umas das outras em tempo real
 - A atividade vale 10 pontos
