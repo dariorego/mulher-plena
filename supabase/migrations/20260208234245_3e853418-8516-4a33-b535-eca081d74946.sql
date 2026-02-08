@@ -1,0 +1,1 @@
+ALTER TABLE public.activities ADD COLUMN is_sensitive boolean NOT NULL DEFAULT false;

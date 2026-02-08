@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useSettings } from '@/contexts/SettingsContext';
-import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -17,6 +18,7 @@ export default function Settings() {
     activityPercentage,
     supplementaryPercentage,
     podcastPercentage,
+    sensitiveContentMessage,
     updateSettings 
   } = useSettings();
 
@@ -24,6 +26,7 @@ export default function Settings() {
   const [localActivity, setLocalActivity] = useState(activityPercentage);
   const [localSupplementary, setLocalSupplementary] = useState(supplementaryPercentage);
   const [localPodcast, setLocalPodcast] = useState(podcastPercentage);
+  const [localSensitiveMessage, setLocalSensitiveMessage] = useState(sensitiveContentMessage);
 
   useEffect(() => {
     setLocalVideo(videoPercentage);
@@ -31,6 +34,10 @@ export default function Settings() {
     setLocalSupplementary(supplementaryPercentage);
     setLocalPodcast(podcastPercentage);
   }, [videoPercentage, activityPercentage, supplementaryPercentage, podcastPercentage]);
+
+  useEffect(() => {
+    setLocalSensitiveMessage(sensitiveContentMessage);
+  }, [sensitiveContentMessage]);
 
   const total = localVideo + localActivity + localSupplementary + localPodcast;
   const isValid = total === 100;
@@ -245,6 +252,39 @@ export default function Settings() {
               <span className={`text-sm ${isValid ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {isValid ? 'Configuração válida' : 'A soma deve ser 100%'}
               </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              Experiência Sensível
+            </CardTitle>
+            <CardDescription>
+              Configure a mensagem exibida quando uma atividade é marcada como experiência sensível
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="sensitive-message">Mensagem do aviso</Label>
+              <Textarea
+                id="sensitive-message"
+                value={localSensitiveMessage}
+                onChange={(e) => setLocalSensitiveMessage(e.target.value)}
+                onBlur={() => {
+                  if (localSensitiveMessage.trim()) {
+                    updateSettings({ sensitiveContentMessage: localSensitiveMessage.trim() });
+                    toast.success('Mensagem de experiência sensível salva');
+                  }
+                }}
+                rows={4}
+                placeholder="Digite a mensagem de aviso para atividades sensíveis..."
+              />
+              <p className="text-xs text-muted-foreground">
+                Este texto será exibido no pop-up quando o participante clicar no aviso de experiência sensível
+              </p>
             </div>
           </CardContent>
         </Card>

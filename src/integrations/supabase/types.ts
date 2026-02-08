@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_sensitive: boolean
           points: number
           station_id: string
           title: string
@@ -30,6 +31,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_sensitive?: boolean
           points?: number
           station_id: string
           title: string
@@ -40,6 +42,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_sensitive?: boolean
           points?: number
           station_id?: string
           title?: string

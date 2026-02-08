@@ -3,7 +3,7 @@ import { Activity } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ActivityForm } from './ActivityForm';
-import { Plus, Edit2, Trash2, FileText, Upload, PenLine, Gamepad2, MessageSquare, Music } from 'lucide-react';
+import { Plus, Edit2, Trash2, FileText, Upload, PenLine, Gamepad2, MessageSquare, Music, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
@@ -100,6 +100,11 @@ export function ActivityManager({ stationId, activities, onAdd, onUpdate, onDele
                         <p className="font-medium text-sm">{activity.title}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
                           {activityLabels[activity.type]} • {activity.points} pts
+                          {activity.is_sensitive && (
+                            <span className="inline-flex items-center gap-0.5 text-amber-600" title="Experiência Sensível">
+                              <AlertTriangle className="h-3 w-3" />
+                            </span>
+                          )}
                           {activity.audio_url && (
                             <span className="inline-flex items-center gap-0.5 text-accent" title="Possui áudio">
                               <Music className="h-3 w-3" />
