@@ -13,10 +13,12 @@ import { SubmittedRealSituationView } from '@/components/activities/RealSituatio
 import { SubmittedLoveWheelView } from '@/components/activities/LoveWheelActivity';
 import { SubmittedWellBeingDiaryView } from '@/components/activities/WellBeingDiaryActivity';
 import { SubmittedEmotionalInventoryView } from '@/components/activities/EmotionalInventoryActivity';
+import { SubmittedLifeTrafficLightView } from '@/components/activities/LifeTrafficLightActivity';
 import { ArrowLeft } from 'lucide-react';
 
 const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
-const isTrafficLightActivity = (title: string) => title.toLowerCase().includes('farol');
+const isTrafficLightActivity = (title: string) => title.toLowerCase().includes('farol') && !title.toLowerCase().includes('farol da minha vida');
+const isLifeTrafficLight = (title: string) => title.toLowerCase().includes('farol da minha vida');
 const isDiaryActivity = (title: string) => title.toLowerCase().includes('diário de papéis') || title.toLowerCase().includes('diario de papeis');
 const isBalancedLifeMap = (title: string) => title.toLowerCase().includes('mapa de vida equilibrada');
 const isLoveAction = (title: string) => title.toLowerCase().includes('acao de amor') || title.toLowerCase().includes('ação de amor');
@@ -59,6 +61,7 @@ export default function SubmissionView() {
   const isLoveWh = activity && isLoveWheel(activity.title);
   const isWellBeing = activity && isWellBeingDiary(activity.title);
   const isEmotionalInv = activity && isEmotionalInventory(activity.title);
+  const isLifeTraffic = activity && isLifeTrafficLight(activity.title);
 
   return (
     <AppLayout>
@@ -93,6 +96,8 @@ export default function SubmissionView() {
             <SubmittedLoveActionView content={submission.content} />
           ) : isBalancedLife && submission.content ? (
             <SubmittedBalancedLifeMapView content={submission.content} />
+          ) : isLifeTraffic && submission.content ? (
+            <SubmittedLifeTrafficLightView content={submission.content} />
           ) : isTrafficLight && submission.content ? (
             <SubmittedTrafficLightView content={submission.content} />
           ) : isDiary && submission.content ? (
