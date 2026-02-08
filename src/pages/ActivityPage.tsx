@@ -113,6 +113,7 @@ export default function ActivityPage() {
   const isLoveWheel = (title: string) => title.toLowerCase().includes('roda de amor');
   const isWellBeingDiary = (title: string) => title.toLowerCase().includes('diário do bem-estar') || title.toLowerCase().includes('diario do bem-estar');
   const isEmotionalInventory = (title: string) => title.toLowerCase().includes('inventário emocional') || title.toLowerCase().includes('inventario emocional');
+  const isJoyBox = (title: string) => title.toLowerCase().includes('caixa da alegria');
 
   // Estado para compartilhar manifesto no mural
   const [shareManifesto, setShareManifesto] = useState(false);
@@ -1599,6 +1600,8 @@ export default function ActivityPage() {
                 <ForumBoard 
                   activityId={activity.id}
                   description={activity.description}
+                  allowImages={isJoyBox(activity.title)}
+                  requireImage={isJoyBox(activity.title)}
                 />
               )}
             </CardContent>
@@ -1743,6 +1746,8 @@ export default function ActivityPage() {
                   <ForumBoard 
                     activityId={activity.id}
                     description={activity.description}
+                    allowImages={isJoyBox(activity.title)}
+                    requireImage={isJoyBox(activity.title)}
                   />
                 )}
               </div>

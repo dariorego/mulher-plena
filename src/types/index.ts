@@ -8,6 +8,7 @@ export interface ForumPost {
   content: string;
   color: string;
   audio_url?: string;
+  image_url?: string;
   created_at: string;
   updated_at: string;
   // Joined data
