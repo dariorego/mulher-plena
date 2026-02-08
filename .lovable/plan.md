@@ -1,23 +1,22 @@
 
 
-# Plano: Atividade "Carta de Compromisso" - Estacao 1, Jornada 4
+# Plano: Atividade "Registro de Situacao Real" - Estacao 2, Jornada 4
 
 ## Objetivo
 
-Criar a atividade "Carta de Compromisso" para a Estacao 1 ("Alma gemea e evolucao espiritual") da Jornada 4. A participante escreve uma carta ao conjuge expressando valores espirituais, transformada em um "jogo de fases" com 3 niveis/missoes.
+Criar a atividade "Registro de Situacao Real" para a Estacao 2 ("Preparo para a formacao de um lar feliz") da Jornada 4. A participante reflete sobre um conflito real atraves de 3 niveis de escrita progressiva, transformando a experiencia em aprendizado espiritual.
 
 ---
 
 ## Como Funciona
 
-A participante completa a atividade em etapas visuais:
+A participante completa a atividade em 3 niveis de escrita:
 
-1. **Carta principal** - Caixa de texto para escrever a carta de compromisso ao conjuge
-2. **Nivel 1 - Memoria Especial** - Caixa de texto para reviver e descrever um momento marcante do namoro
-3. **Nivel 2 - Acao de Amor** - Checkbox para validar que realizou um gesto de carinho (abraco, cafe, bilhete)
-4. **Nivel 3 - Missao Secreta** - Checkbox para validar que planejou uma surpresa para o casal
+1. **Nivel 1 - Portal da Memoria** - Caixa de texto para descrever um conflito real e como se sentiu
+2. **Nivel 2 - Espelho da Sabedoria** - Caixa de texto para refletir: o que teria feito de diferente aplicando principios da Seicho-No-Ie (ver o outro como Filho de Deus, praticar gratidao, cultivar pensamentos positivos)
+3. **Nivel 3 - Tesouro da Transformacao** - Caixa de texto para reescrever a historia mostrando como poderia ter resolvido de forma mais harmoniosa e positiva
 
-Para enviar, a carta principal deve ter no minimo 100 caracteres. Os niveis sao complementares (pelo menos o Nivel 1 deve estar preenchido ou um dos checkboxes marcado).
+Os 3 niveis sao obrigatorios e devem ter no minimo 50 caracteres cada.
 
 ---
 
@@ -25,93 +24,90 @@ Para enviar, a carta principal deve ter no minimo 100 caracteres. Os niveis sao 
 
 ```text
 +----------------------------------------------------------+
-| CARTA DE COMPROMISSO                                      |
+| REGISTRO DE SITUACAO REAL                                 |
 +----------------------------------------------------------+
-| ORIENTACAO                                                |
-| Escreva uma carta para o conjuge expressando os valores   |
-| espirituais que deseja cultivar na relacao...              |
+| ORIENTACAO (texto formatado com HTML)                     |
 +----------------------------------------------------------+
 |                                                           |
-| SUA CARTA                                                 |
-| +------------------------------------------------------+ |
-| |  [Caixa de texto - min. 100 caracteres]              | |
-| +------------------------------------------------------+ |
-|                                                           |
-| JOGO DE FASES                                             |
-|                                                           |
-| [*] NIVEL 1 - MEMORIA ESPECIAL                           |
+| [*] NIVEL 1 - PORTAL DA MEMORIA                          |
+| Lembre-se de um conflito que ja aconteceu. Escreva, de   |
+| forma simples, o que aconteceu e como voce se sentiu.     |
 | +------------------------------------------------------+ |
 | |  [Caixa de texto]                                    | |
 | +------------------------------------------------------+ |
 |                                                           |
-| [ ] NIVEL 2 - ACAO DE AMOR                               |
-| Realize hoje um gesto simples que expresse carinho...     |
-| [x] Missao cumprida!                                     |
+| [ ] NIVEL 2 - ESPELHO DA SABEDORIA                       |
+| Imagine como teria sido se voce tivesse aplicado um      |
+| principio da Seicho-No-Ie...                             |
+| +------------------------------------------------------+ |
+| |  [Caixa de texto]                                    | |
+| +------------------------------------------------------+ |
 |                                                           |
-| [ ] NIVEL 3 - MISSAO SECRETA                             |
-| Planeje uma surpresa: pode ser um passeio diferente...    |
-| [x] Missao cumprida!                                     |
+| [ ] NIVEL 3 - TESOURO DA TRANSFORMACAO                   |
+| Reescreva a historia, mostrando como VOCE poderia ter    |
+| resolvido de forma mais harmoniosa e positiva.           |
+| +------------------------------------------------------+ |
+| |  [Caixa de texto]                                    | |
+| +------------------------------------------------------+ |
 |                                                           |
-| Progresso: [=====-----] 2/3 niveis completos             |
+| Progresso: [=========-] 2/3 niveis completos             |
 |                                                           |
 | [============ Enviar Atividade ============]              |
 +----------------------------------------------------------+
 ```
 
-Cada nivel tera um visual de "fase de jogo" com icones tematicos, cores de progresso e badges de conclusao.
+Cada nivel tera um visual gamificado com icones tematicos e cores de progresso, seguindo o mesmo padrao da "Carta de Compromisso".
 
 ---
 
 ## Alteracoes Necessarias
 
-### 1. Criar `src/components/activities/CommitmentLetterActivity.tsx`
+### 1. Criar `src/components/activities/RealSituationActivity.tsx`
 
 Novo componente dedicado com:
 - **Props:** `description`, `onSubmit`, `isSubmitting`, `fontSizeClass`
 - **Orientacao:** Renderizada com `dangerouslySetInnerHTML`
-- **Carta principal:** Textarea (minimo 100 caracteres)
-- **Nivel 1 - Memoria Especial:** Textarea para escrever sobre uma lembranca
-- **Nivel 2 - Acao de Amor:** Checkbox "Missao cumprida!" com descricao da acao
-- **Nivel 3 - Missao Secreta:** Checkbox "Missao cumprida!" com descricao da missao
-- **Barra de progresso** visual mostrando niveis completos
-- **Visual gamificado** com icones de estrela/coracao/trofeu para cada nivel
-- **Validacao:** Carta principal com minimo 100 caracteres obrigatoria
+- **Nivel 1 - Portal da Memoria:** Textarea (min. 50 caracteres) para descrever o conflito
+- **Nivel 2 - Espelho da Sabedoria:** Textarea (min. 50 caracteres) para reflexao com principios espirituais, incluindo lista de sugestoes (ver o outro como Filho de Deus, praticar gratidao, cultivar pensamentos positivos)
+- **Nivel 3 - Tesouro da Transformacao:** Textarea (min. 50 caracteres) para reescrever a historia de forma positiva
+- **Barra de progresso** visual mostrando niveis completos (X/3)
+- **Visual gamificado** com icones: Nivel 1 (BookOpen), Nivel 2 (Eye/Lightbulb), Nivel 3 (Sparkles/Gem)
+- **Validacao:** Todos os 3 niveis devem ter no minimo 50 caracteres para habilitar o envio
 
-### 2. Criar componente de visualizacao inline (SubmittedCommitmentLetterView)
+### 2. Componente de visualizacao inline (`SubmittedRealSituationView`)
 
-Componente para exibir a submissao formatada:
-- Mostra a carta principal
-- Mostra cada nivel com indicacao de completude (check verde ou pendente)
-- Nivel 1: exibe o texto da memoria
-- Niveis 2 e 3: exibe se foram marcados como cumpridos
+No mesmo arquivo, componente para exibir a submissao formatada:
+- Mostra cada nivel com indicacao de completude (verde quando preenchido)
+- Exibe o texto de cada nivel formatado
 
 ### 3. Modificar `src/pages/ActivityPage.tsx`
 
-- Importar `CommitmentLetterActivity` e o view de submissao
-- Adicionar funcao de deteccao: `isCommitmentLetter = (title) => title.toLowerCase().includes('carta de compromisso')`
-- Adicionar bloco "Already Submitted" com visualizacao formatada
+- Importar `RealSituationActivity` e `SubmittedRealSituationView`
+- Adicionar funcao de deteccao: `isRealSituation = (title) => title.toLowerCase().includes('registro de situa')`
+- Adicionar bloco "Already Submitted" com visualizacao formatada (seguindo o padrao das demais atividades especiais)
 - Adicionar bloco de renderizacao do componente no formulario
-- Excluir da orientacao generica e do footer de submit padrao
-- Adicionar a funcao na lista de exclusoes dos blocos genericos
+- Adicionar a funcao nas listas de exclusao (orientacao generica, essay generico, "already submitted" generico, condicao de exibicao do formulario)
 
 ### 4. Modificar `src/pages/Evaluations.tsx`
 
-- Adicionar deteccao e renderizacao formatada no modal de avaliacao
+- Importar `SubmittedRealSituationView`
+- Adicionar deteccao e renderizacao formatada no encadeamento de condicoes do modal de avaliacao
 
 ### 5. Modificar `src/pages/SubmissionView.tsx`
 
-- Adicionar deteccao e renderizacao formatada na pagina
+- Importar `SubmittedRealSituationView`
+- Adicionar deteccao e renderizacao formatada na pagina de visualizacao completa
 
 ### 6. Modificar `src/components/admin/ActivityForm.tsx`
 
-- Adicionar "Carta de Compromisso" na lista de titulos especiais
+- Adicionar "Registro de Situacao Real" na lista de titulos especiais
 
 ### 7. Migracao SQL - Inserir atividade no banco
 
-- **station_id:** `617a29d5-88b6-4571-b999-83316135a5f9` (Estacao 1 - Alma gemea e evolucao espiritual)
-- **title:** "Carta de Compromisso"
+- **station_id:** `7888901f-aca7-4aaa-92a7-1f6da3786068` (Estacao 2 - Preparo para a formacao de um lar feliz)
+- **title:** "Registro de Situacao Real"
 - **type:** `essay`
-- **description:** Texto de orientacao com HTML formatado incluindo a descricao dos 3 niveis
+- **description:** Texto de orientacao formatado em HTML
 - **points:** 10
 
 ---
@@ -121,46 +117,40 @@ Componente para exibir a submissao formatada:
 ### Deteccao da Atividade
 
 ```typescript
-const isCommitmentLetter = (title: string) =>
-  title.toLowerCase().includes('carta de compromisso');
+const isRealSituation = (title: string) =>
+  title.toLowerCase().includes('registro de situa');
 ```
 
 ### Formato de Submissao (Markdown)
 
 ```
-### Carta de Compromisso
+### Registro de Situacao Real
 
-[Texto da carta escrita pela participante]
-
----
-
-**Nível 1 – Memória Especial:**
-[Texto da memoria escrita pela participante]
+**Nivel 1 - Portal da Memoria:**
+[Texto do conflito descrito pela participante]
 
 ---
 
-**Nível 2 – Ação de Amor:**
-✅ Missão cumprida!
+**Nivel 2 - Espelho da Sabedoria:**
+[Reflexao sobre o que teria feito diferente]
 
 ---
 
-**Nível 3 – Missão Secreta:**
-✅ Missão cumprida!
+**Nivel 3 - Tesouro da Transformacao:**
+[Historia reescrita de forma harmoniosa]
 
 ---
 
-**Progresso:** 3/3 níveis completos
+**Progresso:** 3/3 niveis completos
 ```
-
-Se um nivel nao foi completado, aparece "⬜ Pendente" em vez de "check Missao cumprida!".
 
 ### Visual Gamificado
 
-- Cada nivel tem um icone tematico (Nivel 1: coracao, Nivel 2: estrela, Nivel 3: trofeu)
-- Fundo com cor de gradiente quando o nivel esta completo (verde claro)
-- Fundo neutro quando pendente
+- Nivel 1: icone BookOpen (livro/memoria), fundo verde ao completar
+- Nivel 2: icone Lightbulb (sabedoria/insight), fundo verde ao completar
+- Nivel 3: icone Sparkles (transformacao/brilho), fundo verde ao completar
 - Barra de progresso geral mostrando X/3 niveis completos
-- Animacao sutil ao marcar um checkbox (transicao de cor)
+- Transicoes de cor suaves ao preencher cada nivel
 
 ---
 
@@ -168,25 +158,25 @@ Se um nivel nao foi completado, aparece "⬜ Pendente" em vez de "check Missao c
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| `src/components/activities/CommitmentLetterActivity.tsx` | Criar | Formulario com carta + 3 niveis gamificados |
+| `src/components/activities/RealSituationActivity.tsx` | Criar | Formulario com 3 niveis de texto progressivo |
 | `src/pages/ActivityPage.tsx` | Modificar | Integrar componente e blocos de submissao |
 | `src/pages/Evaluations.tsx` | Modificar | Exibir view formatada no modal |
 | `src/pages/SubmissionView.tsx` | Modificar | Exibir view formatada na pagina |
 | `src/components/admin/ActivityForm.tsx` | Modificar | Adicionar dica de titulo especial |
-| Nova migracao SQL | Criar | Inserir atividade na Estacao 1 da Jornada 4 |
+| Nova migracao SQL | Criar | Inserir atividade na Estacao 2 da Jornada 4 |
 
 ---
 
 ## Resultado Esperado
 
-- Ao acessar a Estacao 1 da Jornada 4, a aluna vera a atividade "Carta de Compromisso"
+- Ao acessar a Estacao 2 da Jornada 4, a aluna vera a atividade "Registro de Situacao Real"
 - A orientacao sera exibida formatada com a descricao dos 3 niveis
-- Uma caixa de texto permitira escrever a carta principal (min. 100 caracteres)
-- Tres niveis gamificados serao exibidos com visual interativo:
-  - Nivel 1: caixa de texto para a memoria especial
-  - Nivel 2: checkbox para validar a acao de amor
-  - Nivel 3: checkbox para validar a missao secreta
+- Tres niveis gamificados serao exibidos com caixas de texto:
+  - Nivel 1 (Portal da Memoria): descrever o conflito e sentimentos
+  - Nivel 2 (Espelho da Sabedoria): refletir com principios espirituais
+  - Nivel 3 (Tesouro da Transformacao): reescrever a historia de forma positiva
 - Barra de progresso visual mostrando quantos niveis foram completados
-- Apos o envio, a submissao sera exibida com a carta e o status de cada nivel
+- Apos o envio, a submissao sera exibida com o conteudo de cada nivel formatado
 - Administradores verao a mesma visualizacao nas paginas de avaliacao
+- A atividade vale 10 pontos
 
