@@ -1,10 +1,10 @@
 
 
-# Plano: Atividade "Diario do Bem-Estar" - Estacao 1, Jornada 6
+# Plano: Atividade "Inventario Emocional" - Estacao 2, Jornada 6
 
 ## Objetivo
 
-Criar a atividade "Diario do Bem-Estar" para a Estacao 1 ("Corpo saudavel, mente saudavel") da Jornada 6. A participante registra, por pelo menos 5 dias, uma pratica diaria relacionada a tres dimensoes do cuidado: Saude Fisica, Saude Mental e Saude Espiritual, usando uma tabela interativa.
+Criar a atividade "Inventario Emocional" para a Estacao 2 ("Emocoes que adoecem - Ressignificando Emocoes") da Jornada 6. A participante lista 3 emocoes que a incomodam com frequencia e, para cada uma, uma acao pratica para ressignifica-la, usando uma tabela interativa.
 
 ---
 
@@ -12,57 +12,56 @@ Criar a atividade "Diario do Bem-Estar" para a Estacao 1 ("Corpo saudavel, mente
 
 Esta atividade utiliza uma **tabela interativa personalizada** com:
 
-- **5 linhas** representando os dias (1 DIA a 5 DIA)
-- **3 colunas** representando as dimensoes: Fisica, Mental e Espiritual
-- Cada celula recebe um campo de texto editavel para a participante registrar sua pratica
-- A tabela tera um layout responsivo (tabela no desktop, cartoes empilhados no mobile)
-- O botao de envio so sera habilitado quando todos os 15 campos estiverem preenchidos
+- **3 linhas** representando as emocoes
+- **2 colunas**: Emocao + Acao pratica para ressignificar
+- Cada celula recebe um campo de texto editavel
+- Layout responsivo (tabela no desktop, cartoes empilhados no mobile)
+- O botao de envio so sera habilitado quando todos os 6 campos estiverem preenchidos
+- Um exemplo e mostrado acima da tabela para orientar a participante
 
-Como a interface requer uma tabela estruturada (conforme a imagem de referencia), sera necessario criar um componente customizado, seguindo o mesmo padrao do "Diario de Papeis" (RoleDiaryActivity) ja existente.
+Segue o mesmo padrao do "Diario do Bem-Estar" (WellBeingDiaryActivity) ja existente.
 
 ---
 
 ## Alteracoes Necessarias
 
-### 1. Novo Componente: `WellBeingDiaryActivity.tsx`
+### 1. Novo Componente: `EmotionalInventoryActivity.tsx`
 
-Criar o arquivo `src/components/activities/WellBeingDiaryActivity.tsx` contendo:
+Criar `src/components/activities/EmotionalInventoryActivity.tsx` contendo:
 
-- **WellBeingDiaryActivity** - Componente de preenchimento com tabela interativa:
+- **EmotionalInventoryActivity** - Componente de preenchimento:
   - Exibe a orientacao formatada em HTML
-  - Tabela com 5 linhas (dias) e 3 colunas (Fisica, Mental, Espiritual)
-  - Cada celula possui um campo Input para registrar a pratica do dia
-  - Barra de progresso mostrando quantas celulas foram preenchidas (0/15)
-  - Botao de envio habilitado apenas quando todas as 15 celulas estiverem preenchidas
-  - Layout responsivo: tabela no desktop, cartoes empilhados no mobile
+  - Mostra o exemplo (Tristeza -> Gratidao diaria)
+  - Tabela com 3 linhas e 2 colunas (Emocao e Acao pratica)
+  - Cada celula possui um campo de texto
+  - Barra de progresso (0/6 campos preenchidos)
+  - Botao de envio habilitado com todos os campos preenchidos
+  - Layout responsivo: tabela no desktop, cartoes no mobile
 
-- **SubmittedWellBeingDiaryView** - Componente de visualizacao pos-envio:
-  - Exibe os dados enviados em formato de tabela somente-leitura
-  - Layout responsivo (tabela/cartoes)
+- **SubmittedEmotionalInventoryView** - Componente de visualizacao pos-envio:
+  - Exibe os dados em tabela somente-leitura
+  - Layout responsivo
 
 ### 2. Registrar no `ActivityPage.tsx`
 
-Integrar o novo componente no fluxo de atividades:
-
-- Adicionar funcao detectora `isWellBeingDiary` (verifica se o titulo contem "diario do bem-estar")
-- Adicionar bloco de renderizacao para submissao ja enviada (secao "Already Submitted")
-- Adicionar bloco de renderizacao para preenchimento (secao de componentes essay)
-- Excluir da renderizacao generica de essay e do footer generico
+- Importar os novos componentes
+- Adicionar funcao detectora `isEmotionalInventory` (verifica se o titulo contem "inventario emocional")
+- Adicionar bloco "Already Submitted" com o SubmittedEmotionalInventoryView
+- Adicionar exclusao nos filtros genericos (submitted, orientation, essay textarea, footer)
+- Adicionar bloco de renderizacao do componente na secao essay
 
 ### 3. Registrar no `SubmissionView.tsx`
 
-Integrar a visualizacao de submissao para professores/admins:
-
-- Importar o SubmittedWellBeingDiaryView
+- Importar SubmittedEmotionalInventoryView
 - Adicionar detectora e renderizacao condicional
 
 ### 4. Migracao SQL - Inserir atividade no banco
 
-- **station_id:** `47b9b1c3-30ba-417a-9eb1-786df4f9d40e` (Estacao 1 - Corpo saudavel, mente saudavel)
-- **title:** "Diario do Bem-Estar"
+- **station_id:** `0dd4bf33-ece9-463d-8bb6-6c64497da8da` (Estacao 2 - Emocoes que adoecem)
+- **title:** "Inventario Emocional"
 - **type:** `essay`
 - **points:** 10
-- **description:** Orientacao formatada em HTML com as instrucoes e as tres dimensoes do cuidado
+- **description:** Orientacao formatada em HTML explicando que a participante deve listar 3 emocoes que a incomodam e uma acao pratica para ressignificar cada uma, incluindo o exemplo (Tristeza / Gratidao diaria)
 
 ---
 
@@ -70,22 +69,27 @@ Integrar a visualizacao de submissao para professores/admins:
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| `src/components/activities/WellBeingDiaryActivity.tsx` | Criar | Componente de tabela interativa + visualizacao pos-envio |
+| `src/components/activities/EmotionalInventoryActivity.tsx` | Criar | Componente de tabela interativa (3 emocoes x 2 colunas) + visualizacao pos-envio |
 | `src/pages/ActivityPage.tsx` | Editar | Registrar o componente no fluxo de atividades |
 | `src/pages/SubmissionView.tsx` | Editar | Registrar visualizacao para professores/admins |
-| Nova migracao SQL | Criar | Inserir atividade essay na Estacao 1 da Jornada 6 |
+| Nova migracao SQL | Criar | Inserir atividade essay na Estacao 2 da Jornada 6 |
+
+---
+
+## Nota sobre o nome
+
+O titulo "Inventario Emocional" sera usado conforme especificado. Caso deseje alterar o nome posteriormente, basta editar o titulo da atividade pelo painel administrativo (Gerenciar -> Editar Estacao).
 
 ---
 
 ## Resultado Esperado
 
-- Ao acessar a Estacao 1 da Jornada 6, a aluna vera a atividade "Diario do Bem-Estar"
-- A orientacao sera exibida com as tres dimensoes de cuidado (Fisica, Mental, Espiritual)
-- Uma tabela interativa com 5 dias e 3 colunas permitira registrar as praticas diarias
-- No mobile, a tabela sera exibida como cartoes empilhados por dia
-- O progresso sera mostrado (ex: 12/15 campos preenchidos)
-- O envio so sera possivel com todos os 15 campos preenchidos
+- Ao acessar a Estacao 2 da Jornada 6, a aluna vera a atividade "Inventario Emocional"
+- A orientacao sera exibida com o exemplo (Tristeza / Gratidao diaria)
+- Uma tabela interativa com 3 linhas e 2 colunas permitira registrar emocoes e acoes praticas
+- No mobile, a tabela sera exibida como cartoes empilhados
+- O progresso sera mostrado (ex: 4/6 campos preenchidos)
+- O envio so sera possivel com todos os 6 campos preenchidos
 - Apos o envio, a visualizacao mostrara os registros em formato de tabela
 - Professores e admins poderao ver as submissoes formatadas corretamente
 - A atividade vale 10 pontos
-
