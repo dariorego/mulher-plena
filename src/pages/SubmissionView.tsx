@@ -7,6 +7,7 @@ import { SubmittedTrafficLightView } from '@/components/activities/SubmittedTraf
 import { SubmittedRoleDiaryView } from '@/components/activities/SubmittedRoleDiaryView';
 import { SubmittedBalancedLifeMapView } from '@/components/activities/SubmittedBalancedLifeMapView';
 import { SubmittedLoveActionView } from '@/components/activities/SubmittedLoveActionView';
+import { SubmittedReconciliationView } from '@/components/activities/ReconciliationReportActivity';
 import { ArrowLeft } from 'lucide-react';
 
 const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
@@ -14,6 +15,7 @@ const isTrafficLightActivity = (title: string) => title.toLowerCase().includes('
 const isDiaryActivity = (title: string) => title.toLowerCase().includes('diário de papéis') || title.toLowerCase().includes('diario de papeis');
 const isBalancedLifeMap = (title: string) => title.toLowerCase().includes('mapa de vida equilibrada');
 const isLoveAction = (title: string) => title.toLowerCase().includes('acao de amor') || title.toLowerCase().includes('ação de amor');
+const isReconciliationReport = (title: string) => title.toLowerCase().includes('relato') && title.toLowerCase().includes('reconcilia');
 
 export default function SubmissionView() {
   const { id } = useParams();
@@ -41,6 +43,7 @@ export default function SubmissionView() {
   const isDiary = activity && isDiaryActivity(activity.title);
   const isBalancedLife = activity && isBalancedLifeMap(activity.title);
   const isLoveAct = activity && isLoveAction(activity.title);
+  const isReconciliation = activity && isReconciliationReport(activity.title);
 
   return (
     <AppLayout>
@@ -59,7 +62,9 @@ export default function SubmissionView() {
 
         <div className="bg-muted/50 rounded-lg p-6">
           <p className="text-sm font-medium mb-4">Resposta do aluno:</p>
-          {isLoveAct && submission.content ? (
+          {isReconciliation && submission.content ? (
+            <SubmittedReconciliationView content={submission.content} />
+          ) : isLoveAct && submission.content ? (
             <SubmittedLoveActionView content={submission.content} />
           ) : isBalancedLife && submission.content ? (
             <SubmittedBalancedLifeMapView content={submission.content} />
