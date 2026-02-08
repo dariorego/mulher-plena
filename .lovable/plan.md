@@ -1,54 +1,82 @@
 
-# Plano: Atividade "Registro de Inspiracao" - Estacao 1, Jornada 7
+# Plano: Recurso "Experiencia Sensivel" em Atividades
 
 ## Objetivo
 
-Criar a atividade "Registro de Inspiracao" para a Estacao 1 ("A mulher que transforma o lar e a sociedade") da Jornada 7 ("Mulher da Nova Civilizacao"). As participantes compartilham exemplos concretos de transformacao positiva no lar ou na sociedade em um mural colaborativo (Padlet).
+Criar um sistema que permita marcar atividades individuais como "experiencia sensivel", com:
+1. Um toggle no formulario de criacao/edicao de atividades (painel admin)
+2. Um aviso visual na pagina da atividade (para participantes)
+3. Um pop-up com mensagem explicativa ao clicar no aviso
+4. A mensagem do pop-up configuravel na pagina de Configuracoes
 
 ---
 
-## Como Funciona
-
-Esta e uma atividade do tipo `forum` (mural interativo estilo Padlet), que ja esta totalmente implementada no sistema. Nao requer nenhum componente novo — o `ForumBoard` existente cuida de tudo.
-
-- A participante ve a orientacao sobre como descrever a transformacao
-- Escreve seu registro de inspiracao no mural
-- Pode opcionalmente gravar um audio
-- O post e compartilhado no mural coletivo em cartoes coloridos
-- Todas as participantes visualizam os registros umas das outras em tempo real
-
----
-
-## Alteracao Necessaria
-
-### Migracao SQL (unica alteracao)
-
-Inserir a atividade no banco de dados:
-
-- **station_id:** `137c81bd-11cb-4ee1-b54c-b99212bc61b7` (Estacao 1 - A mulher que transforma o lar e a sociedade)
-- **title:** "Registro de Inspiracao"
-- **type:** `forum`
-- **points:** 10
-- **description:** Orientacao formatada em HTML explicando que a participante deve apresentar um exemplo concreto de transformacao positiva (contexto inicial, atitude/mudanca adotada e efeitos positivos percebidos)
-
-Nenhuma alteracao em codigo e necessaria — o componente ForumBoard ja renderiza automaticamente todas as atividades do tipo `forum`.
-
----
-
-## Resumo
+## Resumo das Alteracoes
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| Nova migracao SQL | Criar | Inserir atividade forum na Estacao 1 da Jornada 7 |
+| Migracao SQL | Criar | Adicionar coluna `is_sensitive` na tabela `activities` |
+| `src/types/index.ts` | Editar | Adicionar campo `is_sensitive` na interface `Activity` |
+| `src/integrations/supabase/types.ts` | Editar | Atualizar tipos gerados |
+| `src/components/admin/ActivityForm.tsx` | Editar | Adicionar checkbox para marcar atividade como sensivel |
+| `src/components/admin/ActivityManager.tsx` | Editar | Exibir indicador visual na lista quando atividade e sensivel |
+| `src/contexts/SettingsContext.tsx` | Editar | Adicionar campo `sensitiveContentMessage` nas configuracoes |
+| `src/pages/Settings.tsx` | Editar | Adicionar card para editar a mensagem de experiencia sensivel |
+| `src/pages/ActivityPage.tsx` | Editar | Exibir alerta clicavel quando atividade e sensivel |
 
-Nenhum arquivo de codigo sera alterado.
+---
+
+## Detalhes Tecnicos
+
+### 1. Migracao SQL
+
+Adicionar uma coluna booleana `is_sensitive` com valor padrao `false`:
+
+```sql
+ALTER TABLE public.activities ADD COLUMN is_sensitive boolean NOT NULL DEFAULT false;
+```
+
+### 2. Tipo `Activity` (`src/types/index.ts`)
+
+Adicionar o campo opcional `is_sensitive?: boolean` na interface Activity.
+
+### 3. Formulario de Atividades (`ActivityForm.tsx`)
+
+Adicionar um checkbox com o componente Switch existente, posicionado entre o campo de pontos e os botoes de acao:
+- Label: "Experiencia Sensivel"
+- Descricao: "Marque se esta atividade aborda temas que exigem cuidado emocional"
+- Icone: `AlertTriangle` (lucide)
+- O valor sera enviado junto com os demais dados da atividade
+
+### 4. Lista de Atividades (`ActivityManager.tsx`)
+
+Na listagem de atividades da estacao, exibir um pequeno indicador (icone `AlertTriangle` em amarelo) ao lado do tipo/pontos quando `is_sensitive` for `true`.
+
+### 5. Configuracoes - Mensagem do Pop-up
+
+**SettingsContext**: Adicionar campo `sensitiveContentMessage` com um texto padrao:
+
+> "Esta atividade aborda temas que podem despertar emocoes intensas. Sinta-se a vontade para fazer pausas, cuidar de si e buscar apoio se necessario. Voce esta em um espaco seguro."
+
+**Pagina Settings**: Adicionar um novo card "Experiencia Sensivel" com:
+- Icone `AlertTriangle`
+- Um campo Textarea para editar a mensagem
+- Salvamento automatico ao sair do campo (onBlur), mesmo padrao dos outros campos
+
+### 6. Pagina da Atividade (`ActivityPage.tsx`)
+
+Quando `activity.is_sensitive` for `true`, exibir um banner de alerta logo abaixo do header da atividade:
+- Fundo amarelo suave (`bg-amber-50`)
+- Icone `AlertTriangle` + texto "Experiencia Sensivel"
+- Ao clicar, abre um Dialog (pop-up) com a mensagem configurada nas Settings
+- O Dialog tera um botao "Entendi" para fechar
 
 ---
 
 ## Resultado Esperado
 
-- Ao acessar a Estacao 1 da Jornada 7, a aluna vera a atividade "Registro de Inspiracao"
-- A orientacao sera exibida explicando como descrever a transformacao positiva
-- O mural interativo permitira compartilhar textos e audios em cartoes coloridos
-- Todas as participantes poderao ver os registros umas das outras em tempo real
-- A atividade vale 10 pontos
+- Administradores podem marcar qualquer atividade como "sensivel" ao criar ou editar
+- Na lista de atividades (admin), um icone amarelo indica atividades sensiveis
+- Na pagina da atividade, participantes veem um banner clicavel de aviso
+- Ao clicar no aviso, um pop-up exibe a mensagem configurada em Configuracoes
+- A mensagem do pop-up pode ser personalizada pelo administrador a qualquer momento
