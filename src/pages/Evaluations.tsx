@@ -21,6 +21,7 @@ import { SubmittedRoleDiaryView } from '@/components/activities/SubmittedRoleDia
 import { SubmittedBalancedLifeMapView } from '@/components/activities/SubmittedBalancedLifeMapView';
 import { SubmittedLoveActionView } from '@/components/activities/SubmittedLoveActionView';
 import { SubmittedReconciliationView } from '@/components/activities/ReconciliationReportActivity';
+import { SubmittedCommitmentLetterView } from '@/components/activities/CommitmentLetterActivity';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { ActivitySubmission } from '@/types';
@@ -471,7 +472,7 @@ export default function Evaluations() {
         <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
           <DialogContent className={cn(
             "max-h-[90vh] flex flex-col",
-            (activity?.title?.toLowerCase().includes('diário de papéis') || activity?.title?.toLowerCase().includes('diario de papeis') || activity?.title?.toLowerCase().includes('acao de amor') || activity?.title?.toLowerCase().includes('ação de amor') || activity?.title?.toLowerCase().includes('mapa de vida equilibrada') || (activity?.title?.toLowerCase().includes('relato') && activity?.title?.toLowerCase().includes('reconcilia'))) ? 'sm:max-w-4xl' : ''
+            (activity?.title?.toLowerCase().includes('diário de papéis') || activity?.title?.toLowerCase().includes('diario de papeis') || activity?.title?.toLowerCase().includes('acao de amor') || activity?.title?.toLowerCase().includes('ação de amor') || activity?.title?.toLowerCase().includes('mapa de vida equilibrada') || (activity?.title?.toLowerCase().includes('relato') && activity?.title?.toLowerCase().includes('reconcilia')) || activity?.title?.toLowerCase().includes('carta de compromisso')) ? 'sm:max-w-4xl' : ''
           )}>
             <DialogHeader>
               <DialogTitle>Avaliar: {activity?.title}</DialogTitle>
@@ -486,7 +487,9 @@ export default function Evaluations() {
                     </Button>
                   </Link>
                 </div>
-                {(activity?.title?.toLowerCase().includes('relato') && activity?.title?.toLowerCase().includes('reconcilia')) && submission?.content ? (
+                {activity?.title?.toLowerCase().includes('carta de compromisso') && submission?.content ? (
+                  <SubmittedCommitmentLetterView content={submission.content} />
+                ) : (activity?.title?.toLowerCase().includes('relato') && activity?.title?.toLowerCase().includes('reconcilia')) && submission?.content ? (
                   <SubmittedReconciliationView content={submission.content} />
                 ) : (activity?.title?.toLowerCase().includes('acao de amor') || activity?.title?.toLowerCase().includes('ação de amor')) && submission?.content ? (
                   <SubmittedLoveActionView content={submission.content} />
