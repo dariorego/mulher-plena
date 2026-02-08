@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       activities: {
         Row: {
+          audio_url: string | null
           created_at: string
           description: string | null
           id: string
@@ -25,6 +26,7 @@ export type Database = {
           type: Database["public"]["Enums"]["activity_type"]
         }
         Insert: {
+          audio_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -34,6 +36,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["activity_type"]
         }
         Update: {
+          audio_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
