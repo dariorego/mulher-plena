@@ -12,6 +12,7 @@ import { SubmittedCommitmentLetterView } from '@/components/activities/Commitmen
 import { SubmittedRealSituationView } from '@/components/activities/RealSituationActivity';
 import { SubmittedLoveWheelView } from '@/components/activities/LoveWheelActivity';
 import { SubmittedWellBeingDiaryView } from '@/components/activities/WellBeingDiaryActivity';
+import { SubmittedEmotionalInventoryView } from '@/components/activities/EmotionalInventoryActivity';
 import { ArrowLeft } from 'lucide-react';
 
 const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
@@ -24,6 +25,7 @@ const isCommitmentLetter = (title: string) => title.toLowerCase().includes('cart
 const isRealSituation = (title: string) => title.toLowerCase().includes('registro de situa');
 const isLoveWheel = (title: string) => title.toLowerCase().includes('roda de amor');
 const isWellBeingDiary = (title: string) => title.toLowerCase().includes('diário do bem-estar') || title.toLowerCase().includes('diario do bem-estar');
+const isEmotionalInventory = (title: string) => title.toLowerCase().includes('inventário emocional') || title.toLowerCase().includes('inventario emocional');
 
 export default function SubmissionView() {
   const { id } = useParams();
@@ -56,6 +58,7 @@ export default function SubmissionView() {
   const isRealSit = activity && isRealSituation(activity.title);
   const isLoveWh = activity && isLoveWheel(activity.title);
   const isWellBeing = activity && isWellBeingDiary(activity.title);
+  const isEmotionalInv = activity && isEmotionalInventory(activity.title);
 
   return (
     <AppLayout>
@@ -74,7 +77,9 @@ export default function SubmissionView() {
 
         <div className="bg-muted/50 rounded-lg p-6">
           <p className="text-sm font-medium mb-4">Resposta do aluno:</p>
-          {isWellBeing && submission.content ? (
+          {isEmotionalInv && submission.content ? (
+            <SubmittedEmotionalInventoryView content={submission.content} />
+          ) : isWellBeing && submission.content ? (
             <SubmittedWellBeingDiaryView content={submission.content} />
           ) : isLoveWh && submission.content ? (
             <SubmittedLoveWheelView content={submission.content} />
