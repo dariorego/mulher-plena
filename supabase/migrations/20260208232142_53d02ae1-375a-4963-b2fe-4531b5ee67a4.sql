@@ -1,0 +1,1 @@
+DELETE FROM public.forum_posts;
