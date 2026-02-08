@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -14,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { FontSizeControl } from '@/components/ui/font-size-control';
 import { useFontSize } from '@/contexts/FontSizeContext';
-import { ArrowLeft, FileText, Upload, PenLine, Gamepad2, Trophy, CheckCircle, MessageSquare, Heart, Pencil, Save, X, Headphones } from 'lucide-react';
+import { ArrowLeft, FileText, Upload, PenLine, Gamepad2, Trophy, CheckCircle, MessageSquare, Heart, Pencil, Save, X, Headphones, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { VisionBoardCanvas } from '@/components/activities/VisionBoardCanvas';
 import { ForumBoard } from '@/components/activities/ForumBoard';
@@ -61,7 +62,7 @@ export default function ActivityPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { activities, stations, journeys, submissions, quizQuestions, submitActivity, deleteSubmission, updateSubmissionContent, awardBadge, userBadges, updateActivity, refreshData } = useData();
-  const { showScoreToStudents, showFeedbackToStudents } = useSettings();
+  const { showScoreToStudents, showFeedbackToStudents, sensitiveContentMessage } = useSettings();
   const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
   const [essayContent, setEssayContent] = useState('');
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -71,6 +72,7 @@ export default function ActivityPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [isSavingActivity, setIsSavingActivity] = useState(false);
+  const [showSensitiveDialog, setShowSensitiveDialog] = useState(false);
   const { sizeClass: fontSizeClass } = useFontSize();
   const { logAction } = useActivityLogger();
   
@@ -317,6 +319,41 @@ export default function ActivityPage() {
             )}
           </div>
         </div>
+
+        {/* Sensitive Experience Banner */}
+        {activity.is_sensitive && (
+          <>
+            <button
+              type="button"
+              onClick={() => setShowSensitiveDialog(true)}
+              className="w-full flex items-center gap-3 p-3 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors cursor-pointer text-left"
+            >
+              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                Experiência Sensível — clique para saber mais
+              </span>
+            </button>
+
+            <Dialog open={showSensitiveDialog} onOpenChange={setShowSensitiveDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-amber-600" />
+                    Experiência Sensível
+                  </DialogTitle>
+                  <DialogDescription className="text-base leading-relaxed pt-2">
+                    {sensitiveContentMessage}
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button onClick={() => setShowSensitiveDialog(false)}>
+                    Entendi
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
 
         {/* Already Submitted - Gamified with Mural */}
         {existingSubmission && activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/') && (

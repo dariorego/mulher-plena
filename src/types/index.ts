@@ -70,6 +70,7 @@ export interface Activity {
   type: ActivityType;
   points: number;
   audio_url?: string;
+  is_sensitive?: boolean;
   created_at: string;
 }
 

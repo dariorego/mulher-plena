@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Activity, ActivityType } from '@/types';
-import { Loader2, Music, X } from 'lucide-react';
+import { Loader2, Music, X, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const activitySchema = z.object({
@@ -36,6 +37,7 @@ const activityTypes: { value: ActivityType; label: string }[] = [
 
 export function ActivityForm({ stationId, activity, onSubmit, onCancel }: ActivityFormProps) {
   const [activityType, setActivityType] = useState<ActivityType>(activity?.type || 'essay');
+  const [isSensitive, setIsSensitive] = useState(activity?.is_sensitive || false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string>(activity?.audio_url || '');
   const [uploadingAudio, setUploadingAudio] = useState(false);
@@ -94,6 +96,7 @@ export function ActivityForm({ stationId, activity, onSubmit, onCancel }: Activi
           type: activityType,
           points: data.points,
           audio_url: audioUrl || undefined,
+          is_sensitive: isSensitive,
         });
       } finally {
         setIsSubmitting(false);
@@ -211,6 +214,26 @@ export function ActivityForm({ stationId, activity, onSubmit, onCancel }: Activi
         {errors.points && (
           <p className="text-sm text-destructive">{errors.points.message}</p>
         )}
+      </div>
+
+      {/* Sensitive Experience Toggle */}
+      <div className="flex items-center justify-between p-3 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+          <div className="space-y-1">
+            <Label htmlFor="is-sensitive" className="text-base font-medium">
+              Experiência Sensível
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              Marque se esta atividade aborda temas que exigem cuidado emocional
+            </p>
+          </div>
+        </div>
+        <Switch
+          id="is-sensitive"
+          checked={isSensitive}
+          onCheckedChange={setIsSensitive}
+        />
       </div>
 
       {/* Actions */}
