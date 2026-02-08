@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { FontSizeControl } from '@/components/ui/font-size-control';
 import { useFontSize } from '@/contexts/FontSizeContext';
-import { ArrowLeft, FileText, Upload, PenLine, Gamepad2, Trophy, CheckCircle, MessageSquare, Heart, Pencil, Save, X } from 'lucide-react';
+import { ArrowLeft, FileText, Upload, PenLine, Gamepad2, Trophy, CheckCircle, MessageSquare, Heart, Pencil, Save, X, Headphones } from 'lucide-react';
 import { toast } from 'sonner';
 import { VisionBoardCanvas } from '@/components/activities/VisionBoardCanvas';
 import { ForumBoard } from '@/components/activities/ForumBoard';
@@ -854,6 +854,20 @@ export default function ActivityPage() {
                       {parsedDescription.outro}
                     </p>
                   )}
+                </div>
+              )}
+
+              {/* Audio Player - shown when activity has audio_url */}
+              {activity.audio_url && activity.type !== 'gamified' && activity.type !== 'forum' && (
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Headphones className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-semibold text-primary uppercase tracking-wider">Áudio da Atividade</span>
+                  </div>
+                  <audio src={activity.audio_url} controls className="w-full h-10" />
+                  <p className="text-xs text-muted-foreground italic">
+                    Ouça o áudio acima antes de escrever sua reflexão
+                  </p>
                 </div>
               )}
 

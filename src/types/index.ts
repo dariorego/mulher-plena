@@ -68,6 +68,7 @@ export interface Activity {
   description?: string;
   type: ActivityType;
   points: number;
+  audio_url?: string;
   created_at: string;
 }
 
