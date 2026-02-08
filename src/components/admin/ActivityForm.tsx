@@ -99,7 +99,7 @@ export function ActivityForm({ stationId, activity, onSubmit, onCancel }: Activi
         </Select>
         {activityType === 'essay' && (
           <p className="text-xs text-muted-foreground">
-            💡 Títulos especiais: <strong>"Árvore da Gratidão"</strong>, <strong>"Lista de Gratidão"</strong>, <strong>"Linha da Vida"</strong>, <strong>"Farol"</strong>, <strong>"Diário de Papéis"</strong>, <strong>"Mapa de Vida Equilibrada"</strong>, <strong>"Ação de Amor Concreta"</strong>, <strong>"Manifesto"</strong>, <strong>"Relato de Reconciliação"</strong>, <strong>"Carta de Compromisso"</strong> ou <strong>"Registro de Situação Real"</strong> ativam interfaces interativas exclusivas.
+            💡 Títulos especiais: <strong>"Árvore da Gratidão"</strong>, <strong>"Lista de Gratidão"</strong>, <strong>"Linha da Vida"</strong>, <strong>"Farol"</strong>, <strong>"Diário de Papéis"</strong>, <strong>"Mapa de Vida Equilibrada"</strong>, <strong>"Ação de Amor Concreta"</strong>, <strong>"Manifesto"</strong>, <strong>"Relato de Reconciliação"</strong>, <strong>"Carta de Compromisso"</strong>, <strong>"Registro de Situação Real"</strong> ou <strong>"Roda de Amor Consciente"</strong> ativam interfaces interativas exclusivas.
           </p>
         )}
       </div>

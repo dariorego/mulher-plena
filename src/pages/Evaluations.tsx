@@ -23,6 +23,7 @@ import { SubmittedLoveActionView } from '@/components/activities/SubmittedLoveAc
 import { SubmittedReconciliationView } from '@/components/activities/ReconciliationReportActivity';
 import { SubmittedCommitmentLetterView } from '@/components/activities/CommitmentLetterActivity';
 import { SubmittedRealSituationView } from '@/components/activities/RealSituationActivity';
+import { SubmittedLoveWheelView } from '@/components/activities/LoveWheelActivity';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { ActivitySubmission } from '@/types';
@@ -473,7 +474,7 @@ export default function Evaluations() {
         <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
           <DialogContent className={cn(
             "max-h-[90vh] flex flex-col",
-            (activity?.title?.toLowerCase().includes('diário de papéis') || activity?.title?.toLowerCase().includes('diario de papeis') || activity?.title?.toLowerCase().includes('acao de amor') || activity?.title?.toLowerCase().includes('ação de amor') || activity?.title?.toLowerCase().includes('mapa de vida equilibrada') || (activity?.title?.toLowerCase().includes('relato') && activity?.title?.toLowerCase().includes('reconcilia')) || activity?.title?.toLowerCase().includes('carta de compromisso') || activity?.title?.toLowerCase().includes('registro de situa')) ? 'sm:max-w-4xl' : ''
+            (activity?.title?.toLowerCase().includes('diário de papéis') || activity?.title?.toLowerCase().includes('diario de papeis') || activity?.title?.toLowerCase().includes('acao de amor') || activity?.title?.toLowerCase().includes('ação de amor') || activity?.title?.toLowerCase().includes('mapa de vida equilibrada') || (activity?.title?.toLowerCase().includes('relato') && activity?.title?.toLowerCase().includes('reconcilia')) || activity?.title?.toLowerCase().includes('carta de compromisso') || activity?.title?.toLowerCase().includes('registro de situa') || activity?.title?.toLowerCase().includes('roda de amor')) ? 'sm:max-w-4xl' : ''
           )}>
             <DialogHeader>
               <DialogTitle>Avaliar: {activity?.title}</DialogTitle>
@@ -488,7 +489,9 @@ export default function Evaluations() {
                     </Button>
                   </Link>
                 </div>
-                {activity?.title?.toLowerCase().includes('registro de situa') && submission?.content ? (
+                {activity?.title?.toLowerCase().includes('roda de amor') && submission?.content ? (
+                  <SubmittedLoveWheelView content={submission.content} />
+                ) : activity?.title?.toLowerCase().includes('registro de situa') && submission?.content ? (
                   <SubmittedRealSituationView content={submission.content} />
                 ) : activity?.title?.toLowerCase().includes('carta de compromisso') && submission?.content ? (
                   <SubmittedCommitmentLetterView content={submission.content} />
