@@ -1,0 +1,1 @@
+ALTER TABLE public.forum_posts ALTER COLUMN color TYPE text;
