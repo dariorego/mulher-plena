@@ -9,6 +9,7 @@ import { SubmittedBalancedLifeMapView } from '@/components/activities/SubmittedB
 import { SubmittedLoveActionView } from '@/components/activities/SubmittedLoveActionView';
 import { SubmittedReconciliationView } from '@/components/activities/ReconciliationReportActivity';
 import { SubmittedCommitmentLetterView } from '@/components/activities/CommitmentLetterActivity';
+import { SubmittedRealSituationView } from '@/components/activities/RealSituationActivity';
 import { ArrowLeft } from 'lucide-react';
 
 const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
@@ -18,6 +19,7 @@ const isBalancedLifeMap = (title: string) => title.toLowerCase().includes('mapa 
 const isLoveAction = (title: string) => title.toLowerCase().includes('acao de amor') || title.toLowerCase().includes('ação de amor');
 const isReconciliationReport = (title: string) => title.toLowerCase().includes('relato') && title.toLowerCase().includes('reconcilia');
 const isCommitmentLetter = (title: string) => title.toLowerCase().includes('carta de compromisso');
+const isRealSituation = (title: string) => title.toLowerCase().includes('registro de situa');
 
 export default function SubmissionView() {
   const { id } = useParams();
@@ -47,6 +49,7 @@ export default function SubmissionView() {
   const isLoveAct = activity && isLoveAction(activity.title);
   const isReconciliation = activity && isReconciliationReport(activity.title);
   const isCommitment = activity && isCommitmentLetter(activity.title);
+  const isRealSit = activity && isRealSituation(activity.title);
 
   return (
     <AppLayout>
@@ -65,7 +68,9 @@ export default function SubmissionView() {
 
         <div className="bg-muted/50 rounded-lg p-6">
           <p className="text-sm font-medium mb-4">Resposta do aluno:</p>
-          {isCommitment && submission.content ? (
+          {isRealSit && submission.content ? (
+            <SubmittedRealSituationView content={submission.content} />
+          ) : isCommitment && submission.content ? (
             <SubmittedCommitmentLetterView content={submission.content} />
           ) : isReconciliation && submission.content ? (
             <SubmittedReconciliationView content={submission.content} />
