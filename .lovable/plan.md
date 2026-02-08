@@ -1,57 +1,89 @@
 
-# Plano: Atividade "Caixa da Alegria" (Forum com Imagem) - Estacao 3, Jornada 6
+# Plano: Atividade "Farol da Minha Vida" - Estacao Integracao, Jornada 6
 
 ## Objetivo
 
-Criar a atividade compartilhada "Caixa da Alegria" para a Estacao 3 ("Como manter a alegria e o entusiasmo") da Jornada 6. As participantes constroem uma "caixa da alegria" (fisica ou digital), registram sua experiencia e anexam uma foto da caixa no mural coletivo.
+Criar a atividade de integracao "Farol da Minha Vida" para a Estacao de Integracao da Jornada 6 ("Saude da Mulher"). A participante reflete sobre sua vida nas dimensoes fisica, mental e espiritual usando a metafora do semaforo, registrando o que precisa parar (vermelho), o que exige atencao (amarelo) e o que deve continuar fortalecendo (verde).
 
 ---
 
-## Como Funciona
+## Diferenca em relacao ao "Farol dos Relacionamentos"
 
-Esta e uma atividade do tipo `forum` (mural interativo estilo Padlet) com uma novidade: **suporte a upload de imagens**. Alem de texto e audio, as participantes poderao anexar uma foto ao seu post no mural.
+Ja existe uma atividade chamada "Farol das Acoes nos Relacionamentos" (TrafficLightActivity), que permite registrar **multiplos relacionamentos** (minimo 3), cada um com nome, palavra-chave e tres cores. Esta nova atividade e diferente:
 
-- A participante ve a orientacao sobre como criar a Caixa da Alegria
-- Escreve sua reflexao sobre a experiencia
-- Anexa uma foto da sua caixa (obrigatorio para esta atividade)
-- O post com texto + imagem e compartilhado no mural coletivo
-- Todas as participantes visualizam as caixas umas das outras em tempo real
+- **Farol dos Relacionamentos**: Multiplos relacionamentos, cada um com nome + palavra-chave + vermelho/amarelo/verde
+- **Farol da Minha Vida**: Uma unica reflexao pessoal com apenas 3 campos de texto (vermelho, amarelo, verde), focada na vida como um todo
+
+Como os formatos sao diferentes, sera criado um componente dedicado. O detector existente (`isTrafficLightActivity`) que usa `includes('farol')` sera ajustado para nao capturar "Farol da Minha Vida".
 
 ---
 
 ## Alteracoes Necessarias
 
-### 1. Migracao SQL
+### 1. Novo Componente: `LifeTrafficLightActivity.tsx`
 
-Uma unica migracao que:
+Criar `src/components/activities/LifeTrafficLightActivity.tsx` contendo:
 
-- Adiciona a coluna `image_url` (TEXT, nullable) na tabela `forum_posts` para suportar imagens nos posts
-- Cria o bucket de storage `forum-images` (publico) para armazenar as fotos enviadas
-- Configura politicas RLS no bucket: upload para usuarios autenticados, leitura publica
-- Insere a atividade "Caixa da Alegria" na Estacao 3 da Jornada 6 com tipo `forum` e 10 pontos
+- **LifeTrafficLightActivity** - Componente de preenchimento:
+  - Exibe a orientacao formatada em HTML (as instrucoes sobre as tres luzes e o convite a reflexao)
+  - Tres campos de texto grandes (Textarea), cada um acompanhado de um indicador visual colorido:
+    - Vermelho: "Pare e Reavalie" - comportamentos a interromper
+    - Amarelo: "Atencao e Ajuste" - o que precisa de cuidado e equilibrio
+    - Verde: "Siga Fortalecendo" - praticas e atitudes a manter
+  - Botao de envio habilitado apenas quando os 3 campos estiverem preenchidos
+  - Layout visual com circulos coloridos e sombra brilhante, seguindo o estilo visual do semaforo ja existente
 
-### 2. Atualizar tipo ForumPost (`src/types/index.ts`)
+- **SubmittedLifeTrafficLightView** - Componente de visualizacao pos-envio:
+  - Exibe um unico semaforo central com as tres luzes
+  - Cada luz e clicavel e abre um dialog com a reflexao correspondente
+  - Reutiliza o mesmo estilo visual do SubmittedTrafficLightView (pole com luzes brilhantes)
 
-- Adicionar campo opcional `image_url?: string` na interface ForumPost
+### 2. Atualizar detectores no `ActivityPage.tsx`
 
-### 3. Atualizar ForumBoard (`src/components/activities/ForumBoard.tsx`)
+- Adicionar funcao detectora `isLifeTrafficLight` que verifica se o titulo contem "farol da minha vida"
+- **Atualizar** `isTrafficLightActivity` para excluir "farol da minha vida":
+  ```
+  const isTrafficLightActivity = (title: string) => 
+    title.toLowerCase().includes('farol') && !title.toLowerCase().includes('farol da minha vida');
+  ```
+- Adicionar bloco "Already Submitted" com SubmittedLifeTrafficLightView
+- Adicionar bloco de renderizacao do componente na secao essay
+- Excluir das renderizacoes genericas (submitted, orientation, essay textarea, footer)
 
-Adicionar suporte opcional a upload de imagens:
+### 3. Atualizar detectores no `SubmissionView.tsx`
 
-- Novas props: `allowImages?: boolean` e `requireImage?: boolean`
-- Quando `allowImages` estiver ativo:
-  - Botao para selecionar imagem (com preview antes do envio)
-  - Funcao de upload para o bucket `forum-images`
-  - Exibicao da imagem nos cartoes do mural (clicavel para ampliar)
-- Quando `requireImage` estiver ativo:
-  - O botao "Compartilhar" so e habilitado se uma imagem estiver selecionada
-- Layout: a secao de imagem aparece entre o textarea e a secao de audio
+- Importar SubmittedLifeTrafficLightView
+- Adicionar `isLifeTrafficLight` detector
+- Adicionar renderizacao condicional (antes do isTrafficLight generico)
+- **Atualizar** `isTrafficLightActivity` no SubmissionView tambem
 
-### 4. Registrar no ActivityPage (`src/pages/ActivityPage.tsx`)
+### 4. Migracao SQL
 
-- Adicionar funcao detectora `isJoyBox` (verifica se o titulo contem "caixa da alegria")
-- Passar as props `allowImages={true}` e `requireImage={true}` no ForumBoard quando a atividade for "Caixa da Alegria"
-- Aplicar em ambas as instancias do ForumBoard (visao aluno e visao admin)
+- **station_id:** `8d116768-25f2-474d-a072-6f490a2e0f1d` (Farol da Minha Vida - Estacao Integracao)
+- **title:** "Farol da Minha Vida"
+- **type:** `essay`
+- **points:** 10
+- **description:** Orientacao formatada em HTML com o convite a reflexao, as tres luzes (vermelha, amarela, verde) e as instrucoes de registro
+
+---
+
+## Formato de Armazenamento
+
+O conteudo sera salvo em formato Markdown estruturado para facil parsing:
+
+```
+### Farol da Minha Vida
+
+---
+
+- Vermelho (Parar): [texto da participante]
+- Amarelo (Atencao): [texto da participante]
+- Verde (Seguir): [texto da participante]
+```
+
+### 5. Formato de Visualizacao pos-envio
+
+A visualizacao exibira um unico semaforo central (nao multiplos como no Farol dos Relacionamentos). Ao clicar em cada luz, um dialog mostra a reflexao completa da participante para aquela cor.
 
 ---
 
@@ -59,29 +91,19 @@ Adicionar suporte opcional a upload de imagens:
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| Nova migracao SQL | Criar | Coluna image_url, bucket forum-images, atividade forum |
-| `src/types/index.ts` | Editar | Adicionar image_url ao ForumPost |
-| `src/components/activities/ForumBoard.tsx` | Editar | Suporte a upload e exibicao de imagens |
-| `src/pages/ActivityPage.tsx` | Editar | Detectar "Caixa da Alegria" e passar props de imagem |
-
----
-
-## Detalhes Tecnicos
-
-- **Storage**: Bucket `forum-images` publico, com arquivos organizados por `{user_id}/{timestamp}.{ext}`
-- **Tipos de arquivo aceitos**: imagens (image/jpeg, image/png, image/webp, image/gif)
-- **Limite de tamanho**: 10MB por imagem
-- **Visualizacao**: Imagens exibidas nos cartoes do mural com proporcao preservada, clicaveis para ampliar em modal
-- **Compatibilidade**: O ForumBoard continua funcionando normalmente para todas as demais atividades forum (sem imagens), pois as props sao opcionais
+| `src/components/activities/LifeTrafficLightActivity.tsx` | Criar | Componente de reflexao pessoal (3 textareas) + visualizacao com semaforo |
+| `src/pages/ActivityPage.tsx` | Editar | Detector + renderizacao + ajuste no detector existente |
+| `src/pages/SubmissionView.tsx` | Editar | Detector + renderizacao + ajuste no detector existente |
+| Nova migracao SQL | Criar | Inserir atividade essay na Estacao Integracao da Jornada 6 |
 
 ---
 
 ## Resultado Esperado
 
-- Ao acessar a Estacao 3 da Jornada 6, a aluna vera a atividade "Caixa da Alegria"
-- A orientacao sera exibida explicando como criar a caixa e registrar a experiencia
-- O mural interativo permitira compartilhar textos, audios e fotos
-- A foto sera obrigatoria para o envio nesta atividade especifica
-- As demais atividades forum continuarao funcionando normalmente (sem imagens)
-- Todas as participantes poderao ver as fotos das caixas umas das outras
+- Ao acessar a Estacao "Farol da Minha Vida" da Jornada 6, a aluna vera a atividade com orientacao detalhada
+- Tres campos de texto grandes com indicadores coloridos (vermelho, amarelo, verde)
+- O envio so sera possivel com os 3 campos preenchidos
+- Apos o envio, um semaforo visual centralizado mostrara as reflexoes ao clicar nas luzes
+- Professores e admins poderao ver as submissoes formatadas
+- A atividade existente "Farol dos Relacionamentos" continuara funcionando normalmente
 - A atividade vale 10 pontos
