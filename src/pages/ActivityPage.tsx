@@ -299,7 +299,7 @@ export default function ActivityPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-primary hover:text-primary/80">
+          <Button variant="ghost" size="icon" onClick={() => station ? navigate(`/estacao/${station.id}`) : navigate(-1)} className="text-primary hover:text-primary/80">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
@@ -1830,7 +1830,7 @@ export default function ActivityPage() {
         <div className="pt-4 pb-8">
           <Button 
             variant="outline" 
-            onClick={() => navigate(-1)} 
+            onClick={() => station ? navigate(`/estacao/${station.id}`) : navigate(-1)} 
             className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/5"
           >
             <ArrowLeft className="h-4 w-4" />
