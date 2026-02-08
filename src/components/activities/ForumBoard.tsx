@@ -255,6 +255,7 @@ export function ForumBoard({ activityId, description, allowImages = false, requi
       console.error('Error deleting post:', error);
       toast.error('Erro ao excluir post');
     } else {
+      setPosts((prev) => prev.filter((p) => p.id !== post.id));
       toast.success('Post excluído');
     }
   };
