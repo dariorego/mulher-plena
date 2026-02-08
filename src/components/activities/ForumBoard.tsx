@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Trash2, Send, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Trash2, Send, Loader2, ImagePlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ForumPost } from '@/types';
 import { AudioRecorder } from './AudioRecorder';
@@ -17,12 +18,17 @@ const POST_COLORS = [
   { name: 'Lilás', value: 'bg-purple-100 border-purple-300' },
 ];
 
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+
 interface ForumBoardProps {
   activityId: string;
   description?: string;
+  allowImages?: boolean;
+  requireImage?: boolean;
 }
 
-export function ForumBoard({ activityId, description }: ForumBoardProps) {
+export function ForumBoard({ activityId, description, allowImages = false, requireImage = false }: ForumBoardProps) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [newContent, setNewContent] = useState('');
@@ -30,6 +36,10 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch posts with user profiles
   const fetchPosts = async () => {
@@ -67,7 +77,6 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
   useEffect(() => {
     fetchPosts();
 
-    // Subscribe to realtime changes
     const channel = supabase
       .channel('forum-posts-changes')
       .on(
@@ -114,19 +123,87 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
     return urlData.publicUrl;
   };
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+
+    const ext = file.name.split('.').pop() || 'jpg';
+    const fileName = `${user.id}/${Date.now()}.${ext}`;
+
+    const { data, error } = await supabase.storage
+      .from('forum-images')
+      .upload(fileName, file, {
+        contentType: file.type,
+        cacheControl: '3600',
+      });
+
+    if (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Erro ao enviar imagem');
+      return null;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('forum-images')
+      .getPublicUrl(data.path);
+
+    return urlData.publicUrl;
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      toast.error('Formato não suportado. Use JPEG, PNG, WebP ou GIF.');
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast.error('Imagem muito grande. Máximo: 10MB.');
+      return;
+    }
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (imageInputRef.current) imageInputRef.current.value = '';
+  };
+
+  const canSubmit = () => {
+    const hasContent = newContent.trim() || audioBlob;
+    if (requireImage) return !!hasContent && !!imageFile;
+    return !!hasContent || !!imageFile;
+  };
+
   const handleSubmit = async () => {
-    if ((!newContent.trim() && !audioBlob) || !user) return;
+    if (!canSubmit() || !user) return;
 
     setIsSubmitting(true);
 
     let audioUrl: string | null = null;
+    let imageUrl: string | null = null;
 
     // Upload audio if present
     if (audioBlob) {
       audioUrl = await uploadAudio(audioBlob);
       if (audioBlob && !audioUrl) {
         setIsSubmitting(false);
-        return; // Upload failed
+        return;
+      }
+    }
+
+    // Upload image if present
+    if (imageFile) {
+      imageUrl = await uploadImage(imageFile);
+      if (imageFile && !imageUrl) {
+        setIsSubmitting(false);
+        return;
       }
     }
 
@@ -136,6 +213,7 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
       content: newContent.trim() || '',
       color: selectedColor,
       audio_url: audioUrl,
+      image_url: imageUrl,
     });
 
     if (error) {
@@ -145,6 +223,7 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
       toast.success('Reflexão compartilhada!');
       setNewContent('');
       setAudioBlob(null);
+      clearImage();
     }
 
     setIsSubmitting(false);
@@ -156,6 +235,14 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
       const path = post.audio_url.split('/forum-audios/')[1];
       if (path) {
         await supabase.storage.from('forum-audios').remove([path]);
+      }
+    }
+
+    // Delete image from storage if exists
+    if (post.image_url) {
+      const path = post.image_url.split('/forum-images/')[1];
+      if (path) {
+        await supabase.storage.from('forum-images').remove([path]);
       }
     }
 
@@ -207,6 +294,54 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
           className="resize-none border-primary/30 focus:border-primary focus:ring-primary/20 bg-white"
         />
 
+        {/* Image Section - only shown when allowImages is true */}
+        {allowImages && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-px bg-primary/20" />
+              <span className="text-xs text-muted-foreground">
+                {requireImage ? 'anexe uma foto (obrigatório)' : 'anexe uma foto (opcional)'}
+              </span>
+              <div className="flex-1 h-px bg-primary/20" />
+            </div>
+
+            {imagePreview ? (
+              <div className="relative inline-block">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="max-h-48 rounded-lg border border-primary/20 object-contain"
+                />
+                <button
+                  onClick={clearImage}
+                  className="absolute -top-2 -right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shadow-md"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => imageInputRef.current?.click()}
+                className="gap-2 border-primary/30 text-primary hover:bg-primary/5"
+              >
+                <ImagePlus className="h-4 w-4" />
+                Selecionar Foto
+              </Button>
+            )}
+
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+          </div>
+        )}
+
         {/* Audio Section */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -244,7 +379,7 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
 
           <Button
             onClick={handleSubmit}
-            disabled={(!newContent.trim() && !audioBlob) || isSubmitting}
+            disabled={!canSubmit() || isSubmitting}
             className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
           >
             {isSubmitting ? (
@@ -293,6 +428,18 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
                   </button>
                 )}
 
+                {/* Image */}
+                {post.image_url && (
+                  <div className="mb-3">
+                    <img
+                      src={post.image_url}
+                      alt="Foto do post"
+                      className="w-full rounded-md object-cover max-h-48 cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setEnlargedImage(post.image_url!)}
+                    />
+                  </div>
+                )}
+
                 {/* Text Content */}
                 {post.content && (
                   <p className="text-foreground text-sm leading-relaxed mb-3 whitespace-pre-wrap">
@@ -327,6 +474,19 @@ export function ForumBoard({ activityId, description }: ForumBoardProps) {
           </div>
         )}
       </div>
+
+      {/* Enlarged Image Modal */}
+      <Dialog open={!!enlargedImage} onOpenChange={() => setEnlargedImage(null)}>
+        <DialogContent className="max-w-3xl p-2">
+          {enlargedImage && (
+            <img
+              src={enlargedImage}
+              alt="Imagem ampliada"
+              className="w-full h-auto rounded-lg"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
