@@ -1,67 +1,57 @@
 
-
-# Plano: Atividade "Inventario Emocional" - Estacao 2, Jornada 6
+# Plano: Atividade "Caixa da Alegria" (Forum com Imagem) - Estacao 3, Jornada 6
 
 ## Objetivo
 
-Criar a atividade "Inventario Emocional" para a Estacao 2 ("Emocoes que adoecem - Ressignificando Emocoes") da Jornada 6. A participante lista 3 emocoes que a incomodam com frequencia e, para cada uma, uma acao pratica para ressignifica-la, usando uma tabela interativa.
+Criar a atividade compartilhada "Caixa da Alegria" para a Estacao 3 ("Como manter a alegria e o entusiasmo") da Jornada 6. As participantes constroem uma "caixa da alegria" (fisica ou digital), registram sua experiencia e anexam uma foto da caixa no mural coletivo.
 
 ---
 
 ## Como Funciona
 
-Esta atividade utiliza uma **tabela interativa personalizada** com:
+Esta e uma atividade do tipo `forum` (mural interativo estilo Padlet) com uma novidade: **suporte a upload de imagens**. Alem de texto e audio, as participantes poderao anexar uma foto ao seu post no mural.
 
-- **3 linhas** representando as emocoes
-- **2 colunas**: Emocao + Acao pratica para ressignificar
-- Cada celula recebe um campo de texto editavel
-- Layout responsivo (tabela no desktop, cartoes empilhados no mobile)
-- O botao de envio so sera habilitado quando todos os 6 campos estiverem preenchidos
-- Um exemplo e mostrado acima da tabela para orientar a participante
-
-Segue o mesmo padrao do "Diario do Bem-Estar" (WellBeingDiaryActivity) ja existente.
+- A participante ve a orientacao sobre como criar a Caixa da Alegria
+- Escreve sua reflexao sobre a experiencia
+- Anexa uma foto da sua caixa (obrigatorio para esta atividade)
+- O post com texto + imagem e compartilhado no mural coletivo
+- Todas as participantes visualizam as caixas umas das outras em tempo real
 
 ---
 
 ## Alteracoes Necessarias
 
-### 1. Novo Componente: `EmotionalInventoryActivity.tsx`
+### 1. Migracao SQL
 
-Criar `src/components/activities/EmotionalInventoryActivity.tsx` contendo:
+Uma unica migracao que:
 
-- **EmotionalInventoryActivity** - Componente de preenchimento:
-  - Exibe a orientacao formatada em HTML
-  - Mostra o exemplo (Tristeza -> Gratidao diaria)
-  - Tabela com 3 linhas e 2 colunas (Emocao e Acao pratica)
-  - Cada celula possui um campo de texto
-  - Barra de progresso (0/6 campos preenchidos)
-  - Botao de envio habilitado com todos os campos preenchidos
-  - Layout responsivo: tabela no desktop, cartoes no mobile
+- Adiciona a coluna `image_url` (TEXT, nullable) na tabela `forum_posts` para suportar imagens nos posts
+- Cria o bucket de storage `forum-images` (publico) para armazenar as fotos enviadas
+- Configura politicas RLS no bucket: upload para usuarios autenticados, leitura publica
+- Insere a atividade "Caixa da Alegria" na Estacao 3 da Jornada 6 com tipo `forum` e 10 pontos
 
-- **SubmittedEmotionalInventoryView** - Componente de visualizacao pos-envio:
-  - Exibe os dados em tabela somente-leitura
-  - Layout responsivo
+### 2. Atualizar tipo ForumPost (`src/types/index.ts`)
 
-### 2. Registrar no `ActivityPage.tsx`
+- Adicionar campo opcional `image_url?: string` na interface ForumPost
 
-- Importar os novos componentes
-- Adicionar funcao detectora `isEmotionalInventory` (verifica se o titulo contem "inventario emocional")
-- Adicionar bloco "Already Submitted" com o SubmittedEmotionalInventoryView
-- Adicionar exclusao nos filtros genericos (submitted, orientation, essay textarea, footer)
-- Adicionar bloco de renderizacao do componente na secao essay
+### 3. Atualizar ForumBoard (`src/components/activities/ForumBoard.tsx`)
 
-### 3. Registrar no `SubmissionView.tsx`
+Adicionar suporte opcional a upload de imagens:
 
-- Importar SubmittedEmotionalInventoryView
-- Adicionar detectora e renderizacao condicional
+- Novas props: `allowImages?: boolean` e `requireImage?: boolean`
+- Quando `allowImages` estiver ativo:
+  - Botao para selecionar imagem (com preview antes do envio)
+  - Funcao de upload para o bucket `forum-images`
+  - Exibicao da imagem nos cartoes do mural (clicavel para ampliar)
+- Quando `requireImage` estiver ativo:
+  - O botao "Compartilhar" so e habilitado se uma imagem estiver selecionada
+- Layout: a secao de imagem aparece entre o textarea e a secao de audio
 
-### 4. Migracao SQL - Inserir atividade no banco
+### 4. Registrar no ActivityPage (`src/pages/ActivityPage.tsx`)
 
-- **station_id:** `0dd4bf33-ece9-463d-8bb6-6c64497da8da` (Estacao 2 - Emocoes que adoecem)
-- **title:** "Inventario Emocional"
-- **type:** `essay`
-- **points:** 10
-- **description:** Orientacao formatada em HTML explicando que a participante deve listar 3 emocoes que a incomodam e uma acao pratica para ressignificar cada uma, incluindo o exemplo (Tristeza / Gratidao diaria)
+- Adicionar funcao detectora `isJoyBox` (verifica se o titulo contem "caixa da alegria")
+- Passar as props `allowImages={true}` e `requireImage={true}` no ForumBoard quando a atividade for "Caixa da Alegria"
+- Aplicar em ambas as instancias do ForumBoard (visao aluno e visao admin)
 
 ---
 
@@ -69,27 +59,29 @@ Criar `src/components/activities/EmotionalInventoryActivity.tsx` contendo:
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| `src/components/activities/EmotionalInventoryActivity.tsx` | Criar | Componente de tabela interativa (3 emocoes x 2 colunas) + visualizacao pos-envio |
-| `src/pages/ActivityPage.tsx` | Editar | Registrar o componente no fluxo de atividades |
-| `src/pages/SubmissionView.tsx` | Editar | Registrar visualizacao para professores/admins |
-| Nova migracao SQL | Criar | Inserir atividade essay na Estacao 2 da Jornada 6 |
+| Nova migracao SQL | Criar | Coluna image_url, bucket forum-images, atividade forum |
+| `src/types/index.ts` | Editar | Adicionar image_url ao ForumPost |
+| `src/components/activities/ForumBoard.tsx` | Editar | Suporte a upload e exibicao de imagens |
+| `src/pages/ActivityPage.tsx` | Editar | Detectar "Caixa da Alegria" e passar props de imagem |
 
 ---
 
-## Nota sobre o nome
+## Detalhes Tecnicos
 
-O titulo "Inventario Emocional" sera usado conforme especificado. Caso deseje alterar o nome posteriormente, basta editar o titulo da atividade pelo painel administrativo (Gerenciar -> Editar Estacao).
+- **Storage**: Bucket `forum-images` publico, com arquivos organizados por `{user_id}/{timestamp}.{ext}`
+- **Tipos de arquivo aceitos**: imagens (image/jpeg, image/png, image/webp, image/gif)
+- **Limite de tamanho**: 10MB por imagem
+- **Visualizacao**: Imagens exibidas nos cartoes do mural com proporcao preservada, clicaveis para ampliar em modal
+- **Compatibilidade**: O ForumBoard continua funcionando normalmente para todas as demais atividades forum (sem imagens), pois as props sao opcionais
 
 ---
 
 ## Resultado Esperado
 
-- Ao acessar a Estacao 2 da Jornada 6, a aluna vera a atividade "Inventario Emocional"
-- A orientacao sera exibida com o exemplo (Tristeza / Gratidao diaria)
-- Uma tabela interativa com 3 linhas e 2 colunas permitira registrar emocoes e acoes praticas
-- No mobile, a tabela sera exibida como cartoes empilhados
-- O progresso sera mostrado (ex: 4/6 campos preenchidos)
-- O envio so sera possivel com todos os 6 campos preenchidos
-- Apos o envio, a visualizacao mostrara os registros em formato de tabela
-- Professores e admins poderao ver as submissoes formatadas corretamente
+- Ao acessar a Estacao 3 da Jornada 6, a aluna vera a atividade "Caixa da Alegria"
+- A orientacao sera exibida explicando como criar a caixa e registrar a experiencia
+- O mural interativo permitira compartilhar textos, audios e fotos
+- A foto sera obrigatoria para o envio nesta atividade especifica
+- As demais atividades forum continuarao funcionando normalmente (sem imagens)
+- Todas as participantes poderao ver as fotos das caixas umas das outras
 - A atividade vale 10 pontos
