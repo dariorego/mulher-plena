@@ -11,6 +11,7 @@ import { SubmittedReconciliationView } from '@/components/activities/Reconciliat
 import { SubmittedCommitmentLetterView } from '@/components/activities/CommitmentLetterActivity';
 import { SubmittedRealSituationView } from '@/components/activities/RealSituationActivity';
 import { SubmittedLoveWheelView } from '@/components/activities/LoveWheelActivity';
+import { SubmittedWellBeingDiaryView } from '@/components/activities/WellBeingDiaryActivity';
 import { ArrowLeft } from 'lucide-react';
 
 const isTimelineActivity = (title: string) => title.toLowerCase().includes('linha da vida');
@@ -22,6 +23,7 @@ const isReconciliationReport = (title: string) => title.toLowerCase().includes('
 const isCommitmentLetter = (title: string) => title.toLowerCase().includes('carta de compromisso');
 const isRealSituation = (title: string) => title.toLowerCase().includes('registro de situa');
 const isLoveWheel = (title: string) => title.toLowerCase().includes('roda de amor');
+const isWellBeingDiary = (title: string) => title.toLowerCase().includes('diário do bem-estar') || title.toLowerCase().includes('diario do bem-estar');
 
 export default function SubmissionView() {
   const { id } = useParams();
@@ -53,6 +55,7 @@ export default function SubmissionView() {
   const isCommitment = activity && isCommitmentLetter(activity.title);
   const isRealSit = activity && isRealSituation(activity.title);
   const isLoveWh = activity && isLoveWheel(activity.title);
+  const isWellBeing = activity && isWellBeingDiary(activity.title);
 
   return (
     <AppLayout>
@@ -71,7 +74,9 @@ export default function SubmissionView() {
 
         <div className="bg-muted/50 rounded-lg p-6">
           <p className="text-sm font-medium mb-4">Resposta do aluno:</p>
-          {isLoveWh && submission.content ? (
+          {isWellBeing && submission.content ? (
+            <SubmittedWellBeingDiaryView content={submission.content} />
+          ) : isLoveWh && submission.content ? (
             <SubmittedLoveWheelView content={submission.content} />
           ) : isRealSit && submission.content ? (
             <SubmittedRealSituationView content={submission.content} />
