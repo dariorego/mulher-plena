@@ -31,6 +31,7 @@ import { SubmittedBalancedLifeMapView } from '@/components/activities/SubmittedB
 import { UnsentLetterActivity } from '@/components/activities/UnsentLetterActivity';
 import { LoveActionActivity } from '@/components/activities/LoveActionActivity';
 import { SubmittedLoveActionView } from '@/components/activities/SubmittedLoveActionView';
+import { ReconciliationReportActivity, SubmittedReconciliationView } from '@/components/activities/ReconciliationReportActivity';
 import { supabase } from '@/integrations/supabase/client';
 
 const activityIcons = {
@@ -101,6 +102,7 @@ export default function ActivityPage() {
   const isEssayReflexivo = (title: string) => title.toLowerCase().includes('ensaio reflexivo');
   const isUnsentLetter = (title: string) => title.toLowerCase().includes('carta n') && title.toLowerCase().includes('enviada');
   const isLoveAction = (title: string) => title.toLowerCase().includes('acao de amor') || title.toLowerCase().includes('ação de amor');
+  const isReconciliationReport = (title: string) => title.toLowerCase().includes('relato') && title.toLowerCase().includes('reconcilia');
 
   // Estado para compartilhar manifesto no mural
   const [shareManifesto, setShareManifesto] = useState(false);
@@ -567,6 +569,47 @@ export default function ActivityPage() {
           </Card>
         )}
 
+        {/* Already Submitted - Relato de Reconciliação */}
+        {existingSubmission && isReconciliationReport(activity.title) && (
+          <Card className="border-primary/20 overflow-hidden">
+            <div className="bg-primary py-6 px-6">
+              <h1 className="text-2xl md:text-3xl font-cinzel text-accent text-center tracking-wide">
+                {activity.title}
+              </h1>
+            </div>
+            <CardContent className="pt-6 space-y-6">
+              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-green-800">Relato enviado com sucesso!</p>
+                  <p className="text-sm text-green-700">
+                    Enviado em {new Date(existingSubmission.submitted_at).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              </div>
+
+              {existingSubmission.content && (
+                <SubmittedReconciliationView content={existingSubmission.content} />
+              )}
+
+              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+                <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
+                  <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
+                  <p className="text-muted-foreground">{existingSubmission.feedback}</p>
+                </div>
+              )}
+
+              {user.role === 'aluno' && (
+                <div className="flex justify-end">
+                  <Button variant="outline" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
+                    {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Carta Não Enviada - Full lifecycle (handles both writing and post-submit) */}
         {isUnsentLetter(activity.title) && user.role === 'aluno' && (
           <Card className="border-primary/20 overflow-hidden">
@@ -607,7 +650,7 @@ export default function ActivityPage() {
         )}
 
         {/* Already Submitted - Other types (not gamified image, not timeline, not traffic light, not diary, not balanced life map) */}
-        {existingSubmission && !(activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/')) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isUnsentLetter(activity.title) && !isLoveAction(activity.title) && (
+        {existingSubmission && !(activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/')) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isUnsentLetter(activity.title) && !isLoveAction(activity.title) && !isReconciliationReport(activity.title) && (
           <Card className="border-green-500/50 bg-green-50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
@@ -638,7 +681,7 @@ export default function ActivityPage() {
         )}
 
         {/* Activity Content - Forum always shows, others only if not submitted */}
-        {((!existingSubmission || activity.type === 'forum') && user.role === 'aluno' && !isUnsentLetter(activity.title) && !isLoveAction(activity.title)) && (
+        {((!existingSubmission || activity.type === 'forum') && user.role === 'aluno' && !isUnsentLetter(activity.title) && !isLoveAction(activity.title) && !isReconciliationReport(activity.title)) && (
           <Card className="border-primary/20 overflow-hidden">
             {/* Activity Title Banner */}
             <div className="bg-primary py-6 px-6">
@@ -649,7 +692,7 @@ export default function ActivityPage() {
             
             <CardContent className="pt-8 space-y-6">
               {/* Orientation Section - Skip for gamified, forum, Lista de Gratidão, Árvore da Gratidão, Manifesto, and special activities which handle their own */}
-              {activity.description && activity.type !== 'gamified' && activity.type !== 'forum' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isLoveAction(activity.title) && (
+              {activity.description && activity.type !== 'gamified' && activity.type !== 'forum' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isLoveAction(activity.title) && !isReconciliationReport(activity.title) && (
                 <div className="space-y-6">
                   {/* Orientation Label with Font Size Control */}
                   <div className="flex items-center justify-between">
@@ -996,8 +1039,38 @@ export default function ActivityPage() {
                 />
               )}
 
-              {/* Essay - Genérico (não é Gratidão, Manifesto, Árvore, Linha da Vida, Farol, Diário de Papéis, Mapa de Vida ou Ação de Amor) */}
-              {activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isLoveAction(activity.title) && (
+              {/* Essay - Relato de Reconciliação */}
+              {activity.type === 'essay' && isReconciliationReport(activity.title) && (
+                <ReconciliationReportActivity
+                  activityId={activity.id}
+                  description={activity.description}
+                  onSubmit={async (content) => {
+                    setIsSubmitting(true);
+                    await submitActivity({
+                      activity_id: activity.id,
+                      user_id: user.id,
+                      content,
+                    });
+                    logAction('submit_activity', 'activity', {
+                      resourceId: activity.id,
+                      activityId: activity.id,
+                      stationId: station?.id,
+                      journeyId: journey?.id,
+                      metadata: { title: activity.title, type: activity.type },
+                    });
+                    toast.success('Relato enviado com sucesso!');
+                    setIsSubmitting(false);
+                    if (station) {
+                      navigate(`/estacao/${station.id}`);
+                    }
+                  }}
+                  isSubmitting={isSubmitting}
+                  fontSizeClass={fontSizeClass}
+                />
+              )}
+
+              {/* Essay - Genérico (não é Gratidão, Manifesto, Árvore, Linha da Vida, Farol, Diário de Papéis, Mapa de Vida, Ação de Amor ou Relato de Reconciliação) */}
+              {activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isLoveAction(activity.title) && !isReconciliationReport(activity.title) && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sua Resposta</span>
@@ -1158,7 +1231,7 @@ export default function ActivityPage() {
             </CardContent>
             
             {/* Footer with submit button - hide for gamified, forum, and family tree since they have their own */}
-            {activity.type !== 'gamified' && activity.type !== 'forum' && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isLoveAction(activity.title) && (
+            {activity.type !== 'gamified' && activity.type !== 'forum' && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isLoveAction(activity.title) && !isReconciliationReport(activity.title) && (
               <CardFooter className="bg-cream/30 border-t border-primary/10 py-6">
                 <Button
                   onClick={() => handleSubmit()}
@@ -1166,7 +1239,7 @@ export default function ActivityPage() {
                     (activity.type === 'quiz' && quizAnswers.length !== activityQuestions.length) ||
                     (activity.type === 'essay' && isGratitudeActivity(activity.title) && !isGratitudeComplete) ||
                     (activity.type === 'essay' && isManifestoActivity(activity.title) && essayContent.length < 150) ||
-                    (activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isLoveAction(activity.title) && essayContent.length < 100) ||
+                    (activity.type === 'essay' && !isGratitudeActivity(activity.title) && !isManifestoActivity(activity.title) && !isFamilyTreeActivity(activity.title) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isLoveAction(activity.title) && !isReconciliationReport(activity.title) && essayContent.length < 100) ||
                     (activity.type === 'upload' && !uploadFile)
                   )}
                   className="w-full bg-accent hover:bg-accent/90 text-primary font-semibold py-6 text-lg"
