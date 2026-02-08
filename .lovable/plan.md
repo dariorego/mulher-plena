@@ -1,22 +1,23 @@
 
 
-# Plano: Atividade Final "Relato de Reconciliacao com a Historia Familiar" - Estacao de Integracao, Jornada 3
+# Plano: Atividade "Carta de Compromisso" - Estacao 1, Jornada 4
 
 ## Objetivo
 
-Criar a atividade final da Jornada 3 na estacao de integracao (ID: `058ac9d6-9e47-4db2-9cc6-9a84f2729d93`), permitindo que a participante elabore um texto escrito OU produza um video (maximo 3 minutos), relatando como os conteudos da jornada contribuiram para ampliar sua compreensao das relacoes familiares.
+Criar a atividade "Carta de Compromisso" para a Estacao 1 ("Alma gemea e evolucao espiritual") da Jornada 4. A participante escreve uma carta ao conjuge expressando valores espirituais, transformada em um "jogo de fases" com 3 niveis/missoes.
 
 ---
 
 ## Como Funciona
 
-A participante acessa a atividade e encontra:
+A participante completa a atividade em etapas visuais:
 
-1. **Orientacao formatada** (sem tags HTML visiveis)
-2. **Caixa de texto** para escrever o relato (minimo 100 caracteres)
-3. **Campo para anexar video** (opcional) - permite upload de arquivo de video (MP4, MOV, WEBM) ou inserir link do YouTube/Vimeo
-4. A participante pode preencher apenas o texto, apenas o video, ou ambos
-5. Ao enviar, o conteudo e salvo como uma submissao individual
+1. **Carta principal** - Caixa de texto para escrever a carta de compromisso ao conjuge
+2. **Nivel 1 - Memoria Especial** - Caixa de texto para reviver e descrever um momento marcante do namoro
+3. **Nivel 2 - Acao de Amor** - Checkbox para validar que realizou um gesto de carinho (abraco, cafe, bilhete)
+4. **Nivel 3 - Missao Secreta** - Checkbox para validar que planejou uma surpresa para o casal
+
+Para enviar, a carta principal deve ter no minimo 100 caracteres. Os niveis sao complementares (pelo menos o Nivel 1 deve estar preenchido ou um dos checkboxes marcado).
 
 ---
 
@@ -24,75 +25,78 @@ A participante acessa a atividade e encontra:
 
 ```text
 +----------------------------------------------------------+
-| RELATO DE RECONCILIACAO COM A HISTORIA FAMILIAR           |
+| CARTA DE COMPROMISSO                                      |
 +----------------------------------------------------------+
 | ORIENTACAO                                                |
-| Elabore um texto escrito ou produza um video, com duracao |
-| maxima de tres minutos, relatando de que forma os         |
-| conteudos abordados na jornada contribuiram para ampliar  |
-| sua compreensao acerca das relacoes familiares e da       |
-| maneira como voce percebe o passado.                      |
+| Escreva uma carta para o conjuge expressando os valores   |
+| espirituais que deseja cultivar na relacao...              |
 +----------------------------------------------------------+
 |                                                           |
-| SEU RELATO                                                |
+| SUA CARTA                                                 |
 | +------------------------------------------------------+ |
-| |                                                      | |
 | |  [Caixa de texto - min. 100 caracteres]              | |
-| |                                                      | |
 | +------------------------------------------------------+ |
 |                                                           |
-| VIDEO (OPCIONAL)                                          |
+| JOGO DE FASES                                             |
+|                                                           |
+| [*] NIVEL 1 - MEMORIA ESPECIAL                           |
 | +------------------------------------------------------+ |
-| | [Inserir link do video (YouTube, Vimeo)]             | |
-| |              --- ou ---                              | |
-| | [Fazer upload de video (max 50MB)]   [Selecionar]    | |
+| |  [Caixa de texto]                                    | |
 | +------------------------------------------------------+ |
+|                                                           |
+| [ ] NIVEL 2 - ACAO DE AMOR                               |
+| Realize hoje um gesto simples que expresse carinho...     |
+| [x] Missao cumprida!                                     |
+|                                                           |
+| [ ] NIVEL 3 - MISSAO SECRETA                             |
+| Planeje uma surpresa: pode ser um passeio diferente...    |
+| [x] Missao cumprida!                                     |
+|                                                           |
+| Progresso: [=====-----] 2/3 niveis completos             |
 |                                                           |
 | [============ Enviar Atividade ============]              |
 +----------------------------------------------------------+
 ```
 
+Cada nivel tera um visual de "fase de jogo" com icones tematicos, cores de progresso e badges de conclusao.
+
 ---
 
 ## Alteracoes Necessarias
 
-### 1. Criar bucket de storage `activity-videos`
-
-Migracao SQL para criar o bucket de armazenamento de videos de atividades, com politicas RLS permitindo que usuarios autenticados facam upload e visualizem seus proprios videos.
-
-### 2. Criar `src/components/activities/ReconciliationReportActivity.tsx`
+### 1. Criar `src/components/activities/CommitmentLetterActivity.tsx`
 
 Novo componente dedicado com:
 - **Props:** `description`, `onSubmit`, `isSubmitting`, `fontSizeClass`
 - **Orientacao:** Renderizada com `dangerouslySetInnerHTML`
-- **Campo de texto:** Textarea para o relato escrito (minimo 100 caracteres)
-- **Secao de video (opcional):**
-  - Input para colar link de video (YouTube, Vimeo, Google Drive)
-  - Input de upload de arquivo de video (MP4, MOV, WEBM, max 50MB)
-  - Preview do video quando link inserido (embed) ou nome do arquivo quando upload feito
-- **Validacao:** Pelo menos um dos campos (texto OU video) deve estar preenchido
-- **Formatacao markdown** para armazenamento:
-  ```
-  ### Relato de Reconciliacao com a Historia Familiar
+- **Carta principal:** Textarea (minimo 100 caracteres)
+- **Nivel 1 - Memoria Especial:** Textarea para escrever sobre uma lembranca
+- **Nivel 2 - Acao de Amor:** Checkbox "Missao cumprida!" com descricao da acao
+- **Nivel 3 - Missao Secreta:** Checkbox "Missao cumprida!" com descricao da missao
+- **Barra de progresso** visual mostrando niveis completos
+- **Visual gamificado** com icones de estrela/coracao/trofeu para cada nivel
+- **Validacao:** Carta principal com minimo 100 caracteres obrigatoria
 
-  [texto do relato]
+### 2. Criar componente de visualizacao inline (SubmittedCommitmentLetterView)
 
-  ---
-
-  **Video:** [URL do video]
-  ```
+Componente para exibir a submissao formatada:
+- Mostra a carta principal
+- Mostra cada nivel com indicacao de completude (check verde ou pendente)
+- Nivel 1: exibe o texto da memoria
+- Niveis 2 e 3: exibe se foram marcados como cumpridos
 
 ### 3. Modificar `src/pages/ActivityPage.tsx`
 
-- Importar `ReconciliationReportActivity`
-- Adicionar funcao de deteccao: `isReconciliationReport = (title) => title.toLowerCase().includes('relato') && title.toLowerCase().includes('reconcilia')`
-- Adicionar bloco de "Already Submitted" com exibicao do texto e do video (se houver)
+- Importar `CommitmentLetterActivity` e o view de submissao
+- Adicionar funcao de deteccao: `isCommitmentLetter = (title) => title.toLowerCase().includes('carta de compromisso')`
+- Adicionar bloco "Already Submitted" com visualizacao formatada
 - Adicionar bloco de renderizacao do componente no formulario
 - Excluir da orientacao generica e do footer de submit padrao
+- Adicionar a funcao na lista de exclusoes dos blocos genericos
 
 ### 4. Modificar `src/pages/Evaluations.tsx`
 
-- Adicionar deteccao e renderizacao formatada no modal de avaliacao (texto + embed de video)
+- Adicionar deteccao e renderizacao formatada no modal de avaliacao
 
 ### 5. Modificar `src/pages/SubmissionView.tsx`
 
@@ -100,15 +104,15 @@ Novo componente dedicado com:
 
 ### 6. Modificar `src/components/admin/ActivityForm.tsx`
 
-- Adicionar "Relato de Reconciliacao" na lista de titulos especiais
+- Adicionar "Carta de Compromisso" na lista de titulos especiais
 
 ### 7. Migracao SQL - Inserir atividade no banco
 
-- **station_id:** `058ac9d6-9e47-4db2-9cc6-9a84f2729d93` (Estacao de Integracao - Jornada 3)
-- **title:** "Relato de Reconciliação com a História Familiar"
+- **station_id:** `617a29d5-88b6-4571-b999-83316135a5f9` (Estacao 1 - Alma gemea e evolucao espiritual)
+- **title:** "Carta de Compromisso"
 - **type:** `essay`
-- **description:** Texto de orientacao com HTML formatado
-- **points:** 15 (atividade final da jornada, peso maior)
+- **description:** Texto de orientacao com HTML formatado incluindo a descricao dos 3 niveis
+- **points:** 10
 
 ---
 
@@ -117,42 +121,46 @@ Novo componente dedicado com:
 ### Deteccao da Atividade
 
 ```typescript
-const isReconciliationReport = (title: string) =>
-  title.toLowerCase().includes('relato') &&
-  title.toLowerCase().includes('reconcilia');
+const isCommitmentLetter = (title: string) =>
+  title.toLowerCase().includes('carta de compromisso');
 ```
 
-### Upload de Video
-
-- Bucket: `activity-videos` (publico para leitura, autenticado para upload)
-- Limite: 50MB por arquivo
-- Formatos aceitos: `.mp4`, `.mov`, `.webm`
-- Caminho no bucket: `{userId}/{activityId}/{filename}`
-- Apos upload, URL publica e salva junto com o conteudo da submissao
-
-### Link de Video Externo
-
-- Suporta links do YouTube, Vimeo e Google Drive
-- Detecta automaticamente o tipo para exibir embed adequado na visualizacao da submissao
-
-### Formato de Submissao
+### Formato de Submissao (Markdown)
 
 ```
-### Relato de Reconciliação com a História Familiar
+### Carta de Compromisso
 
-[Texto escrito pela participante]
+[Texto da carta escrita pela participante]
 
 ---
 
-**Vídeo anexado:** [URL do vídeo - link externo ou URL do storage]
+**Nível 1 – Memória Especial:**
+[Texto da memoria escrita pela participante]
+
+---
+
+**Nível 2 – Ação de Amor:**
+✅ Missão cumprida!
+
+---
+
+**Nível 3 – Missão Secreta:**
+✅ Missão cumprida!
+
+---
+
+**Progresso:** 3/3 níveis completos
 ```
 
-Se nao houver video, a secao de video e omitida. Se nao houver texto (so video), o texto e substituido por "[Relato enviado em formato de vídeo]".
+Se um nivel nao foi completado, aparece "⬜ Pendente" em vez de "check Missao cumprida!".
 
-### Exibicao da Submissao (Admin/Professor)
+### Visual Gamificado
 
-- Texto exibido com formatacao
-- Video embed (YouTube/Vimeo) ou link clicavel para download (arquivo enviado)
+- Cada nivel tem um icone tematico (Nivel 1: coracao, Nivel 2: estrela, Nivel 3: trofeu)
+- Fundo com cor de gradiente quando o nivel esta completo (verde claro)
+- Fundo neutro quando pendente
+- Barra de progresso geral mostrando X/3 niveis completos
+- Animacao sutil ao marcar um checkbox (transicao de cor)
 
 ---
 
@@ -160,22 +168,25 @@ Se nao houver video, a secao de video e omitida. Se nao houver texto (so video),
 
 | Arquivo / Recurso | Acao | Descricao |
 |-------------------|------|-----------|
-| Nova migracao SQL (bucket) | Criar | Bucket `activity-videos` com RLS |
-| `src/components/activities/ReconciliationReportActivity.tsx` | Criar | Formulario com texto + video opcional |
-| `src/pages/ActivityPage.tsx` | Modificar | Integrar componente e bloco de submissao |
-| `src/pages/Evaluations.tsx` | Modificar | Exibir texto + video no modal |
-| `src/pages/SubmissionView.tsx` | Modificar | Exibir texto + video na pagina |
+| `src/components/activities/CommitmentLetterActivity.tsx` | Criar | Formulario com carta + 3 niveis gamificados |
+| `src/pages/ActivityPage.tsx` | Modificar | Integrar componente e blocos de submissao |
+| `src/pages/Evaluations.tsx` | Modificar | Exibir view formatada no modal |
+| `src/pages/SubmissionView.tsx` | Modificar | Exibir view formatada na pagina |
 | `src/components/admin/ActivityForm.tsx` | Modificar | Adicionar dica de titulo especial |
-| Nova migracao SQL (atividade) | Criar | Inserir atividade na estacao de integracao |
+| Nova migracao SQL | Criar | Inserir atividade na Estacao 1 da Jornada 4 |
 
 ---
 
 ## Resultado Esperado
 
-- Ao acessar a Estacao de Integracao da Jornada 3, a aluna vera a atividade "Relato de Reconciliacao com a Historia Familiar"
-- A orientacao sera exibida formatada corretamente
-- Uma caixa de texto permitira escrever o relato
-- Um campo opcional permitira anexar video (upload ou link externo)
-- A participante pode enviar apenas texto, apenas video, ou ambos
-- Apos o envio, administradores e professores verao o texto e o video na avaliacao
-- A atividade vale 15 pontos (atividade final/integradora da jornada)
+- Ao acessar a Estacao 1 da Jornada 4, a aluna vera a atividade "Carta de Compromisso"
+- A orientacao sera exibida formatada com a descricao dos 3 niveis
+- Uma caixa de texto permitira escrever a carta principal (min. 100 caracteres)
+- Tres niveis gamificados serao exibidos com visual interativo:
+  - Nivel 1: caixa de texto para a memoria especial
+  - Nivel 2: checkbox para validar a acao de amor
+  - Nivel 3: checkbox para validar a missao secreta
+- Barra de progresso visual mostrando quantos niveis foram completados
+- Apos o envio, a submissao sera exibida com a carta e o status de cada nivel
+- Administradores verao a mesma visualizacao nas paginas de avaliacao
+
