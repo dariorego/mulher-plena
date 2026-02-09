@@ -92,6 +92,31 @@ export function LoveActionActivity({ description, onSubmit, isSubmitting, fontSi
         </div>
       )}
 
+      {/* Tabela ilustrativa de referência */}
+      <div className="rounded-lg border border-primary/20 overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-primary text-accent">
+              <th className="px-4 py-3 text-left text-sm font-semibold w-[22%]">Membro da Família</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold w-[30%]">Ação realizada</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Registre a sensação ou sentimento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="bg-cream/30">
+              <td className="px-4 py-4 text-muted-foreground/40 text-sm italic">&nbsp;</td>
+              <td className="px-4 py-4 text-muted-foreground/40 text-sm italic">&nbsp;</td>
+              <td className="px-4 py-4 text-muted-foreground/40 text-sm italic">&nbsp;</td>
+            </tr>
+            <tr className="bg-background">
+              <td className="px-4 py-4 text-muted-foreground/40 text-sm italic">&nbsp;</td>
+              <td className="px-4 py-4 text-muted-foreground/40 text-sm italic">&nbsp;</td>
+              <td className="px-4 py-4 text-muted-foreground/40 text-sm italic">&nbsp;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       {/* Label da tabela */}
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-primary uppercase tracking-wider">Seus Registros</span>
