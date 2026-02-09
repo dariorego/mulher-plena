@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useData } from '@/contexts/DataContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -30,6 +31,7 @@ interface ForumBoardProps {
 
 export function ForumBoard({ activityId, description, allowImages = false, requireImage = false }: ForumBoardProps) {
   const { user } = useAuth();
+  const { submissions, submitActivity } = useData();
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [newContent, setNewContent] = useState('');
   const [selectedColor, setSelectedColor] = useState(POST_COLORS[0].value);
@@ -224,6 +226,19 @@ export function ForumBoard({ activityId, description, allowImages = false, requi
       setNewContent('');
       setAudioBlob(null);
       clearImage();
+
+      // Auto-create activity submission on first forum post to track completion
+      const hasExistingSubmission = submissions.some(
+        s => s.activity_id === activityId && s.user_id === user.id
+      );
+      if (!hasExistingSubmission) {
+        await submitActivity({
+          activity_id: activityId,
+          user_id: user.id,
+          content: 'Participação no fórum',
+          score: null,
+        });
+      }
     }
 
     setIsSubmitting(false);
