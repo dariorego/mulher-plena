@@ -627,34 +627,57 @@ export default function ActivityPage() {
               </h1>
             </div>
             <CardContent className="pt-6 space-y-6">
+              {/* Success Badge */}
               <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
                 <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
-                <div>
+                <div className="flex-1">
                   <p className="font-medium text-green-800">Ação de Amor Concreta enviada com sucesso!</p>
                   <p className="text-sm text-green-700">
-                    Enviada em {new Date(existingSubmission.submitted_at).toLocaleDateString('pt-BR')}
+                    Enviada em {new Date(existingSubmission.submitted_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
+                {existingSubmission.score != null && (user.role !== 'aluno' || showScoreToStudents) && (
+                  <Badge className="bg-accent text-primary font-semibold text-sm px-3 py-1">
+                    Nota: {existingSubmission.score}
+                  </Badge>
+                )}
               </div>
 
+              {/* Submitted Content */}
               {existingSubmission.content && (
-                <SubmittedLoveActionView content={existingSubmission.content} />
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-primary uppercase tracking-wider">Seus Registros</span>
+                    <div className="flex-1 h-px bg-primary/20" />
+                  </div>
+                  <SubmittedLoveActionView content={existingSubmission.content} />
+                </>
               )}
 
+              {/* Feedback */}
               {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
-                  <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
-                  <p className="text-muted-foreground">{existingSubmission.feedback}</p>
+                  <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Feedback da Mentora</p>
+                  <p className="text-foreground leading-relaxed whitespace-pre-wrap">{existingSubmission.feedback}</p>
                 </div>
               )}
 
-              {user.role === 'aluno' && (
-                <div className="flex justify-end">
-                  <Button variant="outline" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
+              {/* Actions */}
+              <div className="flex items-center justify-between pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => station ? navigate(`/estacao/${station.id}`) : navigate(-1)}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </Button>
+                {user.role === 'aluno' && (
+                  <Button variant="ghost" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing} className="text-muted-foreground">
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
