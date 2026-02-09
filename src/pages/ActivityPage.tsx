@@ -1867,10 +1867,9 @@ export default function ActivityPage() {
                   <CardTitle className="font-cinzel text-primary">{activity.title}</CardTitle>
                   {activity.description && (
                     <div 
-                      className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line"
-                    >
-                      {activity.description}
-                    </div>
+                      className="text-muted-foreground text-sm leading-relaxed [&>p]:mb-3 [&>p:last-child]:mb-0 [&_strong]:font-semibold [&_strong]:text-primary"
+                      dangerouslySetInnerHTML={{ __html: activity.description }}
+                    />
                   )}
                 </>
               )}
