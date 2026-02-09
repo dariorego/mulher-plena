@@ -34,6 +34,7 @@ import {
   HelpCircle,
   Activity,
 } from 'lucide-react';
+import logoSemtexto from '@/assets/logoSemtexto.png';
 import { useState } from 'react';
 
 interface AppLayoutProps {
@@ -146,9 +147,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
             <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <GraduationCap className="h-5 w-5" />
-              </div>
+              <img src={logoSemtexto} alt="Logo" className="h-9 w-9 object-contain" />
               <span className="font-display text-xl font-semibold hidden sm:inline">AVA</span>
             </Link>
           </div>
