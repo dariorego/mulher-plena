@@ -944,6 +944,44 @@ export default function ActivityPage() {
           </Card>
         )}
 
+        {/* Ação de Amor Concreta - Full lifecycle */}
+        {isLoveAction(activity.title) && !existingSubmission && user.role === 'aluno' && (
+          <Card className="border-primary/20 overflow-hidden">
+            <div className="bg-primary py-6 px-6">
+              <h1 className="text-2xl md:text-3xl font-cinzel text-accent text-center tracking-wide">
+                {activity.title}
+              </h1>
+            </div>
+            <CardContent className="pt-8 space-y-6">
+              <LoveActionActivity
+                description={activity.description}
+                onSubmit={async (content) => {
+                  setIsSubmitting(true);
+                  await submitActivity({
+                    activity_id: activity.id,
+                    user_id: user.id,
+                    content,
+                  });
+                  logAction('submit_activity', 'activity', {
+                    resourceId: activity.id,
+                    activityId: activity.id,
+                    stationId: station?.id,
+                    journeyId: journey?.id,
+                    metadata: { title: activity.title, type: activity.type },
+                  });
+                  toast.success('Ação de Amor Concreta enviada com sucesso!');
+                  setIsSubmitting(false);
+                  if (station) {
+                    navigate(`/estacao/${station.id}`);
+                  }
+                }}
+                isSubmitting={isSubmitting}
+                fontSizeClass={fontSizeClass}
+              />
+            </CardContent>
+          </Card>
+        )}
+
         {/* Already Submitted - Other types (not gamified image, not timeline, not traffic light, not diary, not balanced life map, not commitment letter, not real situation) */}
         {existingSubmission && !(activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/')) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isLifeTrafficLight(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isUnsentLetter(activity.title) && !isLoveAction(activity.title) && !isReconciliationReport(activity.title) && !isCommitmentLetter(activity.title) && !isRealSituation(activity.title) && !isLoveWheel(activity.title) && !isWellBeingDiary(activity.title) && !isEmotionalInventory(activity.title) && (
           <Card className="border-green-500/50 bg-green-50">
@@ -1355,27 +1393,8 @@ export default function ActivityPage() {
                 />
               )}
 
-              {/* Essay - Ação de Amor Concreta */}
-              {activity.type === 'essay' && isLoveAction(activity.title) && (
-                <LoveActionActivity
-                  description={activity.description}
-                  onSubmit={async (content) => {
-                    setIsSubmitting(true);
-                    await submitActivity({
-                      activity_id: activity.id,
-                      user_id: user.id,
-                      content,
-                    });
-                    toast.success('Ação de Amor Concreta enviada com sucesso!');
-                    setIsSubmitting(false);
-                    if (station) {
-                      navigate(`/estacao/${station.id}`);
-                    }
-                  }}
-                  isSubmitting={isSubmitting}
-                  fontSizeClass={fontSizeClass}
-                />
-              )}
+
+
 
               {/* Essay - Relato de Reconciliação */}
               {activity.type === 'essay' && isReconciliationReport(activity.title) && (
