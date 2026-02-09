@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { GraduationCap, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import bgLogin from '@/assets/bg-login.png';
+import logoSNI from '@/assets/logoSNI.png';
 import { supabase } from '@/integrations/supabase/client';
 import { logActivityDirect } from '@/hooks/useActivityLogger';
 
@@ -57,15 +58,7 @@ export default function Login() {
       
       <div className="w-full max-w-md relative z-10">
         <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <GraduationCap className="h-7 w-7" />
-            </div>
-            <div>
-              <h1 className="font-display text-2xl font-bold">AVA</h1>
-              <p className="text-sm text-muted-foreground">Ambiente Virtual de Aprendizagem</p>
-            </div>
-          </div>
+          <img src={logoSNI} alt="Mulher Plena" className="h-24 object-contain" />
         </div>
 
         <Card>
