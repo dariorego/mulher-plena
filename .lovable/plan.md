@@ -1,82 +1,91 @@
 
-# Plano: Recurso "Experiencia Sensivel" em Atividades
+
+# Plano: Dependencia entre Jornadas (Desbloqueio Sequencial)
 
 ## Objetivo
 
-Criar um sistema que permita marcar atividades individuais como "experiencia sensivel", com:
-1. Um toggle no formulario de criacao/edicao de atividades (painel admin)
-2. Um aviso visual na pagina da atividade (para participantes)
-3. Um pop-up com mensagem explicativa ao clicar no aviso
-4. A mensagem do pop-up configuravel na pagina de Configuracoes
+Criar um mecanismo de desbloqueio progressivo de jornadas: as jornadas 1, 2 e 3 sao sempre acessiveis, mas a partir da jornada 4, cada jornada so pode ser acessada quando todas as anteriores tiverem 100% de progresso.
+
+**Exemplo:** A jornada 4 so e liberada se jornadas 1, 2 e 3 estiverem com 100%. A jornada 5 so e liberada se 1, 2, 3 e 4 estiverem com 100%, e assim por diante.
+
+**Importante:** Essa restricao se aplica apenas a participantes (role `aluno`). Administradores e professores continuam vendo todas as jornadas normalmente.
 
 ---
 
 ## Resumo das Alteracoes
 
-| Arquivo / Recurso | Acao | Descricao |
-|-------------------|------|-----------|
-| Migracao SQL | Criar | Adicionar coluna `is_sensitive` na tabela `activities` |
-| `src/types/index.ts` | Editar | Adicionar campo `is_sensitive` na interface `Activity` |
-| `src/integrations/supabase/types.ts` | Editar | Atualizar tipos gerados |
-| `src/components/admin/ActivityForm.tsx` | Editar | Adicionar checkbox para marcar atividade como sensivel |
-| `src/components/admin/ActivityManager.tsx` | Editar | Exibir indicador visual na lista quando atividade e sensivel |
-| `src/contexts/SettingsContext.tsx` | Editar | Adicionar campo `sensitiveContentMessage` nas configuracoes |
-| `src/pages/Settings.tsx` | Editar | Adicionar card para editar a mensagem de experiencia sensivel |
-| `src/pages/ActivityPage.tsx` | Editar | Exibir alerta clicavel quando atividade e sensivel |
+| Arquivo | Acao | Descricao |
+|---------|------|-----------|
+| `src/contexts/DataContext.tsx` | Editar | Adicionar funcao `isJourneyUnlocked` que verifica se uma jornada esta liberada |
+| `src/pages/Journeys.tsx` | Editar | Aplicar visual de bloqueio (cadeado, opacidade reduzida) e impedir clique em jornadas bloqueadas |
+| `src/pages/Dashboard.tsx` | Editar | Aplicar o mesmo visual de bloqueio na secao "Suas Jornadas" |
+| `src/pages/JourneyDetail.tsx` | Editar | Redirecionar o participante de volta caso acesse a URL de uma jornada bloqueada diretamente |
 
 ---
 
 ## Detalhes Tecnicos
 
-### 1. Migracao SQL
+### 1. Nova funcao `isJourneyUnlocked` no DataContext
 
-Adicionar uma coluna booleana `is_sensitive` com valor padrao `false`:
+Sera adicionada uma funcao ao DataContext que recebe o `userId` e o `journeyId` e retorna `true/false`:
 
-```sql
-ALTER TABLE public.activities ADD COLUMN is_sensitive boolean NOT NULL DEFAULT false;
+**Logica:**
+- Ordenar todas as jornadas por `order_index`
+- Encontrar a posicao da jornada solicitada
+- Se `order_index <= 3`, retornar `true` (sempre liberada)
+- Se `order_index >= 4`, verificar se **todas** as jornadas com `order_index` menor possuem progresso = 100% usando `getJourneyProgress`
+
+### 2. Pagina de Jornadas (`Journeys.tsx`)
+
+Para participantes (`aluno`), cada card de jornada tera:
+- **Jornada liberada:** Funciona como hoje (link clicavel, visual normal)
+- **Jornada bloqueada:**
+  - Opacidade reduzida (`opacity-50`)
+  - Icone de cadeado no canto do card
+  - Clique desabilitado (remove o `Link`)
+  - Mensagem de tooltip ou texto indicando: "Complete as jornadas anteriores para desbloquear"
+  - Barra de progresso nao aparece (ja que nao pode acessar)
+
+### 3. Dashboard - Secao "Suas Jornadas"
+
+O mesmo tratamento visual da pagina de Jornadas sera aplicado nos cards do Dashboard:
+- Jornadas bloqueadas aparecem com opacidade reduzida e cadeado
+- Clique desabilitado
+
+### 4. Protecao via URL direta (`JourneyDetail.tsx`)
+
+Se um participante tentar acessar `/jornadas/{id}` de uma jornada bloqueada diretamente pela barra de endereco:
+- Redirecionar para `/jornadas` com um toast informativo: "Complete as jornadas anteriores para acessar esta jornada"
+
+### 5. Sem alteracao no banco de dados
+
+Nao e necessaria nenhuma migracao SQL. A logica de desbloqueio e calculada inteiramente no frontend, com base no progresso ja existente na tabela `user_progress`.
+
+---
+
+## Fluxo Visual para o Participante
+
+```text
+  Jornada 1 (100%)    Jornada 2 (100%)    Jornada 3 (75%)
+  [  Liberada  ]      [  Liberada  ]      [  Liberada  ]
+
+  Jornada 4            Jornada 5            Jornada 6
+  [  Bloqueada ]      [  Bloqueada ]      [  Bloqueada ]
+       🔒                  🔒                  🔒
+  "Complete as         "Complete as         "Complete as
+   anteriores"          anteriores"          anteriores"
 ```
 
-### 2. Tipo `Activity` (`src/types/index.ts`)
-
-Adicionar o campo opcional `is_sensitive?: boolean` na interface Activity.
-
-### 3. Formulario de Atividades (`ActivityForm.tsx`)
-
-Adicionar um checkbox com o componente Switch existente, posicionado entre o campo de pontos e os botoes de acao:
-- Label: "Experiencia Sensivel"
-- Descricao: "Marque se esta atividade aborda temas que exigem cuidado emocional"
-- Icone: `AlertTriangle` (lucide)
-- O valor sera enviado junto com os demais dados da atividade
-
-### 4. Lista de Atividades (`ActivityManager.tsx`)
-
-Na listagem de atividades da estacao, exibir um pequeno indicador (icone `AlertTriangle` em amarelo) ao lado do tipo/pontos quando `is_sensitive` for `true`.
-
-### 5. Configuracoes - Mensagem do Pop-up
-
-**SettingsContext**: Adicionar campo `sensitiveContentMessage` com um texto padrao:
-
-> "Esta atividade aborda temas que podem despertar emocoes intensas. Sinta-se a vontade para fazer pausas, cuidar de si e buscar apoio se necessario. Voce esta em um espaco seguro."
-
-**Pagina Settings**: Adicionar um novo card "Experiencia Sensivel" com:
-- Icone `AlertTriangle`
-- Um campo Textarea para editar a mensagem
-- Salvamento automatico ao sair do campo (onBlur), mesmo padrao dos outros campos
-
-### 6. Pagina da Atividade (`ActivityPage.tsx`)
-
-Quando `activity.is_sensitive` for `true`, exibir um banner de alerta logo abaixo do header da atividade:
-- Fundo amarelo suave (`bg-amber-50`)
-- Icone `AlertTriangle` + texto "Experiencia Sensivel"
-- Ao clicar, abre um Dialog (pop-up) com a mensagem configurada nas Settings
-- O Dialog tera um botao "Entendi" para fechar
+No exemplo acima, a jornada 3 ainda esta em 75%, entao as jornadas 4-9 permanecem bloqueadas. Quando a jornada 3 chegar a 100%, a jornada 4 sera automaticamente desbloqueada.
 
 ---
 
 ## Resultado Esperado
 
-- Administradores podem marcar qualquer atividade como "sensivel" ao criar ou editar
-- Na lista de atividades (admin), um icone amarelo indica atividades sensiveis
-- Na pagina da atividade, participantes veem um banner clicavel de aviso
-- Ao clicar no aviso, um pop-up exibe a mensagem configurada em Configuracoes
-- A mensagem do pop-up pode ser personalizada pelo administrador a qualquer momento
+- Jornadas 1, 2 e 3 estao sempre acessiveis para todos os participantes
+- A partir da jornada 4, o acesso depende da conclusao de 100% de todas as jornadas anteriores
+- Administradores e professores nao sao afetados pela restricao
+- Visual claro de cadeado + opacidade para jornadas bloqueadas
+- Protecao contra acesso direto por URL
+- Nenhuma alteracao no banco de dados necessaria
+
