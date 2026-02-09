@@ -5,19 +5,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
-import { Clock, BookOpen } from 'lucide-react';
-
-// Strip HTML tags for plain text preview
-function stripHtml(html: string): string {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.body.textContent || '';
-}
+import { BookOpen, Lock } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function Journeys() {
   const { user } = useAuth();
-  const { journeys, stations, activities, getJourneyProgress } = useData();
+  const { journeys, stations, activities, getJourneyProgress, isJourneyUnlocked } = useData();
 
   if (!user) return null;
+
+  const isAluno = user.role === 'aluno';
 
   return (
     <AppLayout>
@@ -32,49 +29,81 @@ export default function Journeys() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[...journeys].sort((a, b) => a.order_index - b.order_index).map((journey) => {
             const journeyStations = stations.filter(s => s.journey_id === journey.id);
-            const progress = user.role === 'aluno' ? getJourneyProgress(user.id, journey.id) : 0;
+            const progress = isAluno ? getJourneyProgress(user.id, journey.id) : 0;
             const journeyActivities = activities.filter(a => 
               journeyStations.some(s => s.id === a.station_id)
             );
-            const plainDescription = journey.description ? stripHtml(journey.description) : '';
+            const unlocked = !isAluno || isJourneyUnlocked(user.id, journey.id);
+
+            const cardContent = (
+              <Card className={`overflow-hidden transition-all duration-300 cursor-pointer group h-full ${!unlocked ? 'opacity-50 grayscale' : 'hover:shadow-lg'}`}>
+                <div className="overflow-hidden rounded-t-lg relative">
+                  <img
+                    src={journey.cover_image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800'}
+                    alt={journey.title}
+                    className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {!unlocked && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <Lock className="h-10 w-10 text-white drop-shadow-lg" />
+                    </div>
+                  )}
+                </div>
+                <CardContent className="pt-4">
+                  <h3 className="font-semibold text-lg line-clamp-2 mb-4">
+                    {journey.title}
+                  </h3>
+                  
+                  {isAluno && unlocked && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Progresso</span>
+                        <span className="font-medium">{progress}%</span>
+                      </div>
+                      <Progress value={progress} className="h-2" />
+                    </div>
+                  )}
+
+                  {isAluno && !unlocked && (
+                    <p className="text-xs text-muted-foreground">
+                      Complete as jornadas anteriores para desbloquear
+                    </p>
+                  )}
+
+                  {!isAluno && (
+                    <div className="flex gap-2">
+                      <Badge variant="secondary">
+                        {journeyStations.length} estações
+                      </Badge>
+                      <Badge variant="outline">
+                        {journeyActivities.length} atividades
+                      </Badge>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+
+            if (!unlocked) {
+              return (
+                <TooltipProvider key={journey.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="cursor-not-allowed">
+                        {cardContent}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Complete as jornadas anteriores para desbloquear</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              );
+            }
 
             return (
               <Link key={journey.id} to={`/jornadas/${journey.id}`}>
-                <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
-                  <div className="overflow-hidden rounded-t-lg">
-                    <img
-                      src={journey.cover_image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800'}
-                      alt={journey.title}
-                      className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <CardContent className="pt-4">
-                    <h3 className="font-semibold text-lg line-clamp-2 mb-4">
-                      {journey.title}
-                    </h3>
-                    
-                    {user.role === 'aluno' && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Progresso</span>
-                          <span className="font-medium">{progress}%</span>
-                        </div>
-                        <Progress value={progress} className="h-2" />
-                      </div>
-                    )}
-
-                    {user.role !== 'aluno' && (
-                      <div className="flex gap-2">
-                        <Badge variant="secondary">
-                          {journeyStations.length} estações
-                        </Badge>
-                        <Badge variant="outline">
-                          {journeyActivities.length} atividades
-                        </Badge>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                {cardContent}
               </Link>
             );
           })}
