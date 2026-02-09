@@ -57,12 +57,11 @@ export default function Login() {
       <div className="absolute inset-0 bg-primary/80" />
       
       <div className="w-full max-w-md relative z-10">
-        <div className="flex justify-center mb-8">
-          <img src={logoSNI} alt="Mulher Plena" className="h-24 object-contain" />
-        </div>
-
         <Card>
-          <CardHeader className="space-y-1">
+          <div className="flex justify-center pt-6">
+            <img src={logoSNI} alt="Mulher Plena" className="h-20 object-contain" />
+          </div>
+          <CardHeader className="space-y-1 pt-4">
             <CardTitle className="text-2xl">Entrar</CardTitle>
             <CardDescription>
               Entre com suas credenciais para acessar a plataforma
