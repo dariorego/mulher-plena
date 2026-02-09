@@ -37,6 +37,7 @@ interface DataContextType {
   markStationStepComplete: (stationId: string, step: 'video' | 'supplementary' | 'podcast', completed: boolean) => Promise<void>;
   getStationProgress: (userId: string, stationId: string) => number;
   isStepCompleted: (userId: string, stationId: string, step: 'video' | 'supplementary' | 'activity' | 'podcast') => boolean;
+  isJourneyUnlocked: (userId: string, journeyId: string) => boolean;
   addScheduledEvent: (event: Omit<ScheduledEvent, 'id' | 'created_at' | 'updated_at'>) => Promise<ScheduledEvent | null>;
   updateScheduledEvent: (id: string, event: Partial<ScheduledEvent>) => Promise<void>;
   deleteScheduledEvent: (id: string) => Promise<void>;
@@ -481,6 +482,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return Math.round(totalProgress / journeyStations.length);
   }, [stations, getStationProgress]);
 
+  // Check if a journey is unlocked for a user (sequential unlock from journey 4+)
+  const isJourneyUnlocked = useCallback((userId: string, journeyId: string): boolean => {
+    const sortedJourneys = [...journeys].sort((a, b) => a.order_index - b.order_index);
+    const journey = sortedJourneys.find(j => j.id === journeyId);
+    if (!journey) return false;
+
+    // Journeys with order_index 1, 2, 3 are always unlocked
+    if (journey.order_index <= 3) return true;
+
+    // For order_index >= 4, all previous journeys must be 100%
+    const previousJourneys = sortedJourneys.filter(j => j.order_index < journey.order_index);
+    return previousJourneys.every(j => getJourneyProgress(userId, j.id) >= 100);
+  }, [journeys, getJourneyProgress]);
+
   const getUserStats = (userId: string) => {
     const userSubmissions = submissions.filter(s => s.user_id === userId && s.score !== undefined);
     const totalPoints = userSubmissions.reduce((acc, s) => {
@@ -572,6 +587,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       markStationStepComplete,
       getStationProgress,
       isStepCompleted,
+      isJourneyUnlocked,
       addScheduledEvent,
       updateScheduledEvent,
       deleteScheduledEvent,

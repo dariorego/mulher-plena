@@ -16,7 +16,7 @@ import { FontSizeControl } from '@/components/ui/font-size-control';
 import { UpcomingEvents } from '@/components/calendar/UpcomingEvents';
 import { useFontSize } from '@/contexts/FontSizeContext';
 import { Station } from '@/types';
-import { ArrowLeft, Play, CheckCircle, Circle, FileText, Upload, PenLine, Gamepad2, Plus } from 'lucide-react';
+import { ArrowLeft, Play, CheckCircle, Circle, FileText, Upload, PenLine, Gamepad2, Plus, Lock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const activityIcons = {
@@ -36,7 +36,7 @@ const activityLabels = {
 export default function JourneyDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { journeys, stations, activities, submissions, scheduledEvents, getJourneyProgress, getStationProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity } = useData();
+  const { journeys, stations, activities, submissions, scheduledEvents, getJourneyProgress, getStationProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity, isJourneyUnlocked } = useData();
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
 
@@ -48,6 +48,14 @@ export default function JourneyDetail() {
   const { logAction } = useActivityLogger();
 
   const journey = journeys.find(j => j.id === id);
+
+  // Redirect if journey is locked for aluno
+  useEffect(() => {
+    if (journey && user && user.role === 'aluno' && !isJourneyUnlocked(user.id, journey.id)) {
+      toast({ title: 'Complete as jornadas anteriores para acessar esta jornada', variant: 'destructive' });
+      navigate('/jornadas');
+    }
+  }, [journey?.id, user?.id, isJourneyUnlocked]);
 
   // Log journey view
   useEffect(() => {

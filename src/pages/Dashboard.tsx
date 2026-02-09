@@ -3,7 +3,7 @@ import { useData } from '@/contexts/DataContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { BookOpen, Trophy, Target, Clock, TrendingUp, Users, FileText, CheckCircle, User } from 'lucide-react';
+import { BookOpen, Trophy, Target, Clock, TrendingUp, Users, FileText, CheckCircle, User, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +12,7 @@ import { useActivityLogger } from '@/hooks/useActivityLogger';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { journeys, stations, activities, submissions, userBadges, badges, scheduledEvents, getJourneyProgress, getUserStats, refreshData } = useData();
+  const { journeys, stations, activities, submissions, userBadges, badges, scheduledEvents, getJourneyProgress, getUserStats, refreshData, isJourneyUnlocked } = useData();
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const { logAction } = useActivityLogger();
 
@@ -212,20 +212,27 @@ export default function Dashboard() {
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Suas Jornadas</h2>
               <div className="grid gap-4 md:grid-cols-2">
-                {journeys.map((journey) => {
+                {[...journeys].sort((a, b) => a.order_index - b.order_index).map((journey) => {
                   const progress = getJourneyProgress(user.id, journey.id);
-                  return (
-                    <Link key={journey.id} to={`/jornadas/${journey.id}`}>
-                      <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-                        <div className="bg-muted">
-                          <img
-                            src={journey.cover_image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800'}
-                            alt={journey.title}
-                            className="w-full h-auto object-contain"
-                          />
-                        </div>
-                        <CardContent className="pt-4">
-                          <h3 className="font-semibold text-lg mb-3">{journey.title}</h3>
+                  const unlocked = isJourneyUnlocked(user.id, journey.id);
+
+                  const card = (
+                    <Card className={`overflow-hidden transition-shadow cursor-pointer ${unlocked ? 'hover:shadow-lg' : 'opacity-50 grayscale'}`}>
+                      <div className="bg-muted relative">
+                        <img
+                          src={journey.cover_image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800'}
+                          alt={journey.title}
+                          className="w-full h-auto object-contain"
+                        />
+                        {!unlocked && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <Lock className="h-8 w-8 text-white drop-shadow-lg" />
+                          </div>
+                        )}
+                      </div>
+                      <CardContent className="pt-4">
+                        <h3 className="font-semibold text-lg mb-3">{journey.title}</h3>
+                        {unlocked ? (
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
                               <span className="text-muted-foreground">Progresso</span>
@@ -233,8 +240,26 @@ export default function Dashboard() {
                             </div>
                             <Progress value={progress} className="h-2" />
                           </div>
-                        </CardContent>
-                      </Card>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            Complete as jornadas anteriores para desbloquear
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+
+                  if (!unlocked) {
+                    return (
+                      <div key={journey.id} className="cursor-not-allowed">
+                        {card}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <Link key={journey.id} to={`/jornadas/${journey.id}`}>
+                      {card}
                     </Link>
                   );
                 })}
