@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useSettings } from '@/contexts/SettingsContext';
 import { Textarea } from '@/components/ui/textarea';
-import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle, AlertTriangle, Image, X } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle, AlertTriangle, Image, X, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -21,6 +21,7 @@ export default function Settings() {
     podcastPercentage,
     sensitiveContentMessage,
     loginBackgroundUrl,
+    headerBorderColor,
     updateSettings 
   } = useSettings();
 
@@ -363,6 +364,43 @@ export default function Settings() {
                 Usando imagem padrão do sistema
               </p>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5 text-primary" />
+              Cor da Linha do Menu
+            </CardTitle>
+            <CardDescription>
+              Escolha a cor da linha divisória entre o menu e o conteúdo da página
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Input
+                type="color"
+                value={headerBorderColor}
+                onChange={(e) => {
+                  updateSettings({ headerBorderColor: e.target.value });
+                }}
+                className="w-16 h-10 p-1 cursor-pointer"
+              />
+              <Input
+                type="text"
+                value={headerBorderColor}
+                onChange={(e) => {
+                  updateSettings({ headerBorderColor: e.target.value });
+                }}
+                className="w-32"
+                placeholder="#b46ebe"
+              />
+              <div
+                className="h-10 flex-1 rounded-md border"
+                style={{ backgroundColor: headerBorderColor }}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>
