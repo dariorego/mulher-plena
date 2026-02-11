@@ -154,7 +154,7 @@ export function AppLayout({
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
             <Link to="/dashboard" className="flex items-center gap-2">
-              <img src={logoSNI} alt="Logo" className="h-9 w-9 object-contain" />
+              <img src={logoSNI} alt="Logo" className="h-[108px] w-auto object-contain" />
               
             </Link>
           </div>
