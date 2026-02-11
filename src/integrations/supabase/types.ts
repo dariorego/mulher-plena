@@ -206,6 +206,21 @@ export type Database = {
         }
         Relationships: []
       }
+      keep_alive: {
+        Row: {
+          created_at: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
       landing_sections: {
         Row: {
           content: string | null
