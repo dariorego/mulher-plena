@@ -15,6 +15,7 @@ import { StationCard } from '@/components/admin/StationCard';
 import { FontSizeControl } from '@/components/ui/font-size-control';
 import { UpcomingEvents } from '@/components/calendar/UpcomingEvents';
 import { useFontSize } from '@/contexts/FontSizeContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { Station } from '@/types';
 import { ArrowLeft, Play, CheckCircle, Circle, FileText, Upload, PenLine, Gamepad2, Plus, Lock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -37,6 +38,7 @@ export default function JourneyDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { journeys, stations, activities, submissions, scheduledEvents, getJourneyProgress, getStationProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity, isJourneyUnlocked } = useData();
+  const { progressBarColor } = useSettings();
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
 
@@ -182,7 +184,7 @@ export default function JourneyDetail() {
                     <span>Seu Progresso</span>
                     <span className="font-semibold text-primary">{progress}%</span>
                   </div>
-                  <Progress value={progress} className="h-3" />
+                  <Progress value={progress} className="h-3" indicatorColor={progressBarColor} />
                 </div>
               )}
 
@@ -280,7 +282,7 @@ export default function JourneyDetail() {
                         
                         {/* Progress bar */}
                         <div className="space-y-1">
-                          <Progress value={stationProgress} className="h-2" />
+                          <Progress value={stationProgress} className="h-2" indicatorColor={progressBarColor} />
                           <p className="text-xs font-medium text-right text-primary">{stationProgress}%</p>
                         </div>
                       </CardContent>

@@ -30,7 +30,7 @@ export default function StationDetail() {
     getStationProgress, 
     isStepCompleted 
   } = useData();
-  const { videoPercentage, activityPercentage, supplementaryPercentage, podcastPercentage } = useSettings();
+  const { videoPercentage, activityPercentage, supplementaryPercentage, podcastPercentage, progressBarColor } = useSettings();
   const navigate = useNavigate();
   const { sizeClass: fontSizeClass } = useFontSize();
   const { logAction } = useActivityLogger();
@@ -237,7 +237,7 @@ export default function StationDetail() {
               <span className="text-sm font-medium text-primary">Progresso da Estação</span>
               <span className="text-sm font-bold text-primary">{stationProgress}%</span>
             </div>
-            <Progress value={stationProgress} className="h-3" />
+            <Progress value={stationProgress} className="h-3" indicatorColor={progressBarColor} />
           </CardContent>
         </Card>
 
