@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { useSettings } from './SettingsContext';
-import { Journey, Station, Activity, QuizQuestion, ActivitySubmission, UserProgress, Badge, UserBadge, ScheduledEvent } from '@/types';
+import { Journey, Station, Activity, QuizQuestion, ActivitySubmission, UserProgress, Badge, UserBadge, ScheduledEvent, DeletionRequest } from '@/types';
 
 interface DataContextType {
   journeys: Journey[];
@@ -14,6 +14,7 @@ interface DataContextType {
   badges: Badge[];
   userBadges: UserBadge[];
   scheduledEvents: ScheduledEvent[];
+  deletionRequests: DeletionRequest[];
   isLoading: boolean;
   refreshData: () => Promise<void>;
   addJourney: (journey: Omit<Journey, 'id' | 'created_at' | 'updated_at'>) => Promise<Journey | null>;
@@ -41,8 +42,9 @@ interface DataContextType {
   addScheduledEvent: (event: Omit<ScheduledEvent, 'id' | 'created_at' | 'updated_at'>) => Promise<ScheduledEvent | null>;
   updateScheduledEvent: (id: string, event: Partial<ScheduledEvent>) => Promise<void>;
   deleteScheduledEvent: (id: string) => Promise<void>;
+  createDeletionRequest: (submissionId: string, reason: string) => Promise<void>;
+  reviewDeletionRequest: (requestId: string, status: 'approved' | 'rejected') => Promise<void>;
 }
-
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -57,6 +59,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvent[]>([]);
+  const [deletionRequests, setDeletionRequests] = useState<DeletionRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -77,6 +80,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         badgesRes,
         userBadgesRes,
         scheduledEventsRes,
+        deletionRequestsRes,
       ] = await Promise.all([
         supabase.from('journeys').select('*').order('order_index'),
         supabase.from('stations').select('*').order('order_index'),
@@ -87,6 +91,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         supabase.from('badges').select('*'),
         supabase.from('user_badges').select('*'),
         supabase.from('scheduled_events').select('*').order('event_date'),
+        supabase.from('deletion_requests').select('*').order('created_at', { ascending: false }),
       ]);
 
       if (journeysRes.data) setJourneys(journeysRes.data);
@@ -98,6 +103,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (badgesRes.data) setBadges(badgesRes.data);
       if (userBadgesRes.data) setUserBadges(userBadgesRes.data);
       if (scheduledEventsRes.data) setScheduledEvents(scheduledEventsRes.data as ScheduledEvent[]);
+      if (deletionRequestsRes.data) setDeletionRequests(deletionRequestsRes.data as DeletionRequest[]);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -553,6 +559,44 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setScheduledEvents(prev => prev.filter(e => e.id !== id));
   };
 
+  const createDeletionRequest = async (submissionId: string, reason: string) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('deletion_requests')
+      .insert({ submission_id: submissionId, user_id: user.id, reason } as any)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating deletion request:', error);
+      throw error;
+    }
+    setDeletionRequests(prev => [data as DeletionRequest, ...prev]);
+  };
+
+  const reviewDeletionRequest = async (requestId: string, status: 'approved' | 'rejected') => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('deletion_requests')
+      .update({ status, reviewed_by: user.id, reviewed_at: new Date().toISOString() } as any)
+      .eq('id', requestId);
+
+    if (error) {
+      console.error('Error reviewing deletion request:', error);
+      throw error;
+    }
+
+    // If approved, delete the submission
+    if (status === 'approved') {
+      const request = deletionRequests.find(r => r.id === requestId);
+      if (request) {
+        await deleteSubmission(request.submission_id);
+      }
+    }
+
+    setDeletionRequests(prev => prev.map(r => r.id === requestId ? { ...r, status, reviewed_by: user.id, reviewed_at: new Date().toISOString() } : r));
+  };
+
   return (
     <DataContext.Provider value={{
       journeys,
@@ -564,6 +608,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       badges,
       userBadges,
       scheduledEvents,
+      deletionRequests,
       isLoading,
       refreshData,
       addJourney,
@@ -591,6 +636,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addScheduledEvent,
       updateScheduledEvent,
       deleteScheduledEvent,
+      createDeletionRequest,
+      reviewDeletionRequest,
     }}>
       {children}
     </DataContext.Provider>

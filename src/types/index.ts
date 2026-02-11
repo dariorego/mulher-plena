@@ -163,6 +163,24 @@ export interface ScheduledEvent {
 export type SupportTicketType = 'bug' | 'improvement';
 export type SupportTicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 
+export type DeletionRequestStatus = 'pending' | 'approved' | 'rejected';
+
+export interface DeletionRequest {
+  id: string;
+  submission_id: string;
+  user_id: string;
+  reason: string;
+  status: DeletionRequestStatus;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  created_at: string;
+  // Joined data
+  user_name?: string;
+  activity_title?: string;
+  journey_title?: string;
+  station_title?: string;
+}
+
 export interface SupportTicket {
   id: string;
   user_id: string;
