@@ -8,6 +8,7 @@ interface EvaluationSettings {
   supplementaryPercentage: number;
   podcastPercentage: number;
   sensitiveContentMessage: string;
+  loginBackgroundUrl: string;
 }
 
 interface SettingsContextType extends EvaluationSettings {
@@ -24,6 +25,7 @@ const defaultSettings: EvaluationSettings = {
   supplementaryPercentage: 20,
   podcastPercentage: 10,
   sensitiveContentMessage: 'Esta atividade aborda temas que podem despertar emoções intensas. Sinta-se à vontade para fazer pausas, cuidar de si e buscar apoio se necessário. Você está em um espaço seguro.',
+  loginBackgroundUrl: '',
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);

@@ -11,6 +11,7 @@ import bgLogin from '@/assets/bg-login.png';
 import logoSNI from '@/assets/logoSNI.png';
 import { supabase } from '@/integrations/supabase/client';
 import { logActivityDirect } from '@/hooks/useActivityLogger';
+import { useSettings } from '@/contexts/SettingsContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -18,6 +19,8 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { loginBackgroundUrl } = useSettings();
+  const backgroundImage = loginBackgroundUrl || bgLogin;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +54,7 @@ export default function Login() {
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${bgLogin})` }}
+        style={{ backgroundImage: `url(${backgroundImage})` }}
       />
       {/* Burgundy Overlay */}
       <div className="absolute inset-0 bg-primary/80" />

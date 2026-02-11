@@ -7,7 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useSettings } from '@/contexts/SettingsContext';
 import { Textarea } from '@/components/ui/textarea';
-import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle, AlertTriangle, Image, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -19,6 +20,7 @@ export default function Settings() {
     supplementaryPercentage,
     podcastPercentage,
     sensitiveContentMessage,
+    loginBackgroundUrl,
     updateSettings 
   } = useSettings();
 
@@ -72,6 +74,31 @@ export default function Settings() {
       });
       toast.success('Percentuais de conclusão salvos');
     }
+  };
+
+  const handleLoginBgChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecione um arquivo de imagem válido.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 5MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      updateSettings({ loginBackgroundUrl: dataUrl });
+      toast.success('Imagem de fundo do login atualizada!');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeLoginBg = () => {
+    updateSettings({ loginBackgroundUrl: '' });
+    toast.success('Imagem de fundo restaurada para o padrão');
   };
 
   return (
@@ -286,6 +313,56 @@ export default function Settings() {
                 Este texto será exibido no pop-up quando o participante clicar no aviso de experiência sensível
               </p>
             </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Image className="h-5 w-5 text-primary" />
+              Imagem de Fundo do Login
+            </CardTitle>
+            <CardDescription>
+              Escolha uma imagem da galeria do seu dispositivo para personalizar a tela de login
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loginBackgroundUrl && (
+              <div className="relative rounded-lg overflow-hidden border border-border">
+                <img
+                  src={loginBackgroundUrl}
+                  alt="Preview do fundo do login"
+                  className="w-full h-40 object-cover"
+                />
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2 h-8 w-8"
+                  onClick={removeLoginBg}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="login-bg-upload">
+                {loginBackgroundUrl ? 'Trocar imagem' : 'Selecionar imagem'}
+              </Label>
+              <Input
+                id="login-bg-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleLoginBgChange}
+                className="cursor-pointer"
+              />
+              <p className="text-xs text-muted-foreground">
+                Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 5MB.
+              </p>
+            </div>
+            {!loginBackgroundUrl && (
+              <p className="text-sm text-muted-foreground italic">
+                Usando imagem padrão do sistema
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
