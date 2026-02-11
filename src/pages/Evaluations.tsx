@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -410,149 +411,152 @@ export default function Evaluations() {
           </Card>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" /> Pendentes ({pendingSubmissions.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {pendingSubmissions.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
-                  {hasActiveFilters ? 'Nenhuma avaliação pendente com os filtros aplicados' : 'Nenhuma avaliação pendente'}
-                </p>
-              ) : (
-                <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                  {pendingSubmissions.map(sub => {
-                    const context = getSubmissionContext(sub);
-                    return (
-                      <div key={sub.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border/50">
-                        <div className="space-y-1 min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-primary flex-shrink-0" />
-                            <p className="font-semibold text-foreground truncate">{context.participantName}</p>
-                          </div>
-                          {context.journeyTitle && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {context.journeyTitle} &gt; {context.stationTitle}
-                            </p>
-                          )}
-                          <p className="font-medium text-sm text-primary">{context.activityTitle}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(sub.submitted_at).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                          <Button size="sm" onClick={() => setSelectedSubmission(sub.id)}>
-                            Avaliar
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir submissão?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Você está prestes a excluir a submissão de <strong>{context.participantName}</strong> para a atividade <strong>"{context.activityTitle}"</strong>.
-                                  <br /><br />
-                                  Isso permitirá que o participante envie a atividade novamente. Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDeleteSubmission(sub.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="pending" className="w-full">
+          <TabsList>
+            <TabsTrigger value="pending" className="gap-1">
+              <Clock className="h-4 w-4" /> Pendentes ({pendingSubmissions.length})
+            </TabsTrigger>
+            <TabsTrigger value="evaluated" className="gap-1">
+              <CheckCircle className="h-4 w-4" /> Avaliadas ({evaluatedSubmissions.length})
+            </TabsTrigger>
+          </TabsList>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" /> Avaliadas ({evaluatedSubmissions.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {evaluatedSubmissions.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
-                  {hasActiveFilters ? 'Nenhuma avaliação realizada com os filtros aplicados' : 'Nenhuma avaliação realizada'}
-                </p>
-              ) : (
-                <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                  {evaluatedSubmissions.slice().reverse().map(sub => {
-                    const context = getSubmissionContext(sub);
-                    const evaluatorName = sub.evaluated_by ? profiles[sub.evaluated_by] : null;
-                    return (
-                      <div key={sub.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border/50">
-                        <div className="space-y-1 min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-primary flex-shrink-0" />
-                            <p className="font-semibold text-foreground truncate">{context.participantName}</p>
-                          </div>
-                          {context.journeyTitle && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {context.journeyTitle} &gt; {context.stationTitle}
+          <TabsContent value="pending">
+            <Card>
+              <CardContent className="pt-6">
+                {pendingSubmissions.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">
+                    {hasActiveFilters ? 'Nenhuma avaliação pendente com os filtros aplicados' : 'Nenhuma avaliação pendente'}
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {pendingSubmissions.map(sub => {
+                      const context = getSubmissionContext(sub);
+                      return (
+                        <div key={sub.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border/50">
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-primary flex-shrink-0" />
+                              <p className="font-semibold text-foreground truncate">{context.participantName}</p>
+                            </div>
+                            {context.journeyTitle && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {context.journeyTitle} &gt; {context.stationTitle}
+                              </p>
+                            )}
+                            <p className="font-medium text-sm text-primary">{context.activityTitle}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(sub.submitted_at).toLocaleDateString('pt-BR')}
                             </p>
-                          )}
-                          <p className="font-medium text-sm">{context.activityTitle}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Nota: {sub.score}%
-                            {evaluatorName && ` • Avaliado por: ${evaluatorName}`}
-                          </p>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                            <Button size="sm" onClick={() => setSelectedSubmission(sub.id)}>
+                              Avaliar
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir submissão?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Você está prestes a excluir a submissão de <strong>{context.participantName}</strong> para a atividade <strong>"{context.activityTitle}"</strong>.
+                                    <br /><br />
+                                    Isso permitirá que o participante envie a atividade novamente. Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteSubmission(sub.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                          <Badge variant="secondary">Avaliado</Badge>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir submissão avaliada?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Você está prestes a excluir a submissão avaliada de <strong>{context.participantName}</strong> para a atividade <strong>"{context.activityTitle}"</strong>.
-                                  <br /><br />
-                                  A nota ({sub.score}%) e feedback serão perdidos. O participante poderá enviar a atividade novamente. Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDeleteSubmission(sub.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="evaluated">
+            <Card>
+              <CardContent className="pt-6">
+                {evaluatedSubmissions.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">
+                    {hasActiveFilters ? 'Nenhuma avaliação realizada com os filtros aplicados' : 'Nenhuma avaliação realizada'}
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {evaluatedSubmissions.slice().reverse().map(sub => {
+                      const context = getSubmissionContext(sub);
+                      const evaluatorName = sub.evaluated_by ? profiles[sub.evaluated_by] : null;
+                      return (
+                        <div key={sub.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border/50">
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-primary flex-shrink-0" />
+                              <p className="font-semibold text-foreground truncate">{context.participantName}</p>
+                            </div>
+                            {context.journeyTitle && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {context.journeyTitle} &gt; {context.stationTitle}
+                              </p>
+                            )}
+                            <p className="font-medium text-sm">{context.activityTitle}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Nota: {sub.score}%
+                              {evaluatorName && ` • Avaliado por: ${evaluatorName}`}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                            <Badge variant="secondary">Avaliado</Badge>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir submissão avaliada?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Você está prestes a excluir a submissão avaliada de <strong>{context.participantName}</strong> para a atividade <strong>"{context.activityTitle}"</strong>.
+                                    <br /><br />
+                                    A nota ({sub.score}%) e feedback serão perdidos. O participante poderá enviar a atividade novamente. Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteSubmission(sub.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
           <DialogContent className={cn(
