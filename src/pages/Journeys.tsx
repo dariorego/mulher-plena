@@ -1,5 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -11,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 export default function Journeys() {
   const { user } = useAuth();
   const { journeys, stations, activities, getJourneyProgress, isJourneyUnlocked } = useData();
+  const { progressBarColor } = useSettings();
 
   if (!user) return null;
 
@@ -60,7 +62,7 @@ export default function Journeys() {
                         <span className="text-muted-foreground">Progresso</span>
                         <span className="font-medium">{progress}%</span>
                       </div>
-                      <Progress value={progress} className="h-2" />
+                      <Progress value={progress} className="h-2" indicatorColor={progressBarColor} />
                     </div>
                   )}
 

@@ -1,5 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -13,6 +14,7 @@ import { useActivityLogger } from '@/hooks/useActivityLogger';
 export default function Dashboard() {
   const { user } = useAuth();
   const { journeys, stations, activities, submissions, userBadges, badges, scheduledEvents, getJourneyProgress, getUserStats, refreshData, isJourneyUnlocked } = useData();
+  const { progressBarColor } = useSettings();
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const { logAction } = useActivityLogger();
 
@@ -238,7 +240,7 @@ export default function Dashboard() {
                               <span className="text-muted-foreground">Progresso</span>
                               <span className="font-medium">{progress}%</span>
                             </div>
-                            <Progress value={progress} className="h-2" />
+                            <Progress value={progress} className="h-2" indicatorColor={progressBarColor} />
                           </div>
                         ) : (
                           <p className="text-xs text-muted-foreground">

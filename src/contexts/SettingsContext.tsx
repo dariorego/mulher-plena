@@ -10,6 +10,7 @@ interface EvaluationSettings {
   sensitiveContentMessage: string;
   loginBackgroundUrl: string;
   headerBorderColor: string;
+  progressBarColor: string;
 }
 
 interface SettingsContextType extends EvaluationSettings {
@@ -28,6 +29,7 @@ const defaultSettings: EvaluationSettings = {
   sensitiveContentMessage: 'Esta atividade aborda temas que podem despertar emoções intensas. Sinta-se à vontade para fazer pausas, cuidar de si e buscar apoio se necessário. Você está em um espaço seguro.',
   loginBackgroundUrl: '',
   headerBorderColor: '#b46ebe',
+  progressBarColor: '#2e6682',
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);

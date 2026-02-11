@@ -22,6 +22,7 @@ export default function Settings() {
     sensitiveContentMessage,
     loginBackgroundUrl,
     headerBorderColor,
+    progressBarColor,
     updateSettings 
   } = useSettings();
 
@@ -399,6 +400,43 @@ export default function Settings() {
               <div
                 className="h-10 flex-1 rounded-md border"
                 style={{ backgroundColor: headerBorderColor }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5 text-primary" />
+              Cor da Barra de Progresso
+            </CardTitle>
+            <CardDescription>
+              Escolha a cor das barras de progresso das estações
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Input
+                type="color"
+                value={progressBarColor}
+                onChange={(e) => {
+                  updateSettings({ progressBarColor: e.target.value });
+                }}
+                className="w-16 h-10 p-1 cursor-pointer"
+              />
+              <Input
+                type="text"
+                value={progressBarColor}
+                onChange={(e) => {
+                  updateSettings({ progressBarColor: e.target.value });
+                }}
+                className="w-32"
+                placeholder="#2e6682"
+              />
+              <div
+                className="h-10 flex-1 rounded-md border"
+                style={{ backgroundColor: progressBarColor }}
               />
             </div>
           </CardContent>
