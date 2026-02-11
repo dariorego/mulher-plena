@@ -1,13 +1,13 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from '@/components/ui/dropdown-menu';
 import { LayoutDashboard, BookOpen, Trophy, Users, Settings, LogOut, ClipboardCheck, GraduationCap, Menu, X, Home, Pencil, ChevronDown, ImageIcon, Calendar, HelpCircle, Activity } from 'lucide-react';
 import logoSNI from '@/assets/logoSNI.png';
-import { useState } from 'react';
 interface AppLayoutProps {
   children: ReactNode;
 }
@@ -125,6 +125,7 @@ export function AppLayout({
     user,
     logout
   } = useAuth();
+  const { headerBorderColor } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -147,7 +148,7 @@ export function AppLayout({
   };
   return <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60" style={{ borderBottom: `3px solid ${headerBorderColor}` }}>
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
