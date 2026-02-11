@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from '@/components/ui/dropdown-menu';
 import { LayoutDashboard, BookOpen, Trophy, Users, Settings, LogOut, ClipboardCheck, GraduationCap, Menu, X, Home, Pencil, ChevronDown, ImageIcon, Calendar, HelpCircle, Activity } from 'lucide-react';
-import logoSemtexto from '@/assets/logoSemtexto.png';
+import logoSNI from '@/assets/logoSNI.png';
 import { useState } from 'react';
 interface AppLayoutProps {
   children: ReactNode;
@@ -154,7 +154,7 @@ export function AppLayout({
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
             <Link to="/dashboard" className="flex items-center gap-2">
-              <img src={logoSemtexto} alt="Logo" className="h-9 w-9 object-contain" />
+              <img src={logoSNI} alt="Logo" className="h-9 w-9 object-contain" />
               
             </Link>
           </div>
