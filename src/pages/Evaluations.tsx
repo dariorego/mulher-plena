@@ -26,6 +26,7 @@ import { SubmittedRealSituationView } from '@/components/activities/RealSituatio
 import { SubmittedLoveWheelView } from '@/components/activities/LoveWheelActivity';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useSettings } from '@/contexts/SettingsContext';
 import { ActivitySubmission } from '@/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -34,6 +35,7 @@ import { cn } from '@/lib/utils';
 export default function Evaluations() {
   const { user } = useAuth();
   const { activities, stations, journeys, submissions, evaluateSubmission, deleteSubmission, refreshData } = useData();
+  const { showScoreToStudents, showFeedbackToStudents } = useSettings();
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
   const [score, setScore] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -517,18 +519,22 @@ export default function Evaluations() {
                   <p className="text-sm break-all whitespace-pre-wrap line-clamp-6">{submission?.content}</p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label>Nota (0-100)</Label>
-                <Input type="number" min="0" max="100" value={score} onChange={e => setScore(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Feedback</Label>
-                <Textarea value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Comentários..." />
-              </div>
+              {showScoreToStudents && (
+                <div className="space-y-2">
+                  <Label>Nota (0-100)</Label>
+                  <Input type="number" min="0" max="100" value={score} onChange={e => setScore(e.target.value)} />
+                </div>
+              )}
+              {showFeedbackToStudents && (
+                <div className="space-y-2">
+                  <Label>Feedback</Label>
+                  <Textarea value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Comentários..." />
+                </div>
+              )}
             </div>
             <DialogFooter className="flex-shrink-0">
               <Button variant="outline" onClick={() => setSelectedSubmission(null)}>Cancelar</Button>
-              <Button onClick={handleEvaluate} disabled={!score}>Enviar Avaliação</Button>
+              <Button onClick={handleEvaluate} disabled={showScoreToStudents && !score}>Enviar Avaliação</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
