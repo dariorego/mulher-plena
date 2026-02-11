@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { CheckCircle, Clock, ExternalLink, User, Filter, CalendarIcon, X, Trash2 } from 'lucide-react';
+import { CheckCircle, Clock, ExternalLink, User, Filter, CalendarIcon, X, Trash2, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SubmittedTimelineView } from '@/components/activities/SubmittedTimelineView';
 import { SubmittedTrafficLightView } from '@/components/activities/SubmittedTrafficLightView';
@@ -34,7 +34,7 @@ import { cn } from '@/lib/utils';
 
 export default function Evaluations() {
   const { user } = useAuth();
-  const { activities, stations, journeys, submissions, evaluateSubmission, deleteSubmission, refreshData } = useData();
+  const { activities, stations, journeys, submissions, evaluateSubmission, deleteSubmission, refreshData, deletionRequests, reviewDeletionRequest } = useData();
   const { showScoreToStudents, showFeedbackToStudents } = useSettings();
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
   const [score, setScore] = useState('');
@@ -328,6 +328,87 @@ export default function Evaluations() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Deletion Requests Section */}
+        {deletionRequests.filter(r => r.status === 'pending').length > 0 && (
+          <Card className="border-amber-200 bg-amber-50/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <RotateCcw className="h-5 w-5 text-amber-600" />
+                Solicitações de Refazer ({deletionRequests.filter(r => r.status === 'pending').length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                {deletionRequests
+                  .filter(r => r.status === 'pending')
+                  .map(request => {
+                    const submission = submissions.find(s => s.id === request.submission_id);
+                    const activity = submission ? activities.find(a => a.id === submission.activity_id) : null;
+                    const station = activity ? stations.find(s => s.id === activity.station_id) : null;
+                    const journey = station ? journeys.find(j => j.id === station.journey_id) : null;
+                    const participantName = profiles[request.user_id] || 'Participante';
+
+                    return (
+                      <div key={request.id} className="flex items-center justify-between p-4 rounded-lg bg-background border border-border/50">
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-primary flex-shrink-0" />
+                            <p className="font-semibold text-foreground truncate">{participantName}</p>
+                          </div>
+                          {journey && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {journey.title} &gt; {station?.title}
+                            </p>
+                          )}
+                          <p className="font-medium text-sm text-primary">{activity?.title || 'Atividade'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Solicitado em {new Date(request.created_at).toLocaleDateString('pt-BR')}
+                          </p>
+                          {request.reason && (
+                            <p className="text-sm text-muted-foreground mt-1 italic">
+                              Motivo: "{request.reason}"
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                            onClick={async () => {
+                              try {
+                                await reviewDeletionRequest(request.id, 'rejected');
+                                toast.success('Solicitação recusada.');
+                              } catch {
+                                toast.error('Erro ao recusar solicitação.');
+                              }
+                            }}
+                          >
+                            Recusar
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                await reviewDeletionRequest(request.id, 'approved');
+                                await refreshData();
+                                toast.success('Solicitação aprovada! Submissão excluída.');
+                              } catch {
+                                toast.error('Erro ao aprovar solicitação.');
+                              }
+                            }}
+                          >
+                            Aprovar
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>

@@ -129,6 +129,47 @@ export type Database = {
         }
         Relationships: []
       }
+      deletion_requests: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["deletion_request_status"]
+          submission_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["deletion_request_status"]
+          submission_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["deletion_request_status"]
+          submission_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deletion_requests_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "activity_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forum_posts: {
         Row: {
           activity_id: string
@@ -645,6 +686,7 @@ export type Database = {
     Enums: {
       activity_type: "quiz" | "upload" | "essay" | "gamified" | "forum"
       app_role: "admin" | "professor" | "aluno"
+      deletion_request_status: "pending" | "approved" | "rejected"
       support_ticket_status: "open" | "in_progress" | "resolved" | "closed"
       support_ticket_type: "bug" | "improvement"
     }
@@ -776,6 +818,7 @@ export const Constants = {
     Enums: {
       activity_type: ["quiz", "upload", "essay", "gamified", "forum"],
       app_role: ["admin", "professor", "aluno"],
+      deletion_request_status: ["pending", "approved", "rejected"],
       support_ticket_status: ["open", "in_progress", "resolved", "closed"],
       support_ticket_type: ["bug", "improvement"],
     },
