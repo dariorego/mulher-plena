@@ -1,31 +1,30 @@
 
+# Corrigir Exibicao de HTML Nao Renderizado nas Descricoes de Atividades
 
-# Centralizar Notificacoes e Adicionar Botao de Fechar
+## Problema
 
-## Resumo
+Quando o administrador cria descricoes de atividades usando o editor rich-text (que gera HTML como `<p>`, `<strong>`, `<ul>`, etc.), essas tags aparecem visíveis como texto cru para o participante, em vez de serem renderizadas como formatacao.
 
-O projeto utiliza dois sistemas de notificacao que exibem mensagens no canto inferior direito, podendo sobrepor botoes e areas de acao. A proposta e centralizar todas as notificacoes na tela e adicionar um botao visivel de fechamento.
+## Causa Raiz
 
-## Sistemas de notificacao encontrados
+No arquivo `src/pages/ActivityPage.tsx`, a funcao `parseDescription` (linha 283) tenta interpretar a descricao como markdown com marcadores `**`. Quando a descricao contem HTML em vez de markdown, o parse falha e o texto e exibido como texto puro via `{parsedDescription.intro}` (linha 1120), mostrando as tags HTML literalmente.
 
-O projeto possui **dois sistemas distintos** de toast/notificacao:
+## Solucao
 
-1. **Sonner** (usado em 14 arquivos) -- exibe no canto inferior direito por padrao
-   - Arquivos: Evaluations, StationDetail, ActivityPage, Settings, Login, Register, ManageLandingPage, ImageLibraryPage, ManageContent, UnsentLetterActivity, ForumBoard, ReconciliationReportActivity, DeletionRequestButton, LandingSectionForm, ImageLibrary, JourneyForm
-   
-2. **Shadcn/Radix Toast** (usado em 4 arquivos) -- exibe no canto inferior direito
-   - Arquivos: JourneyDetail, UsersPage, SupportPage, ActivityManager
+### Arquivo: `src/pages/ActivityPage.tsx`
 
-## Mudancas planejadas
+1. **Detectar conteudo HTML na descricao** -- Verificar se a descricao contem tags HTML (`<p>`, `<strong>`, `<ul>`, etc.)
 
-### 1. Sonner -- `src/components/ui/sonner.tsx`
-- Adicionar `position="top-center"` ao componente `<Sonner>` para centralizar na parte superior da tela
-- Adicionar `closeButton={true}` para exibir botao de fechar visivel em cada notificacao
+2. **Quando contem HTML**: Renderizar diretamente com `dangerouslySetInnerHTML` (como ja e feito nas atividades especiais e na secao gamificada), pulando o `parseDescription`
 
-### 2. Shadcn Toaster -- `src/components/ui/toaster.tsx`
-- Alterar as classes CSS do `<ToastViewport>` para posicionar centralizado no topo da tela em vez do canto inferior direito
-- Substituir `sm:bottom-0 sm:right-0 sm:top-auto` por classes centralizadas como `top-0 left-1/2 -translate-x-1/2`
+3. **Quando nao contem HTML**: Manter o comportamento atual do `parseDescription` para descricoes em texto puro/markdown
 
-### Nenhuma alteracao necessaria nos 18 arquivos que chamam toast
-As mudancas sao exclusivamente nos dois componentes de configuracao global. Todos os `toast.success()`, `toast.error()` e `toast({...})` espalhados pelo projeto continuarao funcionando normalmente, apenas com a nova posicao e botao de fechar.
+### Logica da mudanca (linhas 1107-1141)
 
+Dentro do bloco de orientacao para atividades genericas (essay nao-especiais, quiz):
+- Se a descricao contem tags HTML → renderizar com `dangerouslySetInnerHTML` e classes de formatacao
+- Caso contrario → manter o `parseDescription` atual para intro/question/outro
+
+### Nenhum outro arquivo precisa ser alterado
+
+As demais paginas (StationDetail, JourneyDetail, LandingPage) ja utilizam `dangerouslySetInnerHTML` corretamente. Os componentes de atividades especiais tambem ja renderizam HTML via `dangerouslySetInnerHTML`.
