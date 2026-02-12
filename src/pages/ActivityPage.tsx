@@ -1115,27 +1115,32 @@ export default function ActivityPage() {
                     <FontSizeControl />
                   </div>
                   
-                  {/* Intro Text or Plain Description */}
-                  {parsedDescription?.intro && (
-                    <p className={`text-foreground leading-relaxed ${fontSizeClass}`}>
-                      {parsedDescription.intro}
-                    </p>
-                  )}
-                  
-                  {/* Highlighted Question (if markdown bold exists) */}
-                  {parsedDescription?.question && (
-                    <div className="bg-accent/10 border-l-4 border-accent p-6 rounded-r-lg">
-                      <p className={`text-primary font-medium italic leading-relaxed ${fontSizeClass}`}>
-                        "{parsedDescription.question}"
-                      </p>
-                    </div>
-                  )}
-                  
-                  {/* Outro Text */}
-                  {parsedDescription?.outro && (
-                    <p className={`text-muted-foreground leading-relaxed ${fontSizeClass}`}>
-                      {parsedDescription.outro}
-                    </p>
+                  {/* Render HTML or parsed text */}
+                  {/<[a-z][\s\S]*>/i.test(activity.description || '') ? (
+                    <div 
+                      className={`prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed ${fontSizeClass} [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2`}
+                      dangerouslySetInnerHTML={{ __html: activity.description! }} 
+                    />
+                  ) : (
+                    <>
+                      {parsedDescription?.intro && (
+                        <p className={`text-foreground leading-relaxed ${fontSizeClass}`}>
+                          {parsedDescription.intro}
+                        </p>
+                      )}
+                      {parsedDescription?.question && (
+                        <div className="bg-accent/10 border-l-4 border-accent p-6 rounded-r-lg">
+                          <p className={`text-primary font-medium italic leading-relaxed ${fontSizeClass}`}>
+                            "{parsedDescription.question}"
+                          </p>
+                        </div>
+                      )}
+                      {parsedDescription?.outro && (
+                        <p className={`text-muted-foreground leading-relaxed ${fontSizeClass}`}>
+                          {parsedDescription.outro}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               )}
