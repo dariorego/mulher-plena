@@ -181,6 +181,14 @@ export interface DeletionRequest {
   station_title?: string;
 }
 
+export interface JourneyAccess {
+  id: string;
+  user_id: string;
+  journey_id: string;
+  granted_by: string;
+  granted_at: string;
+}
+
 export interface SupportTicket {
   id: string;
   user_id: string;

@@ -214,6 +214,38 @@ export type Database = {
           },
         ]
       }
+      journey_access: {
+        Row: {
+          granted_at: string
+          granted_by: string
+          id: string
+          journey_id: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by: string
+          id?: string
+          journey_id: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string
+          id?: string
+          journey_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_access_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       journeys: {
         Row: {
           cover_image: string | null

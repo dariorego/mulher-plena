@@ -13,7 +13,7 @@ import { useActivityLogger } from '@/hooks/useActivityLogger';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { journeys, stations, activities, submissions, userBadges, badges, scheduledEvents, getJourneyProgress, getUserStats, refreshData, isJourneyUnlocked } = useData();
+  const { journeys, stations, activities, submissions, userBadges, badges, scheduledEvents, getJourneyProgress, getUserStats, refreshData, isJourneyUnlocked, getJourneyLockReason } = useData();
   const { progressBarColor } = useSettings();
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const { logAction } = useActivityLogger();
@@ -244,7 +244,9 @@ export default function Dashboard() {
                           </div>
                         ) : (
                           <p className="text-xs text-muted-foreground">
-                            Complete as jornadas anteriores para desbloquear
+                            {getJourneyLockReason(user.id, journey.id) === 'prerequisites'
+                              ? 'As Jornadas 1, 2 e 3 são pré-requisitos obrigatórios.'
+                              : 'Esta jornada ainda não foi liberada.'}
                           </p>
                         )}
                       </CardContent>
