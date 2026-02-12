@@ -75,7 +75,7 @@ export function DeletionRequestButton({ submissionId }: DeletionRequestButtonPro
           <DialogHeader>
             <DialogTitle>Solicitar Refazer Atividade</DialogTitle>
             <DialogDescription>
-              Sua solicitação será analisada por um administrador ou professor. Se aprovada, sua resposta anterior será excluída e você poderá enviar novamente.
+              Sua solicitação será analisada por um administrador ou tutor(a). Se aprovada, sua resposta anterior será excluída e você poderá enviar novamente.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
