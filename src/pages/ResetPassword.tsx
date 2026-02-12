@@ -1,95 +1,71 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import bgLogin from '@/assets/bg-login.png';
 import logoSNI from '@/assets/logoSNI.png';
-import { supabase } from '@/integrations/supabase/client';
-import { logActivityDirect } from '@/hooks/useActivityLogger';
 import { useSettings } from '@/contexts/SettingsContext';
 
-export default function Login() {
-  const [email, setEmail] = useState('');
+export default function ResetPassword() {
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
   const { loginBackgroundUrl } = useSettings();
   const backgroundImage = loginBackgroundUrl || bgLogin;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    const { error } = await login(email, password);
-    
-    if (!error) {
-      // Log login action
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        logActivityDirect(session.user.id, 'login', 'platform');
-      }
-      toast.success('Login realizado com sucesso!');
-      navigate('/dashboard');
-    } else {
-      if (error.includes('Invalid login credentials')) {
-        toast.error('Email ou senha inválidos');
-      } else if (error.includes('Email not confirmed')) {
-        toast.error('Por favor, confirme seu email antes de fazer login');
-      } else {
-        toast.error(error);
-      }
+    if (password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
     }
-    
+    if (password !== confirmPassword) {
+      toast.error('As senhas não coincidem');
+      return;
+    }
+
+    setIsLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
     setIsLoading(false);
+
+    if (error) {
+      toast.error('Erro ao redefinir senha. Tente novamente.');
+    } else {
+      toast.success('Senha redefinida com sucesso!');
+      navigate('/login');
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
-      {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       />
-      {/* Burgundy Overlay */}
       <div className="absolute inset-0 bg-primary/80" />
-      
+
       <div className="w-full max-w-md relative z-10">
         <Card>
           <div className="flex justify-center pt-6">
             <img src={logoSNI} alt="Mulher Plena" className="h-20 object-contain" />
           </div>
           <CardHeader className="space-y-1 pt-4">
-            <CardTitle className="text-2xl">Entrar</CardTitle>
+            <CardTitle className="text-2xl">Redefinir senha</CardTitle>
             <CardDescription>
-              Entre com suas credenciais para acessar a plataforma
+              Defina sua nova senha abaixo.
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Senha</Label>
-                  <Link to="/recuperar-senha" className="text-xs text-primary hover:underline">
-                    Esqueci minha senha
-                  </Link>
-                </div>
+                <Label htmlFor="password">Nova senha</Label>
                 <Input
                   id="password"
                   type="password"
@@ -97,20 +73,27 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirmar nova senha</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col gap-4">
+            <CardFooter>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Entrar
+                Redefinir senha
               </Button>
-              <p className="text-sm text-muted-foreground text-center">
-                Não tem uma conta?{' '}
-                <Link to="/registro" className="text-primary hover:underline">
-                  Cadastre-se
-                </Link>
-              </p>
             </CardFooter>
           </form>
         </Card>

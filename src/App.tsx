@@ -10,6 +10,8 @@ import { SettingsProvider } from "@/contexts/SettingsContext";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Journeys from "./pages/Journeys";
 import JourneyDetail from "./pages/JourneyDetail";
@@ -53,6 +55,8 @@ function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
       <Route path="/registro" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+      <Route path="/recuperar-senha" element={<ForgotPassword />} />
+      <Route path="/redefinir-senha" element={<ResetPassword />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/jornadas" element={<ProtectedRoute><Journeys /></ProtectedRoute>} />
       <Route path="/jornadas/:id" element={<ProtectedRoute><JourneyDetail /></ProtectedRoute>} />
