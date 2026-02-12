@@ -29,9 +29,9 @@ const roleIcons: Record<UserRole, typeof Shield> = {
 };
 
 const roleLabels: Record<UserRole, string> = {
-  admin: 'Administrador',
+  admin: 'Administrador(a)',
   professor: 'Tutor(a)',
-  aluno: 'Aluno',
+  aluno: 'Participante',
 };
 
 export default function UsersPage() {
@@ -207,9 +207,9 @@ export default function UsersPage() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="admin">Administrador</SelectItem>
+                                <SelectItem value="admin">Administrador(a)</SelectItem>
                                 <SelectItem value="professor">Tutor(a)</SelectItem>
-                                <SelectItem value="aluno">Aluno</SelectItem>
+                                <SelectItem value="aluno">Participante</SelectItem>
                               </SelectContent>
                             </Select>
                             {u.role === 'aluno' && (
