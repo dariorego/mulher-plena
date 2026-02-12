@@ -507,21 +507,27 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const journey = journeys.find(j => j.id === journeyId);
     if (!journey) return false;
 
-    // Journeys 1-3 always unlocked
-    if (journey.order_index <= 3) return true;
+    // All journeys require admin release
+    const hasAccess = journeyAccessList.some(a => a.user_id === userId && a.journey_id === journeyId);
+    if (!hasAccess) return false;
 
-    // For 4+: prerequisites + admin release
-    if (!arePrerequisitesMet(userId)) return false;
-    return journeyAccessList.some(a => a.user_id === userId && a.journey_id === journeyId);
+    // For 4+: also require prerequisites
+    if (journey.order_index > 3 && !arePrerequisitesMet(userId)) return false;
+
+    return true;
   }, [journeys, arePrerequisitesMet, journeyAccessList]);
 
   // Get the reason why a journey is locked
   const getJourneyLockReason = useCallback((userId: string, journeyId: string): 'prerequisites' | 'not_released' | null => {
     const journey = journeys.find(j => j.id === journeyId);
-    if (!journey || journey.order_index <= 3) return null;
+    if (!journey) return null;
 
-    if (!arePrerequisitesMet(userId)) return 'prerequisites';
-    if (!journeyAccessList.some(a => a.user_id === userId && a.journey_id === journeyId)) return 'not_released';
+    const hasAccess = journeyAccessList.some(a => a.user_id === userId && a.journey_id === journeyId);
+
+    // For journeys 4+: check prerequisites first
+    if (journey.order_index > 3 && !arePrerequisitesMet(userId)) return 'prerequisites';
+
+    if (!hasAccess) return 'not_released';
     return null;
   }, [journeys, arePrerequisitesMet, journeyAccessList]);
 

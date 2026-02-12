@@ -4,6 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface JourneyAccessManagerProps {
   userId: string;
@@ -11,20 +12,22 @@ interface JourneyAccessManagerProps {
 }
 
 export function JourneyAccessManager({ userId, userName }: JourneyAccessManagerProps) {
-  const { journeys, journeyAccess, grantJourneyAccess, revokeJourneyAccess } = useData();
+  const { journeys, journeyAccess, grantJourneyAccess, revokeJourneyAccess, getJourneyProgress } = useData();
   const [loadingJourneyId, setLoadingJourneyId] = useState<string | null>(null);
 
-  const advancedJourneys = [...journeys]
-    .filter(j => j.order_index > 3)
-    .sort((a, b) => a.order_index - b.order_index);
+  const sortedJourneys = [...journeys].sort((a, b) => a.order_index - b.order_index);
 
-  if (advancedJourneys.length === 0) {
+  if (sortedJourneys.length === 0) {
     return (
       <p className="text-sm text-muted-foreground py-2">
-        Nenhuma jornada avançada (4+) cadastrada.
+        Nenhuma jornada cadastrada.
       </p>
     );
   }
+
+  // Check if journeys 1-3 are 100% complete
+  const prereqJourneys = journeys.filter(j => j.order_index <= 3);
+  const prerequisitesMet = prereqJourneys.every(j => getJourneyProgress(userId, j.id) >= 100);
 
   const handleToggle = async (journeyId: string, currentlyGranted: boolean) => {
     setLoadingJourneyId(journeyId);
@@ -46,25 +49,42 @@ export function JourneyAccessManager({ userId, userName }: JourneyAccessManagerP
   return (
     <div className="space-y-2 pt-2 border-t">
       <p className="text-xs font-medium text-muted-foreground mb-2">Liberação de Jornadas</p>
-      {advancedJourneys.map((journey) => {
+      {sortedJourneys.map((journey) => {
         const isGranted = journeyAccess.some(a => a.user_id === userId && a.journey_id === journey.id);
         const isLoading = loadingJourneyId === journey.id;
+        const isAdvanced = journey.order_index > 3;
+        const canToggleAdvanced = !isAdvanced || prerequisitesMet;
 
         return (
           <div key={journey.id} className="flex items-center justify-between py-1.5 px-2 rounded bg-background">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-sm truncate">{journey.title}</span>
               {isGranted && (
-                <Badge variant="secondary" className="text-xs shrink-0">Liberada</Badge>
+                <span className="text-xs text-primary font-medium shrink-0">Liberada</span>
               )}
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
-              <Switch
-                checked={isGranted}
-                onCheckedChange={() => handleToggle(journey.id, isGranted)}
-                disabled={isLoading}
-              />
+              {isAdvanced && !canToggleAdvanced ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Switch checked={false} disabled />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs max-w-[200px]">
+                      Pré-requisitos não cumpridos. O aluno precisa concluir as Jornadas 1, 2 e 3.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <Switch
+                  checked={isGranted}
+                  onCheckedChange={() => handleToggle(journey.id, isGranted)}
+                  disabled={isLoading}
+                />
+              )}
             </div>
           </div>
         );
