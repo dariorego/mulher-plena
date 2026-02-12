@@ -170,14 +170,14 @@ export default function Evaluations() {
     setFilterDateEnd(undefined);
   };
 
-  const handleEvaluate = () => {
-    if (selectedSubmission && score) {
-      evaluateSubmission(selectedSubmission, parseInt(score), feedback, user.id);
-      toast.success('Avaliação enviada!');
-      setSelectedSubmission(null);
-      setScore('');
-      setFeedback('');
-    }
+  const handleEvaluate = async () => {
+    if (!selectedSubmission) return;
+    const finalScore = score ? parseInt(score) : 100;
+    await evaluateSubmission(selectedSubmission, finalScore, feedback, user.id);
+    toast.success(feedback ? 'Avaliação e feedback enviados!' : 'Avaliação enviada!');
+    setSelectedSubmission(null);
+    setScore('');
+    setFeedback('');
   };
 
   const handleDeleteSubmission = async (submissionId: string) => {
