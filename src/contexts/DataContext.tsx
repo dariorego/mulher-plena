@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { useSettings } from './SettingsContext';
-import { Journey, Station, Activity, QuizQuestion, ActivitySubmission, UserProgress, Badge, UserBadge, ScheduledEvent, DeletionRequest } from '@/types';
+import { Journey, Station, Activity, QuizQuestion, ActivitySubmission, UserProgress, Badge, UserBadge, ScheduledEvent, DeletionRequest, JourneyAccess } from '@/types';
 
 interface DataContextType {
   journeys: Journey[];
@@ -39,6 +39,10 @@ interface DataContextType {
   getStationProgress: (userId: string, stationId: string) => number;
   isStepCompleted: (userId: string, stationId: string, step: 'video' | 'supplementary' | 'activity' | 'podcast') => boolean;
   isJourneyUnlocked: (userId: string, journeyId: string) => boolean;
+  getJourneyLockReason: (userId: string, journeyId: string) => 'prerequisites' | 'not_released' | null;
+  grantJourneyAccess: (userId: string, journeyId: string) => Promise<void>;
+  revokeJourneyAccess: (userId: string, journeyId: string) => Promise<void>;
+  journeyAccess: JourneyAccess[];
   addScheduledEvent: (event: Omit<ScheduledEvent, 'id' | 'created_at' | 'updated_at'>) => Promise<ScheduledEvent | null>;
   updateScheduledEvent: (id: string, event: Partial<ScheduledEvent>) => Promise<void>;
   deleteScheduledEvent: (id: string) => Promise<void>;
@@ -60,6 +64,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvent[]>([]);
   const [deletionRequests, setDeletionRequests] = useState<DeletionRequest[]>([]);
+  const [journeyAccessList, setJourneyAccessList] = useState<JourneyAccess[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -81,6 +86,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         userBadgesRes,
         scheduledEventsRes,
         deletionRequestsRes,
+        journeyAccessRes,
       ] = await Promise.all([
         supabase.from('journeys').select('*').order('order_index'),
         supabase.from('stations').select('*').order('order_index'),
@@ -92,6 +98,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         supabase.from('user_badges').select('*'),
         supabase.from('scheduled_events').select('*').order('event_date'),
         supabase.from('deletion_requests').select('*').order('created_at', { ascending: false }),
+        supabase.from('journey_access' as any).select('*'),
       ]);
 
       if (journeysRes.data) setJourneys(journeysRes.data);
@@ -104,6 +111,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (userBadgesRes.data) setUserBadges(userBadgesRes.data);
       if (scheduledEventsRes.data) setScheduledEvents(scheduledEventsRes.data as ScheduledEvent[]);
       if (deletionRequestsRes.data) setDeletionRequests(deletionRequestsRes.data as DeletionRequest[]);
+      if (journeyAccessRes.data) setJourneyAccessList(journeyAccessRes.data as unknown as JourneyAccess[]);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -488,19 +496,65 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return Math.round(totalProgress / journeyStations.length);
   }, [stations, getStationProgress]);
 
-  // Check if a journey is unlocked for a user (sequential unlock from journey 4+)
+  // Check prerequisites: journeys 1-3 must be 100%
+  const arePrerequisitesMet = useCallback((userId: string): boolean => {
+    const prereqJourneys = journeys.filter(j => j.order_index >= 1 && j.order_index <= 3);
+    return prereqJourneys.every(j => getJourneyProgress(userId, j.id) >= 100);
+  }, [journeys, getJourneyProgress]);
+
+  // Check if a journey is unlocked for a user
   const isJourneyUnlocked = useCallback((userId: string, journeyId: string): boolean => {
-    const sortedJourneys = [...journeys].sort((a, b) => a.order_index - b.order_index);
-    const journey = sortedJourneys.find(j => j.id === journeyId);
+    const journey = journeys.find(j => j.id === journeyId);
     if (!journey) return false;
 
-    // Journeys with order_index 1, 2, 3 are always unlocked
+    // Journeys 1-3 always unlocked
     if (journey.order_index <= 3) return true;
 
-    // For order_index >= 4, all previous journeys must be 100%
-    const previousJourneys = sortedJourneys.filter(j => j.order_index < journey.order_index);
-    return previousJourneys.every(j => getJourneyProgress(userId, j.id) >= 100);
-  }, [journeys, getJourneyProgress]);
+    // For 4+: prerequisites + admin release
+    if (!arePrerequisitesMet(userId)) return false;
+    return journeyAccessList.some(a => a.user_id === userId && a.journey_id === journeyId);
+  }, [journeys, arePrerequisitesMet, journeyAccessList]);
+
+  // Get the reason why a journey is locked
+  const getJourneyLockReason = useCallback((userId: string, journeyId: string): 'prerequisites' | 'not_released' | null => {
+    const journey = journeys.find(j => j.id === journeyId);
+    if (!journey || journey.order_index <= 3) return null;
+
+    if (!arePrerequisitesMet(userId)) return 'prerequisites';
+    if (!journeyAccessList.some(a => a.user_id === userId && a.journey_id === journeyId)) return 'not_released';
+    return null;
+  }, [journeys, arePrerequisitesMet, journeyAccessList]);
+
+  // Admin: grant journey access
+  const grantJourneyAccess = async (userId: string, journeyId: string) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('journey_access' as any)
+      .insert({ user_id: userId, journey_id: journeyId, granted_by: user.id })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error granting journey access:', error);
+      throw error;
+    }
+    setJourneyAccessList(prev => [...prev, data as unknown as JourneyAccess]);
+  };
+
+  // Admin: revoke journey access
+  const revokeJourneyAccess = async (userId: string, journeyId: string) => {
+    const { error } = await supabase
+      .from('journey_access' as any)
+      .delete()
+      .eq('user_id', userId)
+      .eq('journey_id', journeyId);
+
+    if (error) {
+      console.error('Error revoking journey access:', error);
+      throw error;
+    }
+    setJourneyAccessList(prev => prev.filter(a => !(a.user_id === userId && a.journey_id === journeyId)));
+  };
 
   const getUserStats = (userId: string) => {
     const userSubmissions = submissions.filter(s => s.user_id === userId && s.score !== undefined);
@@ -633,6 +687,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       getStationProgress,
       isStepCompleted,
       isJourneyUnlocked,
+      getJourneyLockReason,
+      grantJourneyAccess,
+      revokeJourneyAccess,
+      journeyAccess: journeyAccessList,
       addScheduledEvent,
       updateScheduledEvent,
       deleteScheduledEvent,

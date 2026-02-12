@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 export default function Journeys() {
   const { user } = useAuth();
-  const { journeys, stations, activities, getJourneyProgress, isJourneyUnlocked } = useData();
+  const { journeys, stations, activities, getJourneyProgress, isJourneyUnlocked, getJourneyLockReason } = useData();
   const { progressBarColor } = useSettings();
 
   if (!user) return null;
@@ -68,7 +68,9 @@ export default function Journeys() {
 
                   {isAluno && !unlocked && (
                     <p className="text-xs text-muted-foreground">
-                      Complete as jornadas anteriores para desbloquear
+                      {getJourneyLockReason(user.id, journey.id) === 'prerequisites'
+                        ? 'As Jornadas 1, 2 e 3 são pré-requisitos obrigatórios. Complete-as para ter acesso às demais jornadas.'
+                        : 'Esta jornada ainda não foi liberada. O acesso depende de liberação ou aquisição.'}
                     </p>
                   )}
 
@@ -96,7 +98,9 @@ export default function Journeys() {
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Complete as jornadas anteriores para desbloquear</p>
+                      <p>{getJourneyLockReason(user.id, journey.id) === 'prerequisites'
+                        ? 'As Jornadas 1, 2 e 3 são pré-requisitos obrigatórios. Complete-as para ter acesso às demais jornadas.'
+                        : 'Esta jornada ainda não foi liberada. O acesso depende de liberação ou aquisição.'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

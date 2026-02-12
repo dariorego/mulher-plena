@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Shield, GraduationCap, UserCheck, Calendar } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Shield, GraduationCap, UserCheck, Calendar, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { JourneyAccessManager } from '@/components/admin/JourneyAccessManager';
 import type { UserRole } from '@/types';
 
 interface UserWithRole {
@@ -179,38 +181,53 @@ export default function UsersPage() {
                 {users.map((u) => {
                   const Icon = roleIcons[u.role];
                   return (
-                    <div
-                      key={u.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Icon className="h-5 w-5 text-primary" />
+                    <Collapsible key={u.id}>
+                      <div className="rounded-lg bg-muted/50">
+                        <div className="flex items-center justify-between p-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Icon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{u.name}</p>
+                              <p className="text-sm text-muted-foreground">{u.email || 'Sem email'}</p>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                Cadastro: {new Date(u.created_at).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={u.role}
+                              onValueChange={(value) => handleRoleChange(u.id, value as UserRole)}
+                              disabled={updatingUserId === u.id}
+                            >
+                              <SelectTrigger className="w-[160px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">Administrador</SelectItem>
+                                <SelectItem value="professor">Professor</SelectItem>
+                                <SelectItem value="aluno">Aluno</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {u.role === 'aluno' && (
+                              <CollapsibleTrigger asChild>
+                                <button className="p-2 rounded hover:bg-muted transition-colors">
+                                  <ChevronDown className="h-4 w-4" />
+                                </button>
+                              </CollapsibleTrigger>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{u.name}</p>
-                          <p className="text-sm text-muted-foreground">{u.email || 'Sem email'}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            Cadastro: {new Date(u.created_at).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
+                        {u.role === 'aluno' && (
+                          <CollapsibleContent className="px-3 pb-3">
+                            <JourneyAccessManager userId={u.id} userName={u.name} />
+                          </CollapsibleContent>
+                        )}
                       </div>
-                      <Select
-                        value={u.role}
-                        onValueChange={(value) => handleRoleChange(u.id, value as UserRole)}
-                        disabled={updatingUserId === u.id}
-                      >
-                        <SelectTrigger className="w-[160px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Administrador</SelectItem>
-                          <SelectItem value="professor">Professor</SelectItem>
-                          <SelectItem value="aluno">Aluno</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    </Collapsible>
                   );
                 })}
               </div>

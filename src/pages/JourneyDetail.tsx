@@ -38,7 +38,7 @@ export default function JourneyDetail() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { journeys, stations, activities, submissions, scheduledEvents, getJourneyProgress, getStationProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity, isJourneyUnlocked } = useData();
+  const { journeys, stations, activities, submissions, scheduledEvents, getJourneyProgress, getStationProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity, isJourneyUnlocked, getJourneyLockReason } = useData();
   const { progressBarColor } = useSettings();
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
@@ -55,7 +55,13 @@ export default function JourneyDetail() {
   // Redirect if journey is locked for aluno
   useEffect(() => {
     if (journey && user && user.role === 'aluno' && !isJourneyUnlocked(user.id, journey.id)) {
-      toast({ title: 'Complete as jornadas anteriores para acessar esta jornada', variant: 'destructive' });
+      const reason = getJourneyLockReason(user.id, journey.id);
+      toast({ 
+        title: reason === 'prerequisites'
+          ? 'As Jornadas 1, 2 e 3 são pré-requisitos obrigatórios. Complete-as para ter acesso às demais jornadas.'
+          : 'Esta jornada ainda não foi liberada. O acesso depende de liberação ou aquisição.',
+        variant: 'destructive' 
+      });
       navigate('/jornadas');
     }
   }, [journey?.id, user?.id, isJourneyUnlocked]);
