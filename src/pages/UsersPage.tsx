@@ -10,6 +10,7 @@ import { Shield, GraduationCap, UserCheck, Calendar, ChevronDown } from 'lucide-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { JourneyAccessManager } from '@/components/admin/JourneyAccessManager';
+import { CsvJourneyImport } from '@/components/admin/CsvJourneyImport';
 import type { UserRole } from '@/types';
 
 interface UserWithRole {
@@ -126,8 +127,13 @@ export default function UsersPage() {
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Usuários</h1>
-          <p className="text-muted-foreground">Gerencie os usuários da plataforma</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Usuários</h1>
+              <p className="text-muted-foreground">Gerencie os usuários da plataforma</p>
+            </div>
+            <CsvJourneyImport />
+          </div>
         </div>
 
         {/* Cards de contagem */}
