@@ -9,13 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { CheckCircle, Clock, ExternalLink, User, Filter, CalendarIcon, X, Trash2, RotateCcw } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CheckCircle, Clock, User, Filter, CalendarIcon, X, Trash2, RotateCcw } from 'lucide-react';
 import { SubmittedTimelineView } from '@/components/activities/SubmittedTimelineView';
 import { SubmittedTrafficLightView } from '@/components/activities/SubmittedTrafficLightView';
 import { SubmittedRoleDiaryView } from '@/components/activities/SubmittedRoleDiaryView';
@@ -193,9 +191,6 @@ export default function Evaluations() {
       toast.error('Erro ao excluir submissão. Verifique suas permissões.');
     }
   };
-
-  const submission = submissions.find(s => s.id === selectedSubmission);
-  const activity = submission ? activities.find(a => a.id === submission.activity_id) : null;
 
   return (
     <AppLayout>
@@ -432,54 +427,119 @@ export default function Evaluations() {
                   <div className="space-y-3">
                     {pendingSubmissions.map(sub => {
                       const context = getSubmissionContext(sub);
+                      const isExpanded = selectedSubmission === sub.id;
+                      const subActivity = activities.find(a => a.id === sub.activity_id);
                       return (
-                        <div key={sub.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border/50">
-                          <div className="space-y-1 min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 text-primary flex-shrink-0" />
-                              <p className="font-semibold text-foreground truncate">{context.participantName}</p>
-                            </div>
-                            {context.journeyTitle && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                {context.journeyTitle} &gt; {context.stationTitle}
+                        <div key={sub.id} className="rounded-lg bg-muted/50 border border-border/50 overflow-hidden">
+                          <div className="flex items-center justify-between p-4">
+                            <div className="space-y-1 min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4 text-primary flex-shrink-0" />
+                                <p className="font-semibold text-foreground truncate">{context.participantName}</p>
+                              </div>
+                              {context.journeyTitle && (
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {context.journeyTitle} &gt; {context.stationTitle}
+                                </p>
+                              )}
+                              <p className="font-medium text-sm text-primary">{context.activityTitle}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(sub.submitted_at).toLocaleDateString('pt-BR')}
                               </p>
-                            )}
-                            <p className="font-medium text-sm text-primary">{context.activityTitle}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(sub.submitted_at).toLocaleDateString('pt-BR')}
-                            </p>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                              <Button size="sm" variant={isExpanded ? "secondary" : "default"} onClick={() => {
+                                if (isExpanded) {
+                                  setSelectedSubmission(null);
+                                  setScore('');
+                                  setFeedback('');
+                                } else {
+                                  setSelectedSubmission(sub.id);
+                                  setScore('');
+                                  setFeedback('');
+                                }
+                              }}>
+                                {isExpanded ? 'Fechar' : 'Avaliar'}
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Excluir submissão?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Você está prestes a excluir a submissão de <strong>{context.participantName}</strong> para a atividade <strong>"{context.activityTitle}"</strong>.
+                                      <br /><br />
+                                      Isso permitirá que o participante envie a atividade novamente. Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => handleDeleteSubmission(sub.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                            <Button size="sm" onClick={() => setSelectedSubmission(sub.id)}>
-                              Avaliar
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Excluir submissão?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Você está prestes a excluir a submissão de <strong>{context.participantName}</strong> para a atividade <strong>"{context.activityTitle}"</strong>.
-                                    <br /><br />
-                                    Isso permitirá que o participante envie a atividade novamente. Esta ação não pode ser desfeita.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction 
-                                    onClick={() => handleDeleteSubmission(sub.id)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    Excluir
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
+
+                          {isExpanded && (
+                            <div className="border-t border-border/50 p-4 space-y-4">
+                              <div className="p-4 bg-background rounded-lg">
+                                <p className="text-sm font-medium mb-3">Resposta do aluno:</p>
+                                {subActivity?.title?.toLowerCase().includes('roda de amor') && sub.content ? (
+                                  <SubmittedLoveWheelView content={sub.content} />
+                                ) : subActivity?.title?.toLowerCase().includes('registro de situa') && sub.content ? (
+                                  <SubmittedRealSituationView content={sub.content} />
+                                ) : subActivity?.title?.toLowerCase().includes('carta de compromisso') && sub.content ? (
+                                  <SubmittedCommitmentLetterView content={sub.content} />
+                                ) : (subActivity?.title?.toLowerCase().includes('relato') && subActivity?.title?.toLowerCase().includes('reconcilia')) && sub.content ? (
+                                  <SubmittedReconciliationView content={sub.content} />
+                                ) : (subActivity?.title?.toLowerCase().includes('acao de amor') || subActivity?.title?.toLowerCase().includes('ação de amor')) && sub.content ? (
+                                  <SubmittedLoveActionView content={sub.content} />
+                                ) : subActivity?.title?.toLowerCase().includes('mapa de vida equilibrada') && sub.content ? (
+                                  <SubmittedBalancedLifeMapView content={sub.content} />
+                                ) : subActivity?.title?.toLowerCase().includes('farol') && sub.content ? (
+                                  <SubmittedTrafficLightView content={sub.content} />
+                                ) : (subActivity?.title?.toLowerCase().includes('diário de papéis') || subActivity?.title?.toLowerCase().includes('diario de papeis')) && sub.content ? (
+                                  <SubmittedRoleDiaryView content={sub.content} />
+                                ) : subActivity?.title?.toLowerCase().includes('linha da vida') && sub.content ? (
+                                  <SubmittedTimelineView content={sub.content} />
+                                ) : sub.content?.startsWith('data:image') ? (
+                                  <img 
+                                    src={sub.content} 
+                                    alt="Resposta do aluno" 
+                                    className="max-w-full h-auto rounded-md"
+                                  />
+                                ) : (
+                                  <p className="text-sm break-all whitespace-pre-wrap">{sub.content}</p>
+                                )}
+                              </div>
+                              {showScoreToStudents && (
+                                <div className="space-y-2">
+                                  <Label>Nota (0-100)</Label>
+                                  <Input type="number" min="0" max="100" value={score} onChange={e => setScore(e.target.value)} />
+                                </div>
+                              )}
+                              {showFeedbackToStudents && (
+                                <div className="space-y-2">
+                                  <Label>Feedback</Label>
+                                  <Textarea value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Comentários..." />
+                                </div>
+                              )}
+                              <div className="flex justify-end gap-2">
+                                <Button variant="outline" onClick={() => { setSelectedSubmission(null); setScore(''); setFeedback(''); }}>Cancelar</Button>
+                                <Button onClick={handleEvaluate} disabled={showScoreToStudents && !score}>Enviar Avaliação</Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -558,71 +618,7 @@ export default function Evaluations() {
           </TabsContent>
         </Tabs>
 
-        <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
-          <DialogContent className={cn(
-            "max-h-[90vh] flex flex-col",
-            (activity?.title?.toLowerCase().includes('diário de papéis') || activity?.title?.toLowerCase().includes('diario de papeis') || activity?.title?.toLowerCase().includes('acao de amor') || activity?.title?.toLowerCase().includes('ação de amor') || activity?.title?.toLowerCase().includes('mapa de vida equilibrada') || (activity?.title?.toLowerCase().includes('relato') && activity?.title?.toLowerCase().includes('reconcilia')) || activity?.title?.toLowerCase().includes('carta de compromisso') || activity?.title?.toLowerCase().includes('registro de situa') || activity?.title?.toLowerCase().includes('roda de amor')) ? 'sm:max-w-4xl' : ''
-          )}>
-            <DialogHeader>
-              <DialogTitle>Avaliar: {activity?.title}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-1">
-              <div className="p-3 bg-muted rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium">Resposta do aluno:</p>
-                  <Link to={`/submissao/${selectedSubmission}`} target="_blank">
-                    <Button variant="ghost" size="sm">
-                      <ExternalLink className="h-4 w-4 mr-1" /> Ver completo
-                    </Button>
-                  </Link>
-                </div>
-                {activity?.title?.toLowerCase().includes('roda de amor') && submission?.content ? (
-                  <SubmittedLoveWheelView content={submission.content} />
-                ) : activity?.title?.toLowerCase().includes('registro de situa') && submission?.content ? (
-                  <SubmittedRealSituationView content={submission.content} />
-                ) : activity?.title?.toLowerCase().includes('carta de compromisso') && submission?.content ? (
-                  <SubmittedCommitmentLetterView content={submission.content} />
-                ) : (activity?.title?.toLowerCase().includes('relato') && activity?.title?.toLowerCase().includes('reconcilia')) && submission?.content ? (
-                  <SubmittedReconciliationView content={submission.content} />
-                ) : (activity?.title?.toLowerCase().includes('acao de amor') || activity?.title?.toLowerCase().includes('ação de amor')) && submission?.content ? (
-                  <SubmittedLoveActionView content={submission.content} />
-                ) : activity?.title?.toLowerCase().includes('mapa de vida equilibrada') && submission?.content ? (
-                  <SubmittedBalancedLifeMapView content={submission.content} />
-                ) : activity?.title?.toLowerCase().includes('farol') && submission?.content ? (
-                  <SubmittedTrafficLightView content={submission.content} />
-                ) : (activity?.title?.toLowerCase().includes('diário de papéis') || activity?.title?.toLowerCase().includes('diario de papeis')) && submission?.content ? (
-                  <SubmittedRoleDiaryView content={submission.content} />
-                ) : activity?.title?.toLowerCase().includes('linha da vida') && submission?.content ? (
-                  <SubmittedTimelineView content={submission.content} />
-                ) : submission?.content?.startsWith('data:image') ? (
-                  <img 
-                    src={submission.content} 
-                    alt="Resposta do aluno" 
-                    className="max-w-full h-auto rounded-md max-h-32 object-contain"
-                  />
-                ) : (
-                  <p className="text-sm break-all whitespace-pre-wrap line-clamp-6">{submission?.content}</p>
-                )}
-              </div>
-              {showScoreToStudents && (
-                <div className="space-y-2">
-                  <Label>Nota (0-100)</Label>
-                  <Input type="number" min="0" max="100" value={score} onChange={e => setScore(e.target.value)} />
-                </div>
-              )}
-              {showFeedbackToStudents && (
-                <div className="space-y-2">
-                  <Label>Feedback</Label>
-                  <Textarea value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Comentários..." />
-                </div>
-              )}
-            </div>
-            <DialogFooter className="flex-shrink-0">
-              <Button variant="outline" onClick={() => setSelectedSubmission(null)}>Cancelar</Button>
-              <Button onClick={handleEvaluate} disabled={showScoreToStudents && !score}>Enviar Avaliação</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+
       </div>
     </AppLayout>
   );
