@@ -35,6 +35,7 @@ const activityLabels = {
 };
 
 export default function JourneyDetail() {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { journeys, stations, activities, submissions, scheduledEvents, getJourneyProgress, getStationProgress, addStation, updateStation, deleteStation, addActivity, updateActivity, deleteActivity, isJourneyUnlocked } = useData();
