@@ -1,64 +1,31 @@
 
 
-# Avaliacao Inline -- Substituir Pop-up por Visualizacao na Pagina
+# Centralizar Notificacoes e Adicionar Botao de Fechar
 
 ## Resumo
 
-Substituir o modal (Dialog) de avaliacao por uma visualizacao expandida inline na propria pagina. Ao clicar em "Avaliar", o conteudo completo da submissao sera exibido diretamente abaixo do item selecionado (ou em uma secao dedicada), junto com os campos de nota e feedback -- eliminando pop-ups e o botao "Ver completo".
+O projeto utiliza dois sistemas de notificacao que exibem mensagens no canto inferior direito, podendo sobrepor botoes e areas de acao. A proposta e centralizar todas as notificacoes na tela e adicionar um botao visivel de fechamento.
+
+## Sistemas de notificacao encontrados
+
+O projeto possui **dois sistemas distintos** de toast/notificacao:
+
+1. **Sonner** (usado em 14 arquivos) -- exibe no canto inferior direito por padrao
+   - Arquivos: Evaluations, StationDetail, ActivityPage, Settings, Login, Register, ManageLandingPage, ImageLibraryPage, ManageContent, UnsentLetterActivity, ForumBoard, ReconciliationReportActivity, DeletionRequestButton, LandingSectionForm, ImageLibrary, JourneyForm
+   
+2. **Shadcn/Radix Toast** (usado em 4 arquivos) -- exibe no canto inferior direito
+   - Arquivos: JourneyDetail, UsersPage, SupportPage, ActivityManager
 
 ## Mudancas planejadas
 
-### Arquivo: `src/pages/Evaluations.tsx`
+### 1. Sonner -- `src/components/ui/sonner.tsx`
+- Adicionar `position="top-center"` ao componente `<Sonner>` para centralizar na parte superior da tela
+- Adicionar `closeButton={true}` para exibir botao de fechar visivel em cada notificacao
 
-1. **Remover o Dialog de avaliacao** (linhas 561-625) -- todo o bloco `<Dialog>` sera eliminado.
+### 2. Shadcn Toaster -- `src/components/ui/toaster.tsx`
+- Alterar as classes CSS do `<ToastViewport>` para posicionar centralizado no topo da tela em vez do canto inferior direito
+- Substituir `sm:bottom-0 sm:right-0 sm:top-auto` por classes centralizadas como `top-0 left-1/2 -translate-x-1/2`
 
-2. **Substituir por painel inline expandido** -- Ao clicar em "Avaliar", o item da lista se expande para mostrar:
-   - O conteudo completo da submissao (sem `line-clamp`, sem `max-h-32` para imagens)
-   - Todos os componentes especializados (SubmittedTimelineView, SubmittedLoveActionView, etc.) em tamanho completo
-   - Campos de Nota e Feedback diretamente abaixo do conteudo
-   - Botoes "Cancelar" e "Enviar Avaliacao"
-
-3. **Remover o botao/link "Ver completo"** -- como o conteudo ja sera exibido por inteiro, nao ha necessidade desse link.
-
-4. **Layout expandido** -- O painel inline ocupara toda a largura disponivel, com o conteudo da resposta sem restricoes de altura ou truncamento.
-
-## Detalhes Tecnicos
-
-### Estrutura do item expandido
-
-Cada item da lista de pendentes tera dois estados:
-- **Colapsado** (padrao): mostra participante, jornada, estacao, atividade e botao "Avaliar" (como ja funciona)
-- **Expandido** (ao clicar "Avaliar"): expande para mostrar o conteudo completo + campos de avaliacao
-
-```text
-+-------------------------------------------------------------------+
-| [icone] Participante                                              |
-| Jornada > Estacao                                                 |
-| Titulo da Atividade                     [Avaliar] [Excluir]       |
-+-------------------------------------------------------------------+
-|  Resposta do aluno:                                               |
-|  [Conteudo completo - tabela, imagem, texto, etc.]                |
-|                                                                   |
-|  Nota (0-100): [________]                                         |
-|  Feedback: [________________________]                             |
-|                                                                   |
-|  [Cancelar]  [Enviar Avaliacao]                                   |
-+-------------------------------------------------------------------+
-```
-
-### Logica de estado
-
-- `selectedSubmission` continua sendo usado, mas agora controla qual item esta expandido na lista (em vez de abrir um modal)
-- Ao clicar "Avaliar" em outro item, o anterior fecha e o novo abre
-- Ao clicar "Cancelar" ou "Enviar Avaliacao", o painel fecha
-
-### Conteudo completo sem restricoes
-
-- Imagens: removido `max-h-32` e `line-clamp-6`, exibidas em tamanho natural
-- Textos: sem `line-clamp`, exibidos por completo com `whitespace-pre-wrap`
-- Componentes especializados: renderizados sem restricoes de tamanho
-
-### Arquivos modificados
-
-- **`src/pages/Evaluations.tsx`** -- unico arquivo alterado
+### Nenhuma alteracao necessaria nos 18 arquivos que chamam toast
+As mudancas sao exclusivamente nos dois componentes de configuracao global. Todos os `toast.success()`, `toast.error()` e `toast({...})` espalhados pelo projeto continuarao funcionando normalmente, apenas com a nova posicao e botao de fechar.
 
