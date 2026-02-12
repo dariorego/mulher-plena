@@ -65,7 +65,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold">Olá, {user.name.split(' ')[0]}!</h1>
           <p className="text-muted-foreground">
             {user.role === 'aluno' && 'Continue sua jornada de aprendizado'}
-            {user.role === 'professor' && 'Acompanhe o progresso dos alunos'}
+            {user.role === 'professor' && 'Acompanhe o progresso das participantes'}
             {user.role === 'admin' && 'Gerencie a plataforma de cursos'}
           </p>
         </div>
