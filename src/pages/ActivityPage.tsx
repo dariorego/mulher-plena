@@ -59,6 +59,7 @@ const activityLabels = {
 };
 
 export default function ActivityPage() {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();

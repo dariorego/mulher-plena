@@ -20,6 +20,7 @@ import activityButtonImage from '@/assets/activity-button.png';
 import atividadeTitleImage from '@/assets/atividade-title.png';
 
 export default function StationDetail() {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { 
