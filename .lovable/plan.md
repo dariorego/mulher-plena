@@ -1,51 +1,50 @@
 
 
-## Melhorias na Pagina de Usuarios
+## Funcionalidade "Esqueci a Senha"
 
-### 1. Filtros de busca
-Adicionar na parte superior da lista de usuarios dois filtros:
-- **Campo de texto** para buscar por nome (filtragem em tempo real enquanto digita)
-- **Select de perfil** com opcoes: Todos, Administrador(a), Tutor(a), Participante
+### O que ja temos
+O Supabase Auth possui suporte nativo para redefinicao de senha. Nao e necessario criar tabelas, edge functions ou configuracoes extras. Basta usar dois metodos do SDK:
+- `resetPasswordForEmail(email)` - envia o email com link de redefinicao
+- `updateUser({ password })` - atualiza a senha apos o usuario clicar no link
 
-### 2. Edicao de nome do usuario
-Ao lado do nome de cada usuario, adicionar um botao de edicao (icone de lapis). Ao clicar:
-- O nome se transforma em um campo de texto editavel (inline)
-- Botoes de confirmar e cancelar aparecem
-- Ao confirmar, atualiza o nome na tabela `profiles` do Supabase
-- Feedback via toast de sucesso ou erro
+### O que sera implementado
 
-### 3. Icones de status das jornadas
-Para cada usuario com role "aluno", exibir na linha do usuario uma sequencia de 9 circulos/icones representando as jornadas (ordenadas por `order_index`), com cores indicando o status:
-- **Verde**: jornada 100% concluida
-- **Amarelo**: jornada em andamento (progresso > 0% e < 100%)
-- **Vermelho**: jornada com acesso liberado mas nao iniciada (0%)
-- **Cinza**: jornada sem acesso liberado (nao contratada)
+**1. Link "Esqueci minha senha" na tela de Login**
+- Adicionar um link abaixo do campo de senha em `src/pages/Login.tsx`
+- O link levara para uma nova pagina `/recuperar-senha`
 
-Os icones exibirao o numero da jornada dentro e um tooltip com o nome e percentual de progresso ao passar o mouse.
+**2. Nova pagina de solicitacao de recuperacao (`src/pages/ForgotPassword.tsx`)**
+- Campo de email
+- Botao "Enviar link de recuperacao"
+- Chama `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/redefinir-senha' })`
+- Exibe mensagem de confirmacao apos envio
+
+**3. Nova pagina de redefinicao de senha (`src/pages/ResetPassword.tsx`)**
+- Dois campos: nova senha e confirmacao de senha
+- Validacao de senha minima (6 caracteres) e correspondencia entre campos
+- Chama `supabase.auth.updateUser({ password: novaSenha })`
+- Redireciona para `/login` apos sucesso
+
+**4. Rota no App.tsx**
+- Adicionar rotas `/recuperar-senha` e `/redefinir-senha` como rotas publicas (sem ProtectedRoute)
 
 ### Detalhes Tecnicos
 
-**Arquivo principal**: `src/pages/UsersPage.tsx`
+**Arquivos novos:**
+- `src/pages/ForgotPassword.tsx`
+- `src/pages/ResetPassword.tsx`
 
-**Alteracoes necessarias**:
+**Arquivos editados:**
+- `src/pages/Login.tsx` - adicionar link "Esqueci minha senha"
+- `src/App.tsx` - adicionar as duas novas rotas
 
-1. **Estado de filtros**: Adicionar `searchName` (string) e `filterRole` (string) ao estado do componente
+**Fluxo do usuario:**
+1. Na tela de login, clica em "Esqueci minha senha"
+2. Digita o email e clica em enviar
+3. Recebe email do Supabase com link de redefinicao
+4. Clica no link, e redirecionado para `/redefinir-senha`
+5. Define a nova senha e confirma
+6. Redirecionado para `/login` com mensagem de sucesso
 
-2. **Logica de filtragem**: Criar `filteredUsers` derivado de `users` aplicando os filtros antes do `.map()` de renderizacao
-
-3. **Edicao de nome**:
-   - Estado `editingUserId` e `editingName` para controlar qual usuario esta sendo editado
-   - Funcao `handleNameUpdate` que faz `supabase.from('profiles').update({ name }).eq('id', userId)`
-   - Atualiza o estado local `users` apos sucesso
-
-4. **Icones de jornadas**:
-   - Importar `useData` do DataContext para acessar `journeys`, `journeyAccess`, `getJourneyProgress`
-   - Para cada participante, mapear as jornadas ordenadas e calcular o status com base em:
-     - `journeyAccess` para verificar se tem acesso
-     - `getJourneyProgress(userId, journeyId)` para o percentual
-   - Renderizar circulos coloridos com numeros dentro, usando Tooltip para detalhes
-
-5. **Componente de filtro**: Renderizar um bloco com `Input` e `Select` entre os cards de contagem e a lista de usuarios
-
-**Nao requer migracoes de banco** - todas as tabelas e funcoes necessarias ja existem.
+**Nao requer migracoes de banco nem configuracao extra no Supabase.**
 
