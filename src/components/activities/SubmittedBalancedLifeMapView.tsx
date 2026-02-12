@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface LifeAreaEntry {
   area: string;
@@ -39,62 +38,104 @@ function parseBalancedLifeMap(content: string): LifeAreaEntry[] {
 export function SubmittedBalancedLifeMapView({ content }: SubmittedBalancedLifeMapViewProps) {
   const isMobile = useIsMobile();
   const entries = parseBalancedLifeMap(content);
-  const [selectedEntry, setSelectedEntry] = useState<LifeAreaEntry | null>(null);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   if (entries.length === 0) {
     return <p className="whitespace-pre-wrap text-sm">{content}</p>;
   }
 
+  const toggleExpand = (index: number) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
+
   return (
     <>
-      {!isMobile ? (
-        <div className="rounded-lg border border-primary/20 overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-primary text-accent">
-                <th className="px-4 py-3 text-left text-sm font-semibold w-[22%]">Área da Vida</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold w-[30%]">Sonhos e Projetos</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Metas</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((entry, index) => (
-                <tr
-                  key={index}
-                  className={`cursor-pointer transition-colors hover:bg-accent/10 ${
-                    index % 2 === 0 ? 'bg-cream/30' : 'bg-background'
-                  }`}
-                  onClick={() => setSelectedEntry(entry)}
-                >
-                  <td className="px-4 py-3 font-medium text-primary">{entry.area}</td>
-                  <td className="px-4 py-3 text-muted-foreground line-clamp-2">{entry.dreams}</td>
-                  <td className="px-4 py-3 text-muted-foreground line-clamp-2">{entry.goals}</td>
+      <div className="space-y-3">
+        {!isMobile ? (
+          <div className="rounded-lg border border-primary/20 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-primary text-accent">
+                  <th className="px-4 py-3 text-left text-sm font-semibold w-[22%]">Área da Vida</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold w-[30%]">Sonhos e Projetos</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Metas</th>
+                  <th className="px-4 py-3 w-10"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {entries.map((entry, index) => (
-            <div
-              key={index}
-              className={`rounded-lg border border-primary/20 p-4 space-y-2 cursor-pointer transition-colors hover:bg-accent/10 ${
-                index % 2 === 0 ? 'bg-cream/30' : 'bg-background'
-              }`}
-              onClick={() => setSelectedEntry(entry)}
-            >
-              <span className="font-medium text-primary">{entry.area}</span>
-              <p className="text-sm text-muted-foreground line-clamp-1">
-                <strong>Sonhos:</strong> {entry.dreams}
-              </p>
-              <p className="text-sm text-muted-foreground line-clamp-1">
-                <strong>Metas:</strong> {entry.goals}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {entries.map((entry, index) => (
+                  <>
+                    <tr
+                      key={`row-${index}`}
+                      className={`cursor-pointer transition-colors hover:bg-accent/10 ${
+                        index % 2 === 0 ? 'bg-cream/30' : 'bg-background'
+                      } ${expandedIndex === index ? 'bg-accent/10' : ''}`}
+                      onClick={() => toggleExpand(index)}
+                    >
+                      <td className="px-4 py-3 font-medium text-primary">{entry.area}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{expandedIndex === index ? '' : <span className="line-clamp-2">{entry.dreams}</span>}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{expandedIndex === index ? '' : <span className="line-clamp-2">{entry.goals}</span>}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {expandedIndex === index ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </td>
+                    </tr>
+                    {expandedIndex === index && (
+                      <tr key={`detail-${index}`}>
+                        <td colSpan={4} className="px-6 py-4 bg-accent/5 border-t border-primary/10">
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Sonhos e Projetos</p>
+                              <p className="text-foreground leading-relaxed whitespace-pre-wrap">{entry.dreams}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Metas</p>
+                              <p className="text-foreground leading-relaxed whitespace-pre-wrap">{entry.goals}</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {entries.map((entry, index) => (
+              <div
+                key={index}
+                className={`rounded-lg border border-primary/20 p-4 space-y-2 cursor-pointer transition-colors hover:bg-accent/10 ${
+                  index % 2 === 0 ? 'bg-cream/30' : 'bg-background'
+                }`}
+                onClick={() => toggleExpand(index)}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-primary">{entry.area}</span>
+                  {expandedIndex === index ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                </div>
+                {expandedIndex === index ? (
+                  <div className="pt-2 border-t border-primary/10 space-y-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Sonhos e Projetos</p>
+                      <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">{entry.dreams}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Metas</p>
+                      <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">{entry.goals}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground line-clamp-1"><strong>Sonhos:</strong> {entry.dreams}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-1"><strong>Metas:</strong> {entry.goals}</p>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Sugestão de Prática Doutrinária */}
       <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 mt-4 space-y-2">
@@ -108,25 +149,6 @@ export function SubmittedBalancedLifeMapView({ content }: SubmittedBalancedLifeM
           {PRATICA_DOUTRINARIA}
         </p>
       </div>
-
-      {/* Dialog de detalhe */}
-      <Dialog open={!!selectedEntry} onOpenChange={() => setSelectedEntry(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-primary font-cinzel">{selectedEntry?.area}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Sonhos e Projetos</p>
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap">{selectedEntry?.dreams}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Metas</p>
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap">{selectedEntry?.goals}</p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
