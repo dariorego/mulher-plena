@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from '@/components/ui/dropdown-menu';
-import { LayoutDashboard, BookOpen, Trophy, Users, Settings, LogOut, ClipboardCheck, GraduationCap, Menu, X, Home, Pencil, ChevronDown, ImageIcon, Calendar, HelpCircle, Activity } from 'lucide-react';
+import { Home, BookOpen, Trophy, Users, Settings, LogOut, ClipboardCheck, GraduationCap, Menu, X, Pencil, ChevronDown, ImageIcon, Calendar, HelpCircle, Activity } from 'lucide-react';
 import logoSNI from '@/assets/logoSNI.png';
 interface AppLayoutProps {
   children: ReactNode;
@@ -32,8 +32,8 @@ const isNavGroup = (entry: NavEntry): entry is NavGroup => {
 const navItems: Record<string, NavEntry[]> = {
   aluno: [{
     path: '/dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard
+    label: 'Início',
+    icon: Home
   }, {
     path: '/jornadas',
     label: 'Jornadas',
@@ -49,8 +49,8 @@ const navItems: Record<string, NavEntry[]> = {
   }],
   professor: [{
     path: '/dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard
+    label: 'Início',
+    icon: Home
   }, {
     path: '/jornadas',
     label: 'Jornadas',
@@ -66,8 +66,8 @@ const navItems: Record<string, NavEntry[]> = {
   }],
   admin: [{
     path: '/dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard
+    label: 'Início',
+    icon: Home
   }, {
     label: 'Edição',
     icon: Pencil,
