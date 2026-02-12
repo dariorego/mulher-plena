@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, CheckCheck } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -14,6 +14,7 @@ interface JourneyAccessManagerProps {
 export function JourneyAccessManager({ userId, userName }: JourneyAccessManagerProps) {
   const { journeys, journeyAccess, grantJourneyAccess, revokeJourneyAccess, getJourneyProgress } = useData();
   const [loadingJourneyId, setLoadingJourneyId] = useState<string | null>(null);
+  const [grantingAll, setGrantingAll] = useState(false);
 
   const sortedJourneys = [...journeys].sort((a, b) => a.order_index - b.order_index);
 
@@ -46,9 +47,52 @@ export function JourneyAccessManager({ userId, userName }: JourneyAccessManagerP
     }
   };
 
+  const handleGrantAll = async () => {
+    setGrantingAll(true);
+    try {
+      const toGrant = sortedJourneys.filter((journey) => {
+        const isGranted = journeyAccess.some(a => a.user_id === userId && a.journey_id === journey.id);
+        const isAdvanced = journey.order_index > 3;
+        const canToggle = !isAdvanced || prerequisitesMet;
+        return !isGranted && canToggle;
+      });
+      for (const journey of toGrant) {
+        await grantJourneyAccess(userId, journey.id);
+      }
+      if (toGrant.length > 0) {
+        toast({ title: `${toGrant.length} jornada(s) liberada(s) para ${userName}` });
+      } else {
+        toast({ title: 'Todas as jornadas elegíveis já estão liberadas' });
+      }
+    } catch (error: any) {
+      toast({ title: 'Erro ao liberar jornadas', description: error.message, variant: 'destructive' });
+    } finally {
+      setGrantingAll(false);
+    }
+  };
+
+  const allEligibleGranted = sortedJourneys.every((j) => {
+    const isGranted = journeyAccess.some(a => a.user_id === userId && a.journey_id === j.id);
+    const isAdvanced = j.order_index > 3;
+    const canToggle = !isAdvanced || prerequisitesMet;
+    return isGranted || !canToggle;
+  });
+
   return (
     <div className="space-y-2 pt-2 border-t">
-      <p className="text-xs font-medium text-muted-foreground mb-2">Liberação de Jornadas</p>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-medium text-muted-foreground">Liberação de Jornadas</p>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 text-xs gap-1"
+          onClick={handleGrantAll}
+          disabled={grantingAll || allEligibleGranted}
+        >
+          {grantingAll ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCheck className="h-3 w-3" />}
+          Liberar todas
+        </Button>
+      </div>
       {sortedJourneys.map((journey) => {
         const isGranted = journeyAccess.some(a => a.user_id === userId && a.journey_id === journey.id);
         const isLoading = loadingJourneyId === journey.id;
