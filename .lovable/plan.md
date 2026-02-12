@@ -1,30 +1,86 @@
 
-# Corrigir Exibicao de HTML Nao Renderizado nas Descricoes de Atividades
+# Controle de Liberacao de Jornadas pelo Painel Administrativo
 
-## Problema
+## Resumo
 
-Quando o administrador cria descricoes de atividades usando o editor rich-text (que gera HTML como `<p>`, `<strong>`, `<ul>`, etc.), essas tags aparecem visíveis como texto cru para o participante, em vez de serem renderizadas como formatacao.
+Criar um sistema onde o administrador controla quais jornadas estao liberadas para os participantes, mantendo as Jornadas 1, 2 e 3 como pre-requisitos obrigatorios. Exibir mensagens distintas dependendo do motivo do bloqueio.
 
-## Causa Raiz
+## Regras de Acesso (nova logica)
 
-No arquivo `src/pages/ActivityPage.tsx`, a funcao `parseDescription` (linha 283) tenta interpretar a descricao como markdown com marcadores `**`. Quando a descricao contem HTML em vez de markdown, o parse falha e o texto e exibido como texto puro via `{parsedDescription.intro}` (linha 1120), mostrando as tags HTML literalmente.
+1. **Jornadas 1, 2 e 3** (order_index 1-3): sempre acessiveis a todos os participantes
+2. **Jornadas 4+**: requerem DUAS condicoes simultaneas:
+   - O participante deve ter concluido 100% das Jornadas 1, 2 e 3
+   - O administrador deve ter liberado a jornada para aquele participante
 
-## Solucao
+## Mensagens de bloqueio
 
-### Arquivo: `src/pages/ActivityPage.tsx`
+- **Pre-requisitos nao cumpridos**: "As Jornadas 1, 2 e 3 sao pre-requisitos obrigatorios. Complete-as para ter acesso as demais jornadas."
+- **Nao liberada pelo admin**: "Esta jornada ainda nao foi liberada. O acesso depende de liberacao ou aquisicao."
 
-1. **Detectar conteudo HTML na descricao** -- Verificar se a descricao contem tags HTML (`<p>`, `<strong>`, `<ul>`, etc.)
+## Detalhes Tecnicos
 
-2. **Quando contem HTML**: Renderizar diretamente com `dangerouslySetInnerHTML` (como ja e feito nas atividades especiais e na secao gamificada), pulando o `parseDescription`
+### 1. Nova tabela no Supabase: `journey_access`
 
-3. **Quando nao contem HTML**: Manter o comportamento atual do `parseDescription` para descricoes em texto puro/markdown
+Armazena as liberacoes feitas pelo administrador por participante e jornada.
 
-### Logica da mudanca (linhas 1107-1141)
+```
+Colunas:
+- id (uuid, PK)
+- user_id (uuid, FK -> auth.users)
+- journey_id (uuid, FK -> journeys)
+- granted_by (uuid, FK -> auth.users)
+- granted_at (timestamptz, default now())
+- UNIQUE(user_id, journey_id)
+```
 
-Dentro do bloco de orientacao para atividades genericas (essay nao-especiais, quiz):
-- Se a descricao contem tags HTML → renderizar com `dangerouslySetInnerHTML` e classes de formatacao
-- Caso contrario → manter o `parseDescription` atual para intro/question/outro
+Politicas RLS:
+- SELECT: usuarios autenticados podem ver seus proprios registros; admins e professores veem todos
+- INSERT/DELETE: somente admins
 
-### Nenhum outro arquivo precisa ser alterado
+### 2. Atualizar `DataContext.tsx`
 
-As demais paginas (StationDetail, JourneyDetail, LandingPage) ja utilizam `dangerouslySetInnerHTML` corretamente. Os componentes de atividades especiais tambem ja renderizam HTML via `dangerouslySetInnerHTML`.
+- Buscar dados da tabela `journey_access` no `fetchData`
+- Alterar a funcao `isJourneyUnlocked` para verificar as duas condicoes (pre-requisitos + liberacao admin)
+- Criar funcao auxiliar `getJourneyLockReason` que retorna o motivo do bloqueio: `'prerequisites'` ou `'not_released'`
+- Adicionar funcoes `grantJourneyAccess(userId, journeyId)` e `revokeJourneyAccess(userId, journeyId)` para o admin
+
+### 3. Atualizar `Journeys.tsx`
+
+- Usar `getJourneyLockReason` para exibir a mensagem correta no tooltip de jornadas bloqueadas
+- Mensagens diferenciadas conforme o motivo do bloqueio
+
+### 4. Atualizar `JourneyDetail.tsx`
+
+- Alterar a mensagem do toast de redirecionamento para refletir o motivo correto do bloqueio
+
+### 5. Atualizar `Dashboard.tsx`
+
+- Atualizar a mensagem exibida em jornadas bloqueadas para ser contextual
+
+### 6. Criar painel de liberacao na `UsersPage.tsx`
+
+- Adicionar um botao ou secao por usuario para gerenciar o acesso as jornadas
+- Ao expandir um usuario, exibir as jornadas 4+ com toggle (switch) para liberar/revogar acesso
+- Mostrar quais jornadas ja foram liberadas com indicador visual
+
+### 7. Atualizar tipos em `src/types/index.ts`
+
+- Adicionar interface `JourneyAccess` com os campos da nova tabela
+
+## Fluxo do Administrador
+
+1. Acessa a pagina de Usuarios
+2. Localiza o participante
+3. Visualiza as jornadas disponiveis para liberacao (4+)
+4. Ativa/desativa o acesso com um toggle
+5. A alteracao e refletida imediatamente para o participante
+
+## Arquivos modificados
+
+- **Nova migracao SQL**: criacao da tabela `journey_access` com RLS
+- `src/types/index.ts`: nova interface `JourneyAccess`
+- `src/contexts/DataContext.tsx`: fetch de `journey_access`, logica de `isJourneyUnlocked` e `getJourneyLockReason`, funcoes de grant/revoke
+- `src/pages/Journeys.tsx`: mensagens diferenciadas por motivo de bloqueio
+- `src/pages/JourneyDetail.tsx`: toast contextual no redirecionamento
+- `src/pages/Dashboard.tsx`: mensagem contextual em jornadas bloqueadas
+- `src/pages/UsersPage.tsx`: painel de liberacao de jornadas por usuario
