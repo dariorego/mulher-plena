@@ -1093,6 +1093,44 @@ export default function ActivityPage() {
           </Card>
         )}
 
+        {/* Carta de Compromisso - standalone block */}
+        {!existingSubmission && isCommitmentLetter(activity.title) && user.role === 'aluno' && (
+          <Card className="border-primary/20 overflow-hidden">
+            <div className="bg-primary py-6 px-6">
+              <h1 className="text-2xl md:text-3xl font-cinzel text-accent text-center tracking-wide">
+                {activity.title}
+              </h1>
+            </div>
+            <CardContent className="pt-8 space-y-6">
+              <CommitmentLetterActivity
+                description={activity.description}
+                onSubmit={async (content) => {
+                  setIsSubmitting(true);
+                  await submitActivity({
+                    activity_id: activity.id,
+                    user_id: user.id,
+                    content,
+                  });
+                  logAction('submit_activity', 'activity', {
+                    resourceId: activity.id,
+                    activityId: activity.id,
+                    stationId: station?.id,
+                    journeyId: journey?.id,
+                    metadata: { title: activity.title, type: activity.type },
+                  });
+                  toast.success('Carta de Compromisso enviada com sucesso!');
+                  setIsSubmitting(false);
+                  if (station) {
+                    navigate(`/estacao/${station.id}`);
+                  }
+                }}
+                isSubmitting={isSubmitting}
+                fontSizeClass={fontSizeClass}
+              />
+            </CardContent>
+          </Card>
+        )}
+
         {/* Activity Content - Forum always shows, others only if not submitted */}
         {((!existingSubmission || activity.type === 'forum') && user.role === 'aluno' && !isUnsentLetter(activity.title) && !isLoveAction(activity.title) && !isReconciliationReport(activity.title) && !isCommitmentLetter(activity.title) && !isRealSituation(activity.title) && !isLoveWheel(activity.title) && !isWellBeingDiary(activity.title) && !isEmotionalInventory(activity.title) && !isLifeTrafficLight(activity.title)) && (
           <Card className="border-primary/20 overflow-hidden">
@@ -1480,34 +1518,6 @@ export default function ActivityPage() {
 
 
 
-              {/* Essay - Carta de Compromisso */}
-              {activity.type === 'essay' && isCommitmentLetter(activity.title) && (
-                <CommitmentLetterActivity
-                  description={activity.description}
-                  onSubmit={async (content) => {
-                    setIsSubmitting(true);
-                    await submitActivity({
-                      activity_id: activity.id,
-                      user_id: user.id,
-                      content,
-                    });
-                    logAction('submit_activity', 'activity', {
-                      resourceId: activity.id,
-                      activityId: activity.id,
-                      stationId: station?.id,
-                      journeyId: journey?.id,
-                      metadata: { title: activity.title, type: activity.type },
-                    });
-                    toast.success('Carta de Compromisso enviada com sucesso!');
-                    setIsSubmitting(false);
-                    if (station) {
-                      navigate(`/estacao/${station.id}`);
-                    }
-                  }}
-                  isSubmitting={isSubmitting}
-                  fontSizeClass={fontSizeClass}
-                />
-              )}
 
               {/* Essay - Registro de Situação Real */}
               {activity.type === 'essay' && isRealSituation(activity.title) && (
