@@ -1,27 +1,15 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Shield, GraduationCap, UserCheck, Calendar, ChevronDown } from 'lucide-react';
+import { Shield, GraduationCap, UserCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { JourneyAccessManager } from '@/components/admin/JourneyAccessManager';
 import { CsvJourneyImport } from '@/components/admin/CsvJourneyImport';
+import { UserFilters } from '@/components/admin/UserFilters';
+import { UserRow, roleLabels, type UserWithRole } from '@/components/admin/UserRow';
 import type { UserRole } from '@/types';
-
-interface UserWithRole {
-  id: string;
-  name: string;
-  email: string | null;
-  avatar_url: string | null;
-  created_at: string;
-  role: UserRole;
-  role_id: string;
-}
 
 const roleIcons: Record<UserRole, typeof Shield> = {
   admin: Shield,
@@ -29,17 +17,13 @@ const roleIcons: Record<UserRole, typeof Shield> = {
   aluno: GraduationCap,
 };
 
-const roleLabels: Record<UserRole, string> = {
-  admin: 'Administrador(a)',
-  professor: 'Tutor(a)',
-  aluno: 'Participante',
-};
-
 export default function UsersPage() {
   const { user } = useAuth();
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+  const [searchName, setSearchName] = useState('');
+  const [filterRole, setFilterRole] = useState('all');
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -70,50 +54,41 @@ export default function UsersPage() {
 
       setUsers(combined);
     } catch (error: any) {
-      toast({
-        title: 'Erro ao carregar usuários',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro ao carregar usuários', description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (user?.role === 'admin') {
-      fetchUsers();
-    }
+    if (user?.role === 'admin') fetchUsers();
   }, [user, fetchUsers]);
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     setUpdatingUserId(userId);
     try {
-      const { error } = await supabase
-        .from('user_roles')
-        .update({ role: newRole })
-        .eq('user_id', userId);
-
+      const { error } = await supabase.from('user_roles').update({ role: newRole }).eq('user_id', userId);
       if (error) throw error;
-
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
-      );
-
-      toast({
-        title: 'Role atualizada',
-        description: `Usuário alterado para ${roleLabels[newRole]}.`,
-      });
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
+      toast({ title: 'Role atualizada', description: `Usuário alterado para ${roleLabels[newRole]}.` });
     } catch (error: any) {
-      toast({
-        title: 'Erro ao atualizar role',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro ao atualizar role', description: error.message, variant: 'destructive' });
     } finally {
       setUpdatingUserId(null);
     }
   };
+
+  const handleNameUpdate = (userId: string, newName: string) => {
+    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, name: newName } : u)));
+  };
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const matchesName = !searchName || u.name.toLowerCase().includes(searchName.toLowerCase());
+      const matchesRole = filterRole === 'all' || u.role === filterRole;
+      return matchesName && matchesRole;
+    });
+  }, [users, searchName, filterRole]);
 
   if (!user || user.role !== 'admin') return null;
 
@@ -126,14 +101,12 @@ export default function UsersPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Usuários</h1>
-              <p className="text-muted-foreground">Gerencie os usuários da plataforma</p>
-            </div>
-            <CsvJourneyImport />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Usuários</h1>
+            <p className="text-muted-foreground">Gerencie os usuários da plataforma</p>
           </div>
+          <CsvJourneyImport />
         </div>
 
         {/* Cards de contagem */}
@@ -147,21 +120,25 @@ export default function UsersPage() {
                   <Icon className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  {loading ? (
-                    <Skeleton className="h-8 w-12" />
-                  ) : (
-                    <div className="text-2xl font-bold">{roleCounts[role]}</div>
-                  )}
+                  {loading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{roleCounts[role]}</div>}
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
+        {/* Filtros */}
+        <UserFilters
+          searchName={searchName}
+          onSearchNameChange={setSearchName}
+          filterRole={filterRole}
+          onFilterRoleChange={setFilterRole}
+        />
+
         {/* Lista de usuários */}
         <Card>
           <CardHeader>
-            <CardTitle>Lista de Usuários</CardTitle>
+            <CardTitle>Lista de Usuários ({filteredUsers.length})</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -180,62 +157,19 @@ export default function UsersPage() {
                   </div>
                 ))}
               </div>
-            ) : users.length === 0 ? (
+            ) : filteredUsers.length === 0 ? (
               <p className="text-muted-foreground text-center py-4">Nenhum usuário encontrado.</p>
             ) : (
               <div className="space-y-2">
-                {users.map((u) => {
-                  const Icon = roleIcons[u.role];
-                  return (
-                    <Collapsible key={u.id}>
-                      <div className="rounded-lg bg-muted/50">
-                        <div className="flex items-center justify-between p-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              <Icon className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <p className="font-medium">{u.name}</p>
-                              <p className="text-sm text-muted-foreground">{u.email || 'Sem email'}</p>
-                              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                Cadastro: {new Date(u.created_at).toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Select
-                              value={u.role}
-                              onValueChange={(value) => handleRoleChange(u.id, value as UserRole)}
-                              disabled={updatingUserId === u.id}
-                            >
-                              <SelectTrigger className="w-[160px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="admin">Administrador(a)</SelectItem>
-                                <SelectItem value="professor">Tutor(a)</SelectItem>
-                                <SelectItem value="aluno">Participante</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {u.role === 'aluno' && (
-                              <CollapsibleTrigger asChild>
-                                <button className="p-2 rounded hover:bg-muted transition-colors">
-                                  <ChevronDown className="h-4 w-4" />
-                                </button>
-                              </CollapsibleTrigger>
-                            )}
-                          </div>
-                        </div>
-                        {u.role === 'aluno' && (
-                          <CollapsibleContent className="px-3 pb-3">
-                            <JourneyAccessManager userId={u.id} userName={u.name} />
-                          </CollapsibleContent>
-                        )}
-                      </div>
-                    </Collapsible>
-                  );
-                })}
+                {filteredUsers.map((u) => (
+                  <UserRow
+                    key={u.id}
+                    user={u}
+                    onRoleChange={handleRoleChange}
+                    onNameUpdate={handleNameUpdate}
+                    updatingUserId={updatingUserId}
+                  />
+                ))}
               </div>
             )}
           </CardContent>
