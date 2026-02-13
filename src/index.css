@@ -285,7 +285,7 @@
     line-height: 1.8 !important;
   }
 
-  /* Classe global para texto ajustável */
+  /* Classe global para texto ajustável (usa variáveis CSS do FontSizeContext) */
   .text-adjustable {
     font-size: var(--app-font-size, 1rem) !important;
     line-height: var(--app-line-height, 1.6) !important;
