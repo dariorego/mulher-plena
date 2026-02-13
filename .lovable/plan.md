@@ -1,50 +1,36 @@
 
+## Padronizacao Tipografica - Jornada 4 e toda a aplicacao
 
-## Funcionalidade "Esqueci a Senha"
+### Problema Identificado
+Existem dois sistemas de tamanho de fonte inconsistentes na aplicacao:
 
-### O que ja temos
-O Supabase Auth possui suporte nativo para redefinicao de senha. Nao e necessario criar tabelas, edge functions ou configuracoes extras. Basta usar dois metodos do SDK:
-- `resetPasswordForEmail(email)` - envia o email com link de redefinicao
-- `updateUser({ password })` - atualiza a senha apos o usuario clicar no link
+1. **Classe `text-adjustable`** (usada em JourneyDetail): utiliza variaveis CSS com valores muito pequenos (8px, 12px, 14px, 16px, 20px)
+2. **Classes `.text-size-*`** (usadas em StationDetail e ActivityPage): utiliza valores maiores e mais adequados (0.875rem, 1rem, 1.25rem, 1.5rem, 1.75rem)
 
-### O que sera implementado
+No nivel "Medio", o texto da Jornada aparece com 12px enquanto o texto da Estacao aparece com 16px -- uma diferenca muito perceptivel.
 
-**1. Link "Esqueci minha senha" na tela de Login**
-- Adicionar um link abaixo do campo de senha em `src/pages/Login.tsx`
-- O link levara para uma nova pagina `/recuperar-senha`
+### Solucao
 
-**2. Nova pagina de solicitacao de recuperacao (`src/pages/ForgotPassword.tsx`)**
-- Campo de email
-- Botao "Enviar link de recuperacao"
-- Chama `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/redefinir-senha' })`
-- Exibe mensagem de confirmacao apos envio
+Unificar tudo para usar um unico sistema, alinhando os valores das variaveis CSS com os valores das classes utilitarias.
 
-**3. Nova pagina de redefinicao de senha (`src/pages/ResetPassword.tsx`)**
-- Dois campos: nova senha e confirmacao de senha
-- Validacao de senha minima (6 caracteres) e correspondencia entre campos
-- Chama `supabase.auth.updateUser({ password: novaSenha })`
-- Redireciona para `/login` apos sucesso
+### Alteracoes
 
-**4. Rota no App.tsx**
-- Adicionar rotas `/recuperar-senha` e `/redefinir-senha` como rotas publicas (sem ProtectedRoute)
+**1. `src/contexts/FontSizeContext.tsx`**
+- Atualizar os valores de `fontSizeValues` para corresponder as classes utilitarias:
+  - sm: 0.875rem / 1.5
+  - md: 1rem / 1.6
+  - lg: 1.25rem / 1.7
+  - xl: 1.5rem / 1.75
+  - 2xl: 1.75rem / 1.8
+
+**2. `src/pages/JourneyDetail.tsx`**
+- Substituir `text-adjustable` por `fontSizeClass` na descricao da jornada (para consistencia com StationDetail e ActivityPage)
+
+**3. `src/index.css`**
+- Atualizar os valores da classe `.text-adjustable` para usar `rem` em vez de `px` nos defaults, mantendo alinhamento com o contexto
 
 ### Detalhes Tecnicos
 
-**Arquivos novos:**
-- `src/pages/ForgotPassword.tsx`
-- `src/pages/ResetPassword.tsx`
+As variaveis CSS `--app-font-size` e `--app-line-height` serao atualizadas com valores em `rem` para respeitar as preferencias do navegador do usuario. A classe `text-adjustable` e as classes `.text-size-*` passarao a ter os mesmos valores efetivos, eliminando a inconsistencia visual entre as paginas.
 
-**Arquivos editados:**
-- `src/pages/Login.tsx` - adicionar link "Esqueci minha senha"
-- `src/App.tsx` - adicionar as duas novas rotas
-
-**Fluxo do usuario:**
-1. Na tela de login, clica em "Esqueci minha senha"
-2. Digita o email e clica em enviar
-3. Recebe email do Supabase com link de redefinicao
-4. Clica no link, e redirecionado para `/redefinir-senha`
-5. Define a nova senha e confirma
-6. Redirecionado para `/login` com mensagem de sucesso
-
-**Nao requer migracoes de banco nem configuracao extra no Supabase.**
-
+Nenhuma migracao de banco e necessaria. A mudanca e puramente frontend.
