@@ -14,11 +14,11 @@ const sizeLabels: Record<FontSizeLevel, string> = {
 
 // Valores em px para cada nível
 const fontSizeValues: Record<FontSizeLevel, { size: string; lineHeight: string }> = {
-  sm: { size: '8px', lineHeight: '1.4' },
-  md: { size: '12px', lineHeight: '1.5' },
-  lg: { size: '14px', lineHeight: '1.6' },
-  xl: { size: '16px', lineHeight: '1.7' },
-  '2xl': { size: '20px', lineHeight: '1.8' },
+  sm: { size: '0.875rem', lineHeight: '1.5' },
+  md: { size: '1rem', lineHeight: '1.6' },
+  lg: { size: '1.25rem', lineHeight: '1.7' },
+  xl: { size: '1.5rem', lineHeight: '1.75' },
+  '2xl': { size: '1.75rem', lineHeight: '1.8' },
 };
 
 const sizeOrder: FontSizeLevel[] = ['sm', 'md', 'lg', 'xl', '2xl'];

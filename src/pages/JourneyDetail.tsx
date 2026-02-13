@@ -162,7 +162,7 @@ export default function JourneyDetail() {
               <FontSizeControl />
             </div>
             <div 
-              className="text-muted-foreground leading-relaxed prose prose-sm max-w-none text-adjustable"
+              className={`text-muted-foreground leading-relaxed prose prose-sm max-w-none ${fontSizeClass}`}
               dangerouslySetInnerHTML={{ __html: journey.description || '' }}
             />
           </div>
