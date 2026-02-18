@@ -452,6 +452,7 @@ export type Database = {
           image_url: string | null
           journey_id: string
           order_index: number
+          supplementary_type: string | null
           supplementary_url: string | null
           title: string
           video_url: string | null
@@ -465,6 +466,7 @@ export type Database = {
           image_url?: string | null
           journey_id: string
           order_index?: number
+          supplementary_type?: string | null
           supplementary_url?: string | null
           title: string
           video_url?: string | null
@@ -478,6 +480,7 @@ export type Database = {
           image_url?: string | null
           journey_id?: string
           order_index?: number
+          supplementary_type?: string | null
           supplementary_url?: string | null
           title?: string
           video_url?: string | null

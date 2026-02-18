@@ -12,7 +12,7 @@ import { FontSizeControl } from '@/components/ui/font-size-control';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { useFontSize } from '@/contexts/FontSizeContext';
-import { ArrowLeft, Play, Film, ChevronLeft, ChevronRight, Headphones, CheckCircle, PartyPopper } from 'lucide-react';
+import { ArrowLeft, Play, Film, ChevronLeft, ChevronRight, Headphones, CheckCircle, PartyPopper, ExternalLink, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import videoAulaTitleImage from '@/assets/video-aula-title.png';
@@ -396,44 +396,95 @@ export default function StationDetail() {
           </Card>
         )}
 
-        {/* Supplementary Material - Video Modal */}
+        {/* Supplementary Material */}
         {station.supplementary_url && (
           <Card className="border-primary/20">
             <CardHeader>
               <CardTitle className="text-lg font-cinzel text-primary">Material Complementar</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3 mb-4">
-                <Film className="h-5 w-5 text-accent" />
-                <h3 className="font-medium text-primary">Vídeo Complementar</h3>
-              </div>
-              
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="w-full bg-accent text-primary hover:bg-accent/90 font-medium">
-                    <Play className="mr-2 h-4 w-4" />
-                    Assistir Vídeo
+              {/* Video type */}
+              {(!station.supplementary_type || station.supplementary_type === 'video') && (
+                <>
+                  <div className="flex items-center gap-3 mb-4">
+                    <Film className="h-5 w-5 text-accent" />
+                    <h3 className="font-medium text-primary">Vídeo Complementar</h3>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="w-full bg-accent text-primary hover:bg-accent/90 font-medium">
+                        <Play className="mr-2 h-4 w-4" />
+                        Assistir Vídeo
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl p-0 overflow-hidden">
+                      <DialogHeader className="p-6 pb-0">
+                        <DialogTitle className="font-cinzel text-primary">
+                          Material Complementar
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="p-6 pt-4">
+                        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                          <iframe
+                            src={getYouTubeEmbedUrl(station.supplementary_url)}
+                            title="Material Complementar"
+                            className="absolute top-0 left-0 w-full h-full rounded-lg"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </>
+              )}
+
+              {/* Article type */}
+              {station.supplementary_type === 'article' && (
+                <>
+                  <div className="flex items-center gap-3 mb-4">
+                    <FileText className="h-5 w-5 text-accent" />
+                    <h3 className="font-medium text-primary">Artigo Complementar</h3>
+                  </div>
+                  <Button
+                    className="w-full bg-accent text-primary hover:bg-accent/90 font-medium"
+                    onClick={() => window.open(station.supplementary_url, '_blank')}
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Abrir Artigo
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl p-0 overflow-hidden">
-                  <DialogHeader className="p-6 pb-0">
-                    <DialogTitle className="font-cinzel text-primary">
-                      Material Complementar
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="p-6 pt-4">
-                    <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                </>
+              )}
+
+              {/* Podcast type */}
+              {station.supplementary_type === 'podcast' && (
+                <>
+                  <div className="flex items-center gap-3 mb-4">
+                    <Headphones className="h-5 w-5 text-accent" />
+                    <h3 className="font-medium text-primary">Podcast</h3>
+                  </div>
+                  {station.supplementary_url?.includes('spotify.com') ? (
+                    <div className="w-full">
                       <iframe
-                        src={getYouTubeEmbedUrl(station.supplementary_url)}
-                        title="Material Complementar"
-                        className="absolute top-0 left-0 w-full h-full rounded-lg"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
+                        src={station.supplementary_url.replace('/episode/', '/embed/episode/').split('?')[0]}
+                        width="100%"
+                        height="152"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"
+                        className="rounded-lg"
                       />
                     </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  ) : (
+                    <Button
+                      className="w-full bg-accent text-primary hover:bg-accent/90 font-medium"
+                      onClick={() => window.open(station.supplementary_url, '_blank')}
+                    >
+                      <Headphones className="mr-2 h-4 w-4" />
+                      Ouvir Podcast
+                    </Button>
+                  )}
+                </>
+              )}
 
               {/* Supplementary Completion Checkbox */}
               <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${supplementaryCompleted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted/50'}`}>
