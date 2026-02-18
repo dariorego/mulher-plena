@@ -1,5 +1,6 @@
 export type UserRole = 'admin' | 'professor' | 'aluno';
 export type ActivityType = 'quiz' | 'upload' | 'essay' | 'gamified' | 'forum';
+export type SupplementaryType = 'video' | 'article' | 'podcast';
 
 export interface ForumPost {
   id: string;
@@ -58,6 +59,7 @@ export interface Station {
   video_url?: string;
   audio_url?: string;
   supplementary_url?: string;
+  supplementary_type?: SupplementaryType;
   order_index: number;
   created_at: string;
 }

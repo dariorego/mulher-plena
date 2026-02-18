@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { Station, Activity } from '@/types';
+import { Station, Activity, SupplementaryType } from '@/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload, X, Loader2, Music, Image } from 'lucide-react';
 import { ImageLibrary } from './ImageLibrary';
@@ -38,6 +39,7 @@ export function StationForm({ journeyId, station, activities = [], onSubmit, onC
   const [videoUrl, setVideoUrl] = useState<string>(station?.video_url || '');
   const [audioUrl, setAudioUrl] = useState<string>(station?.audio_url || '');
   const [supplementaryUrl, setSupplementaryUrl] = useState<string>(station?.supplementary_url || '');
+  const [supplementaryType, setSupplementaryType] = useState<SupplementaryType>(station?.supplementary_type || 'video');
   const [uploadingTop, setUploadingTop] = useState(false);
   const [uploadingCard, setUploadingCard] = useState(false);
   const [uploadingAudio, setUploadingAudio] = useState(false);
@@ -138,6 +140,7 @@ export function StationForm({ journeyId, station, activities = [], onSubmit, onC
         video_url: videoUrl || undefined,
         audio_url: audioUrl || undefined,
         supplementary_url: supplementaryUrl || undefined,
+        supplementary_type: supplementaryUrl ? supplementaryType : undefined,
         order_index: data.order_index,
       });
     } finally {
@@ -395,6 +398,21 @@ export function StationForm({ journeyId, station, activities = [], onSubmit, onC
         <p className="text-xs text-muted-foreground">
           Link para material complementar (vídeo adicional, artigo, etc.)
         </p>
+        {supplementaryUrl && (
+          <div className="mt-3 space-y-2">
+            <Label>Tipo do Material</Label>
+            <Select value={supplementaryType} onValueChange={(v) => setSupplementaryType(v as SupplementaryType)}>
+              <SelectTrigger className="w-64">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="video">Vídeo (YouTube/Vimeo)</SelectItem>
+                <SelectItem value="article">Artigo / Link Externo</SelectItem>
+                <SelectItem value="podcast">Podcast (Spotify)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* Activities Section - Only shown when editing an existing station */}

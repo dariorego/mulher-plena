@@ -102,7 +102,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       ]);
 
       if (journeysRes.data) setJourneys(journeysRes.data);
-      if (stationsRes.data) setStations(stationsRes.data);
+      if (stationsRes.data) setStations(stationsRes.data as Station[]);
       if (activitiesRes.data) setActivities(activitiesRes.data as Activity[]);
       if (questionsRes.data) setQuizQuestions(questionsRes.data);
       if (submissionsRes.data) setSubmissions(submissionsRes.data);
@@ -181,8 +181,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error adding station:', error);
       return null;
     }
-    setStations(prev => [...prev, data]);
-    return data;
+    setStations(prev => [...prev, data as Station]);
+    return data as Station;
   };
 
   const updateStation = async (id: string, station: Partial<Station>) => {
