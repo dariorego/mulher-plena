@@ -26,7 +26,7 @@ export default function ForgotPassword() {
     }
     setIsLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: window.location.origin + '/redefinir-senha',
+      redirectTo: 'https://sni.plataformaativa.com.br/redefinir-senha',
     });
     setIsLoading(false);
 
