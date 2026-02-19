@@ -54,8 +54,8 @@ export default function ForgotPassword() {
           <CardHeader className="space-y-1 pt-4">
             <CardTitle className="text-2xl">Recuperar senha</CardTitle>
             <CardDescription>
-              {sent
-                ? 'Verifique sua caixa de entrada e clique no link enviado para redefinir sua senha.'
+            {sent
+                ? 'Verifique sua caixa de entrada e clique no link enviado para redefinir sua senha. Caso não encontre, verifique também a pasta de lixeira ou spam.'
                 : 'Informe seu email para receber o link de recuperação de senha.'}
             </CardDescription>
           </CardHeader>
