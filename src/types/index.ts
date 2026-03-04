@@ -60,6 +60,7 @@ export interface Station {
   audio_url?: string;
   supplementary_url?: string;
   supplementary_type?: SupplementaryType;
+  reading_suggestion?: string;
   order_index: number;
   created_at: string;
 }

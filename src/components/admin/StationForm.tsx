@@ -45,6 +45,7 @@ export function StationForm({ journeyId, station, activities = [], onSubmit, onC
   const [uploadingAudio, setUploadingAudio] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [description, setDescription] = useState(station?.description || '');
+  const [readingSuggestion, setReadingSuggestion] = useState(station?.reading_suggestion || '');
   const [isTopLibraryOpen, setIsTopLibraryOpen] = useState(false);
   const [isCardLibraryOpen, setIsCardLibraryOpen] = useState(false);
 
@@ -141,6 +142,7 @@ export function StationForm({ journeyId, station, activities = [], onSubmit, onC
         audio_url: audioUrl || undefined,
         supplementary_url: supplementaryUrl || undefined,
         supplementary_type: supplementaryUrl ? supplementaryType : undefined,
+        reading_suggestion: readingSuggestion || undefined,
         order_index: data.order_index,
       });
     } finally {
@@ -413,6 +415,20 @@ export function StationForm({ journeyId, station, activities = [], onSubmit, onC
             </Select>
           </div>
         )}
+      </div>
+
+      {/* Reading Suggestion */}
+      <div className="space-y-2">
+        <Label htmlFor="reading_suggestion">Sugestão de Leitura</Label>
+        <Input
+          id="reading_suggestion"
+          value={readingSuggestion}
+          onChange={(e) => setReadingSuggestion(e.target.value)}
+          placeholder="Ex: Livro Universo Feminino, pp. 15-22"
+        />
+        <p className="text-xs text-muted-foreground">
+          Texto exibido como sugestão de leitura na página da estação
+        </p>
       </div>
 
       {/* Activities Section - Only shown when editing an existing station */}
