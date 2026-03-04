@@ -12,7 +12,7 @@ import { FontSizeControl } from '@/components/ui/font-size-control';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { useFontSize } from '@/contexts/FontSizeContext';
-import { ArrowLeft, Play, Film, ChevronLeft, ChevronRight, Headphones, CheckCircle, PartyPopper, ExternalLink, FileText } from 'lucide-react';
+import { ArrowLeft, Play, Film, ChevronLeft, ChevronRight, Headphones, CheckCircle, PartyPopper, ExternalLink, FileText, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import videoAulaTitleImage from '@/assets/video-aula-title.png';
@@ -506,6 +506,23 @@ export default function StationDetail() {
                   +{supplementaryPercentage}%
                 </span>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Reading Suggestion */}
+        {station.reading_suggestion && (
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-lg font-cinzel text-primary flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-accent" />
+                Sugestão de Leitura
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-foreground font-medium whitespace-pre-wrap">
+                {station.reading_suggestion}
+              </p>
             </CardContent>
           </Card>
         )}

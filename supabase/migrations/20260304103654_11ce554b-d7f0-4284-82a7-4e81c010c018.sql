@@ -1,0 +1,1 @@
+ALTER TABLE public.stations ADD COLUMN reading_suggestion TEXT;
