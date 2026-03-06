@@ -206,7 +206,7 @@
     --secondary: 200 30% 18%;
     --secondary-foreground: 40 75% 95%;
 
-    --muted: 345 30% 18%;
+    --muted: 200 30% 18%;
     --muted-foreground: 40 30% 65%;
 
     --accent: 43 52% 58%; /* Brighter gold for dark mode */
