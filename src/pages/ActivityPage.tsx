@@ -304,15 +304,16 @@ export default function ActivityPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => station ? navigate(`/estacao/${station.id}`) : navigate(-1)} className="text-[#2D6582] hover:text-[#2D6582]/80">
+          <Button variant="ghost" size="icon" onClick={() => station ? navigate(`/estacao/${station.id}`) : navigate(-1)} className="text-primary hover:text-primary/80">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <Badge variant="outline" className="gap-1 border-[#2D6582]/30 text-[#2D6582]">
+              <Badge variant="outline" className="gap-1 border-primary/30 text-primary">
                 <Icon className="h-3 w-3" />
                 {activityLabels[activity.type]}
               </Badge>
+              <Badge className="bg-accent text-primary hover:bg-accent/90">+{activity.points} pontos</Badge>
             </div>
             {station && (
               <p className="text-sm text-muted-foreground">

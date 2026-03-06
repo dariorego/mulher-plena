@@ -136,27 +136,27 @@
 
 @layer base {
   :root {
-    /* Blue & Gold Palette */
+    /* Burgundy & Gold Palette */
     --background: 40 75% 97%; /* Cream #FDF8F0 */
-    --foreground: 200 48% 20%; /* Dark blue for text */
+    --foreground: 345 47% 25%; /* Dark burgundy for text */
 
     --card: 0 0% 100%;
-    --card-foreground: 200 48% 20%;
+    --card-foreground: 345 47% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 200 48% 25%;
+    --popover-foreground: 345 47% 25%;
 
-    --primary: 200 48% 34%; /* Blue #2D6582 */
+    --primary: 345 47% 33%; /* Burgundy #7B2D42 */
     --primary-foreground: 40 75% 97%;
 
     --secondary: 40 45% 94%; /* Light cream */
-    --secondary-foreground: 200 48% 34%;
+    --secondary-foreground: 345 47% 33%;
 
     --muted: 40 30% 92%;
-    --muted-foreground: 200 25% 45%;
+    --muted-foreground: 345 25% 45%;
 
     --accent: 43 52% 54%; /* Gold #C9A84C */
-    --accent-foreground: 200 48% 25%;
+    --accent-foreground: 345 47% 25%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -167,20 +167,20 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 20% 85%;
-    --input: 200 20% 85%;
+    --border: 345 20% 85%;
+    --input: 345 20% 85%;
     --ring: 43 52% 54%;
 
     --radius: 0.5rem;
 
     /* Sidebar: Burgundy background with gold accents */
-    --sidebar-background: 200 48% 34%; /* Blue */
+    --sidebar-background: 345 47% 33%; /* Burgundy */
     --sidebar-foreground: 43 52% 54%; /* Gold */
     --sidebar-primary: 43 52% 54%; /* Gold */
-    --sidebar-primary-foreground: 200 48% 25%;
-    --sidebar-accent: 200 48% 40%; /* Lighter blue */
+    --sidebar-primary-foreground: 345 47% 25%;
+    --sidebar-accent: 345 47% 40%; /* Lighter burgundy */
     --sidebar-accent-foreground: 43 52% 54%;
-    --sidebar-border: 200 48% 28%;
+    --sidebar-border: 345 47% 28%;
     --sidebar-ring: 43 52% 54%;
 
     --chart-1: 345 47% 33%;
@@ -191,26 +191,26 @@
   }
 
   .dark {
-    --background: 200 48% 8%; /* Dark blue */
+    --background: 345 47% 8%; /* Dark burgundy */
     --foreground: 40 75% 95%;
 
-    --card: 200 48% 12%;
+    --card: 345 47% 12%;
     --card-foreground: 40 75% 95%;
 
-    --popover: 200 48% 12%;
+    --popover: 345 47% 12%;
     --popover-foreground: 40 75% 95%;
 
-    --primary: 200 48% 40%; /* Lighter blue for dark mode */
+    --primary: 345 47% 40%; /* Lighter burgundy for dark mode */
     --primary-foreground: 40 75% 97%;
 
-    --secondary: 200 30% 18%;
+    --secondary: 345 30% 18%;
     --secondary-foreground: 40 75% 95%;
 
-    --muted: 200 30% 18%;
+    --muted: 345 30% 18%;
     --muted-foreground: 40 30% 65%;
 
     --accent: 43 52% 58%; /* Brighter gold for dark mode */
-    --accent-foreground: 200 48% 12%;
+    --accent-foreground: 345 47% 12%;
 
     --success: 142 76% 42%;
     --success-foreground: 0 0% 100%;
@@ -221,17 +221,17 @@
     --destructive: 0 63% 45%;
     --destructive-foreground: 40 75% 95%;
 
-    --border: 200 30% 20%;
-    --input: 200 30% 20%;
+    --border: 345 30% 20%;
+    --input: 345 30% 20%;
     --ring: 43 52% 58%;
 
-    --sidebar-background: 200 48% 10%;
+    --sidebar-background: 345 47% 10%;
     --sidebar-foreground: 43 52% 58%;
     --sidebar-primary: 43 52% 58%;
-    --sidebar-primary-foreground: 200 48% 12%;
-    --sidebar-accent: 200 48% 15%;
+    --sidebar-primary-foreground: 345 47% 12%;
+    --sidebar-accent: 345 47% 15%;
     --sidebar-accent-foreground: 43 52% 58%;
-    --sidebar-border: 200 30% 15%;
+    --sidebar-border: 345 30% 15%;
     --sidebar-ring: 43 52% 58%;
   }
 }
