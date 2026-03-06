@@ -1063,32 +1063,54 @@ export default function ActivityPage() {
 
         {/* Already Submitted - Other types (not gamified image, not timeline, not traffic light, not diary, not balanced life map, not commitment letter, not real situation) */}
         {existingSubmission && !(activity.type === 'gamified' && existingSubmission.content?.startsWith('data:image/')) && !isTimelineActivity(activity.title) && !isTrafficLightActivity(activity.title) && !isLifeTrafficLight(activity.title) && !isDiaryActivity(activity.title) && !isBalancedLifeMap(activity.title) && !isUnsentLetter(activity.title) && !isLoveAction(activity.title) && !isReconciliationReport(activity.title) && !isCommitmentLetter(activity.title) && !isRealSituation(activity.title) && !isLoveWheel(activity.title) && !isWellBeingDiary(activity.title) && !isEmotionalInventory(activity.title) && (
-          <Card className="border-green-500/50 bg-green-50">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-                <div>
-                  <h3 className="font-semibold text-green-800">Atividade já enviada</h3>
+          <Card className="border-primary/20 overflow-hidden">
+            <div className="bg-primary py-6 px-6">
+              <h1 className="text-2xl md:text-3xl font-cinzel text-accent text-center tracking-wide">
+                {activity.title}
+              </h1>
+            </div>
+            <CardContent className="pt-6 space-y-6">
+              {/* Success Badge */}
+              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium text-green-800">Atividade enviada com sucesso!</p>
                   <p className="text-sm text-green-700">
                     Enviada em {new Date(existingSubmission.submitted_at).toLocaleDateString('pt-BR')}
-                    {(user.role !== 'aluno' || showScoreToStudents) && existingSubmission.score !== undefined && ` • Nota: ${existingSubmission.score}%`}
+                    {(user.role !== 'aluno' || showScoreToStudents) && existingSubmission.score != null && ` • Nota: ${existingSubmission.score}%`}
                   </p>
-                  {(user.role !== 'aluno' || showFeedbackToStudents) && existingSubmission.feedback && (
-                    <p className="text-sm mt-2 p-2 bg-white rounded border border-green-200">
-                      <span className="font-medium">Feedback:</span> {existingSubmission.feedback}
-                    </p>
-                  )}
-
-                  {user.role === 'aluno' && (
-                    <div className="mt-3 flex justify-end gap-2">
-                      <DeletionRequestButton submissionId={existingSubmission.id} />
-                      <Button variant="outline" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
-                        {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
+
+              {/* Submitted Content */}
+              {existingSubmission.content && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sua Resposta</span>
+                    <div className="flex-1 h-px bg-primary/20" />
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <p className="text-foreground whitespace-pre-wrap">{existingSubmission.content}</p>
+                  </div>
+                </>
+              )}
+
+              {/* Feedback */}
+              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+                <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
+                  <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
+                  <p className="text-muted-foreground whitespace-pre-wrap">{existingSubmission.feedback}</p>
+                </div>
+              )}
+
+              {user.role === 'aluno' && (
+                <div className="flex justify-end gap-2">
+                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <Button variant="outline" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
+                    {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
