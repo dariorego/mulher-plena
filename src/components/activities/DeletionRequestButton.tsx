@@ -66,7 +66,7 @@ export function DeletionRequestButton({ submissionId }: DeletionRequestButtonPro
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="gap-1">
+      <Button variant="default" size="sm" onClick={() => setOpen(true)} className="gap-1">
         <RotateCcw className="h-3.5 w-3.5" />
         Solicitar Refazer
       </Button>
