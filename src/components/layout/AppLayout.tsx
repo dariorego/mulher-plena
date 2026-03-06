@@ -189,7 +189,7 @@ export function AppLayout({
             const Icon = entry.icon;
             const isActive = isPathActive(entry.path);
             return <Link key={entry.path} to={entry.path}>
-                  <Button variant={isActive ? 'secondary' : 'ghost'} className={cn('gap-2', isActive && 'bg-primary/10 text-primary hover:bg-primary/20')}>
+                  <Button variant={isActive ? 'secondary' : 'ghost'} className={cn('gap-2 hover:!bg-[#2D6582] hover:!text-white', isActive && 'bg-primary/10 text-primary')}>
                     <Icon className="h-4 w-4" />
                     {entry.label}
                   </Button>
