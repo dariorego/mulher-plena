@@ -115,7 +115,7 @@ export default function Login() {
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Entrar
               </Button>
-              <Button variant="outline" className="w-full" asChild>
+              <Button variant="outline" className="w-full bg-[hsl(345,46%,33%)] text-white border-[hsl(345,46%,33%)] hover:bg-[hsl(345,46%,28%)] hover:text-white" asChild>
                 <Link to="/">Página Inicial</Link>
               </Button>
             </CardFooter>
