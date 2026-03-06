@@ -32,7 +32,7 @@ const defaultSettings: EvaluationSettings = {
   loginBackgroundUrl: '',
   headerBorderColor: '#b46ebe',
   progressBarColor: '#2e6682',
-  buttonBgColor: '#7B2D42',
+  buttonBgColor: '#2D6582',
   buttonTextColor: '#FFFFFF',
 };
 
