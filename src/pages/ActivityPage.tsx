@@ -1089,9 +1089,19 @@ export default function ActivityPage() {
                     <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sua Resposta</span>
                     <div className="flex-1 h-px bg-primary/20" />
                   </div>
-                  <div className="bg-muted/50 rounded-lg p-4">
-                    <p className="text-foreground whitespace-pre-wrap">{existingSubmission.content}</p>
-                  </div>
+                  <div 
+                    className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed bg-muted/50 rounded-lg p-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_hr]:my-3"
+                    dangerouslySetInnerHTML={{ 
+                      __html: existingSubmission.content
+                        .replace(/### (.+)/g, '<h3>$1</h3>')
+                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/^- (.+)$/gm, '<li>$1</li>')
+                        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                        .replace(/---/g, '<hr />')
+                        .replace(/\n\n/g, '<br /><br />')
+                        .replace(/\n/g, '<br />')
+                    }}
+                  />
                 </>
               )}
 
