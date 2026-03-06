@@ -262,7 +262,7 @@ export default function StationDetail() {
 
         {/* Video Section */}
         {videoEmbedUrl && (
-          <Card>
+          <Card className="border-t-4" style={{ borderTopColor: '#2d6582' }}>
             <div className="w-full overflow-hidden rounded-t-lg">
               <img
                 src={videoAulaTitleImage}
