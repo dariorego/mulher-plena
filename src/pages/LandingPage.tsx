@@ -9,16 +9,16 @@ import logoSNI from "@/assets/logoSNI.png";
 const BANNER_URL = "https://byslxrvqzcrjgpoatyxt.supabase.co/storage/v1/object/public/landing-images/1766405025490-5vonvbp.png";
 
 export default function LandingPage() {
-  const { data: stations = [], isLoading } = useQuery({
-    queryKey: ["landing-stations"],
+  const { data: journeys = [], isLoading } = useQuery({
+    queryKey: ["landing-journeys"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("stations")
-        .select("id, title, card_image_url, order_index")
+        .from("journeys")
+        .select("*")
         .order("order_index", { ascending: true });
 
       if (error) throw error;
-      return data;
+      return data as Journey[];
     },
   });
 
