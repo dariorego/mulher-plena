@@ -308,13 +308,6 @@ export default function ActivityPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <Badge variant="outline" className="gap-1" style={{ borderColor: 'rgba(45,101,130,0.3)', color: '#2D6582' }}>
-                <Icon className="h-3 w-3" />
-                {activityLabels[activity.type]}
-              </Badge>
-              <Badge style={{ backgroundColor: '#2D6582', color: '#ffffff' }}>+{activity.points} pontos</Badge>
-            </div>
             {station && (
               <p className="text-sm text-muted-foreground">
                 {journey?.title}
