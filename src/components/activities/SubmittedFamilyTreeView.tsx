@@ -111,29 +111,29 @@ export function SubmittedFamilyTreeView({ content }: SubmittedFamilyTreeViewProp
         
         {/* Overlay with positioned nodes */}
         <div className="absolute inset-0 flex flex-col items-center">
-          {/* Level 0 - top of tree ~28% from top */}
-          <div className="absolute flex justify-center" style={{ top: '28%' }}>
+          {/* Level 0 - top of tree */}
+          <div className="absolute flex justify-center" style={{ top: '24%' }}>
             {getByLevel(0).map(a => (
               <NumberedNode key={a.id} number={getNumber(a.id)} ancestor={a} onClick={() => setSelected(a)} level={0} />
             ))}
           </div>
 
-          {/* Level 1 - ~44% from top */}
-          <div className="absolute flex justify-center gap-6 sm:gap-10" style={{ top: '44%' }}>
+          {/* Level 1 */}
+          <div className="absolute flex justify-center gap-6 sm:gap-10" style={{ top: '38%' }}>
             {getByLevel(1).map(a => (
               <NumberedNode key={a.id} number={getNumber(a.id)} ancestor={a} onClick={() => setSelected(a)} level={1} />
             ))}
           </div>
 
-          {/* Level 2 - ~60% from top */}
-          <div className="absolute flex justify-center gap-2 sm:gap-4" style={{ top: '60%' }}>
+          {/* Level 2 */}
+          <div className="absolute flex justify-center gap-2 sm:gap-4" style={{ top: '52%' }}>
             {getByLevel(2).map(a => (
               <NumberedNode key={a.id} number={getNumber(a.id)} ancestor={a} onClick={() => setSelected(a)} level={2} />
             ))}
           </div>
 
-          {/* Level 3 - ~75% from top */}
-          <div className="absolute flex justify-center gap-[2px] sm:gap-2" style={{ top: '75%' }}>
+          {/* Level 3 */}
+          <div className="absolute flex justify-center gap-[2px] sm:gap-2" style={{ top: '65%' }}>
             {getByLevel(3).map(a => (
               <NumberedNode key={a.id} number={getNumber(a.id)} ancestor={a} onClick={() => setSelected(a)} level={3} />
             ))}
