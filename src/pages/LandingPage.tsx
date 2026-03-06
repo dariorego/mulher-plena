@@ -38,48 +38,50 @@ export default function LandingPage() {
         />
       </div>
 
-      {/* Stations Grid */}
+      {/* Jornada Essencial Highlight */}
       <section className="container mx-auto px-6 py-12">
-        <h2 className="text-2xl md:text-3xl font-cinzel font-bold text-primary mb-8 text-center">
-          Jornadas
-        </h2>
+        <div className="rounded-2xl border-2 border-primary/20 bg-card shadow-md p-8 md:p-10">
+          <h2 className="text-2xl md:text-3xl font-cinzel font-bold text-primary mb-8 text-center">
+            Jornada Essencial
+          </h2>
 
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : journeys.length === 0 ? (
-          <p className="text-center text-muted-foreground">
-            Nenhuma jornada disponível no momento.
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {journeys.map((journey) => (
-              <Link
-                key={journey.id}
-                to="/login"
-                className="group rounded-lg overflow-hidden border bg-card shadow-sm hover:shadow-lg transition-shadow"
-              >
-                {journey.cover_image ? (
-                  <img
-                    src={journey.cover_image}
-                    alt={journey.title}
-                    className="w-full h-auto object-contain"
-                  />
-                ) : (
-                  <div className="w-full h-40 bg-muted flex items-center justify-center">
-                    <span className="text-muted-foreground text-sm">Sem imagem</span>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : journeys.length === 0 ? (
+            <p className="text-center text-muted-foreground">
+              Nenhuma jornada disponível no momento.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {journeys.map((journey) => (
+                <Link
+                  key={journey.id}
+                  to="/login"
+                  className="group rounded-lg overflow-hidden border bg-card shadow-sm hover:shadow-lg transition-shadow"
+                >
+                  {journey.cover_image ? (
+                    <img
+                      src={journey.cover_image}
+                      alt={journey.title}
+                      className="w-full h-auto object-contain"
+                    />
+                  ) : (
+                    <div className="w-full h-40 bg-muted flex items-center justify-center">
+                      <span className="text-muted-foreground text-sm">Sem imagem</span>
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-center">
+                      {journey.title}
+                    </h3>
                   </div>
-                )}
-                <div className="p-4">
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-center">
-                    {journey.title}
-                  </h3>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Login Button */}
