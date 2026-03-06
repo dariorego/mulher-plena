@@ -49,13 +49,13 @@ export default function LandingPage() {
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : journeys.length === 0 ? (
+          ) : essenciais.length === 0 ? (
             <p className="text-center text-muted-foreground">
               Nenhuma jornada disponível no momento.
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {journeys.map((journey) => (
+              {essenciais.map((journey) => (
                 <Link
                   key={journey.id}
                   to="/login"
