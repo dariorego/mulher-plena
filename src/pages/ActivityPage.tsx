@@ -394,7 +394,7 @@ export default function ActivityPage() {
               </div>
               
               {/* Feedback if exists - conditional visibility for students */}
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -440,7 +440,7 @@ export default function ActivityPage() {
               )}
 
               {/* Feedback */}
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -482,7 +482,7 @@ export default function ActivityPage() {
                 <SubmittedTrafficLightView content={existingSubmission.content} />
               )}
 
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -524,7 +524,7 @@ export default function ActivityPage() {
                 <SubmittedLifeTrafficLightView content={existingSubmission.content} />
               )}
 
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -565,7 +565,7 @@ export default function ActivityPage() {
                 <SubmittedRoleDiaryView content={existingSubmission.content} />
               )}
 
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -607,7 +607,7 @@ export default function ActivityPage() {
                 <SubmittedBalancedLifeMapView content={existingSubmission.content} />
               )}
 
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -663,7 +663,7 @@ export default function ActivityPage() {
               )}
 
               {/* Feedback */}
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Feedback da Mentora</p>
                   <p className="text-foreground leading-relaxed whitespace-pre-wrap">{existingSubmission.feedback}</p>
@@ -716,7 +716,7 @@ export default function ActivityPage() {
                 <SubmittedReconciliationView content={existingSubmission.content} />
               )}
 
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -758,7 +758,7 @@ export default function ActivityPage() {
                 <SubmittedCommitmentLetterView content={existingSubmission.content} />
               )}
 
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -800,7 +800,7 @@ export default function ActivityPage() {
                 <SubmittedRealSituationView content={existingSubmission.content} />
               )}
 
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -839,7 +839,7 @@ export default function ActivityPage() {
                 <SubmittedLoveWheelView content={existingSubmission.content} />
               )}
 
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -884,7 +884,7 @@ export default function ActivityPage() {
                 <SubmittedWellBeingDiaryView content={existingSubmission.content} />
               )}
 
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -923,7 +923,7 @@ export default function ActivityPage() {
                 <SubmittedEmotionalInventoryView content={existingSubmission.content} />
               )}
 
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground">{existingSubmission.feedback}</p>
@@ -1096,7 +1096,7 @@ export default function ActivityPage() {
               )}
 
               {/* Feedback */}
-              {existingSubmission.feedback && (user.role !== 'aluno' || showFeedbackToStudents) && (
+              {existingSubmission.feedback && (
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <p className="text-sm font-medium text-primary mb-1">Feedback da Mentora:</p>
                   <p className="text-muted-foreground whitespace-pre-wrap">{existingSubmission.feedback}</p>
