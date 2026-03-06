@@ -684,7 +684,7 @@ export default function ActivityPage() {
                 {user.role === 'aluno' && (
                   <div className="flex items-center gap-2">
                     <DeletionRequestButton submissionId={existingSubmission.id} />
-                    <Button variant="ghost" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing} className="text-muted-foreground">
+                    <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                       {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                     </Button>
                   </div>
