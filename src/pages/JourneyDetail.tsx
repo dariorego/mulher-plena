@@ -140,7 +140,7 @@ export default function JourneyDetail() {
       <div className="space-y-6">
         {/* Back Button */}
         <Link to="/jornadas">
-          <Button variant="ghost" size="sm" className="gap-2">
+          <Button variant="default" size="sm" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
