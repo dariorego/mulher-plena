@@ -1,36 +1,46 @@
 
 
-## Plano: Seção "Sugestão de Leitura" nas Estações
+## Plano: Visualização da Árvore Genealógica Enviada em Formato de Fluxograma
 
-### O que será feito
+### Problema Atual
+Quando a atividade "Árvore da Gratidão" é enviada, a resposta é exibida como texto markdown genérico (lista de nomes). O usuário quer ver a mesma visualização em árvore (fluxograma com conexões) que aparece durante o preenchimento.
 
-Adicionar um campo opcional "Sugestão de Leitura" nas estações. Quando preenchido, será exibido na página da estação (abaixo do Material Complementar, antes da navegação entre estações) com um ícone de livro.
+### Solução
+
+Criar um componente `SubmittedFamilyTreeView` que faz o parse do conteúdo markdown salvo e reconstrói a visualização em árvore com conexões SVG, reutilizando o visual já existente do `FamilyTreeActivity`. Garantir responsividade para mobile.
 
 ### Alterações
 
-**1. Migração de Banco de Dados**
+**1. Novo componente: `src/components/activities/SubmittedFamilyTreeView.tsx`**
 
-Adicionar coluna `reading_suggestion` (TEXT, nullable) na tabela `stations`.
+- Recebe `content: string` (markdown da submissão)
+- Faz parse do markdown para extrair os nomes por nível/relação
+- Reconstrói o array de `Ancestor[]` a partir do conteúdo
+- Renderiza a mesma `AncestralTreeVisualization` + `TreeTrunk` usados no formulário de preenchimento
+- Layout responsivo: em mobile, os nodes se ajustam com tamanhos menores
 
-**2. `src/types/index.ts`**
+**2. Refatorar `src/components/activities/FamilyTreeActivity.tsx`**
 
-Adicionar `reading_suggestion?: string` na interface `Station`.
+- Exportar os componentes internos `AncestralTreeVisualization`, `TreeTrunk` e a interface `Ancestor` para que o `SubmittedFamilyTreeView` possa reutilizá-los
+- Exportar também `createTreeStructure` para reconstruir a árvore a partir do parse
 
-**3. `src/components/admin/StationForm.tsx`**
+**3. Atualizar `src/pages/ActivityPage.tsx`**
 
-- Adicionar estado `readingSuggestion` inicializado com `station?.reading_suggestion`
-- Adicionar campo de texto (Input ou Textarea) com label "Sugestão de Leitura" e placeholder "Ex: Livro Universo Feminino, pp. 15-22"
-- Incluir `reading_suggestion` no submit do formulário
+- Importar `SubmittedFamilyTreeView`
+- Adicionar um bloco dedicado para `existingSubmission && isFamilyTreeActivity(activity.title)` (similar aos outros tipos especiais como LoveWheel, Timeline, etc.)
+- Dentro desse bloco, renderizar o `SubmittedFamilyTreeView` com o conteúdo da submissão, seguido do feedback da mentora
 
-**4. `src/pages/StationDetail.tsx`**
+### Lógica de Parse do Conteúdo
 
-Adicionar nova seção condicional (só aparece se `station.reading_suggestion` estiver preenchido), posicionada após o Material Complementar (linha ~511) e antes da navegação entre estações:
+O conteúdo salvo tem o formato:
+```
+### Você
+- **Você:** Maria
 
-- Card com ícone `BookOpen` (lucide-react) e título "Sugestão de Leitura"
-- Exibe o texto da sugestão em estilo destacado
-- Visual consistente com os demais cards da página
+### Pais
+- **Mãe:** Ana
+- **Pai:** João
+```
 
-**5. `src/integrations/supabase/types.ts`**
-
-Verificar se o campo `reading_suggestion` precisa ser adicionado manualmente ao tipo gerado.
+O parse usa regex para extrair relação e nome de cada linha `- **Relação:** Nome`, mapeando para os IDs corretos da árvore.
 
