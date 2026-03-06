@@ -2003,9 +2003,9 @@ export default function ActivityPage() {
         {/* Botão Voltar no final da página */}
         <div className="pt-4 pb-8">
           <Button 
-            variant="outline" 
+            variant="default" 
             onClick={() => station ? navigate(`/estacao/${station.id}`) : navigate(-1)} 
-            className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/5"
+            className="w-full gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar
