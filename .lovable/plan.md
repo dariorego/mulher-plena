@@ -1,46 +1,21 @@
 
 
-## Plano: Visualização da Árvore Genealógica Enviada em Formato de Fluxograma
+## Plano: Aplicar cores configuráveis a todos os botões `default`
 
-### Problema Atual
-Quando a atividade "Árvore da Gratidão" é enviada, a resposta é exibida como texto markdown genérico (lista de nomes). O usuário quer ver a mesma visualização em árvore (fluxograma com conexões) que aparece durante o preenchimento.
+### Abordagem
 
-### Solução
+A forma mais eficiente é modificar o componente `Button` centralmente para que botões com variant `default` (o principal) apliquem automaticamente as cores de `SettingsContext`. Isso evita editar 58 arquivos individualmente.
 
-Criar um componente `SubmittedFamilyTreeView` que faz o parse do conteúdo markdown salvo e reconstrói a visualização em árvore com conexões SVG, reutilizando o visual já existente do `FamilyTreeActivity`. Garantir responsividade para mobile.
+### Alteração
 
-### Alterações
+**`src/components/ui/button.tsx`**
 
-**1. Novo componente: `src/components/activities/SubmittedFamilyTreeView.tsx`**
+- Importar `useSettings` do `SettingsContext`
+- No componente `Button`, quando `variant` é `default` (ou não especificado), aplicar `style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}` inline, sobrescrevendo as classes Tailwind de cor
+- Para variantes `destructive`, `outline`, `ghost`, `secondary`, `link` — manter o comportamento atual (não aplicar as cores customizadas)
+- Tratar o caso onde o `Button` está fora do `SettingsProvider` (ex: em testes) com um try/catch ou contexto opcional
 
-- Recebe `content: string` (markdown da submissão)
-- Faz parse do markdown para extrair os nomes por nível/relação
-- Reconstrói o array de `Ancestor[]` a partir do conteúdo
-- Renderiza a mesma `AncestralTreeVisualization` + `TreeTrunk` usados no formulário de preenchimento
-- Layout responsivo: em mobile, os nodes se ajustam com tamanhos menores
+### Resultado
 
-**2. Refatorar `src/components/activities/FamilyTreeActivity.tsx`**
-
-- Exportar os componentes internos `AncestralTreeVisualization`, `TreeTrunk` e a interface `Ancestor` para que o `SubmittedFamilyTreeView` possa reutilizá-los
-- Exportar também `createTreeStructure` para reconstruir a árvore a partir do parse
-
-**3. Atualizar `src/pages/ActivityPage.tsx`**
-
-- Importar `SubmittedFamilyTreeView`
-- Adicionar um bloco dedicado para `existingSubmission && isFamilyTreeActivity(activity.title)` (similar aos outros tipos especiais como LoveWheel, Timeline, etc.)
-- Dentro desse bloco, renderizar o `SubmittedFamilyTreeView` com o conteúdo da submissão, seguido do feedback da mentora
-
-### Lógica de Parse do Conteúdo
-
-O conteúdo salvo tem o formato:
-```
-### Você
-- **Você:** Maria
-
-### Pais
-- **Mãe:** Ana
-- **Pai:** João
-```
-
-O parse usa regex para extrair relação e nome de cada linha `- **Relação:** Nome`, mapeando para os IDs corretos da árvore.
+Todos os ~1039 usos de `<Button>` com variant `default` passam a usar as cores configuradas automaticamente, sem precisar editar nenhum outro arquivo.
 
