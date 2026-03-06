@@ -121,6 +121,9 @@ export default function Login() {
                   Cadastre-se
                 </Link>
               </p>
+              <Button variant="outline" className="w-full" asChild>
+                <Link to="/">Página Inicial</Link>
+              </Button>
             </CardFooter>
           </form>
         </Card>
