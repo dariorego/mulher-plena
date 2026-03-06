@@ -168,7 +168,7 @@ export function AppLayout({
               const groupActive = isGroupActive(entry);
               return <DropdownMenu key={entry.label}>
                     <DropdownMenuTrigger asChild>
-                      <Button variant={groupActive ? 'secondary' : 'ghost'} className={cn('gap-2', groupActive && 'bg-primary/10 text-primary hover:bg-primary/20')}>
+                      <Button variant={groupActive ? 'secondary' : 'ghost'} className={cn('gap-2 hover:!bg-[#2D6582] hover:!text-white', groupActive && 'bg-primary/10 text-primary')}>
                         <Icon className="h-4 w-4" />
                         {entry.label}
                         <ChevronDown className="h-3 w-3" />
