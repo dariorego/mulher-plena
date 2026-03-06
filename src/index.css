@@ -136,12 +136,12 @@
 
 @layer base {
   :root {
-    /* Burgundy & Gold Palette */
+    /* Blue & Gold Palette */
     --background: 40 75% 97%; /* Cream #FDF8F0 */
-    --foreground: 345 47% 25%; /* Dark burgundy for text */
+    --foreground: 200 48% 20%; /* Dark blue for text */
 
     --card: 0 0% 100%;
-    --card-foreground: 345 47% 25%;
+    --card-foreground: 200 48% 20%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 200 48% 25%;
