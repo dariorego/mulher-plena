@@ -23,6 +23,8 @@ export default function Settings() {
     loginBackgroundUrl,
     headerBorderColor,
     progressBarColor,
+    buttonBgColor,
+    buttonTextColor,
     updateSettings 
   } = useSettings();
 
@@ -438,6 +440,75 @@ export default function Settings() {
                 className="h-10 flex-1 rounded-md border"
                 style={{ backgroundColor: progressBarColor }}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5 text-primary" />
+              Cor dos Botões
+            </CardTitle>
+            <CardDescription>
+              Personalize a cor de fundo e a cor do texto dos botões do sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label>Cor de Fundo</Label>
+              <div className="flex items-center gap-4">
+                <Input
+                  type="color"
+                  value={buttonBgColor}
+                  onChange={(e) => updateSettings({ buttonBgColor: e.target.value })}
+                  className="w-16 h-10 p-1 cursor-pointer"
+                />
+                <Input
+                  type="text"
+                  value={buttonBgColor}
+                  onChange={(e) => updateSettings({ buttonBgColor: e.target.value })}
+                  className="w-32"
+                  placeholder="#7B2D42"
+                />
+                <div className="h-10 flex-1 rounded-md border" style={{ backgroundColor: buttonBgColor }} />
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+              <Label>Cor do Texto</Label>
+              <div className="flex items-center gap-4">
+                <Input
+                  type="color"
+                  value={buttonTextColor}
+                  onChange={(e) => updateSettings({ buttonTextColor: e.target.value })}
+                  className="w-16 h-10 p-1 cursor-pointer"
+                />
+                <Input
+                  type="text"
+                  value={buttonTextColor}
+                  onChange={(e) => updateSettings({ buttonTextColor: e.target.value })}
+                  className="w-32"
+                  placeholder="#FFFFFF"
+                />
+                <div className="h-10 flex-1 rounded-md border" style={{ backgroundColor: buttonTextColor }} />
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+              <Label>Pré-visualização</Label>
+              <div className="flex items-center gap-4">
+                <button
+                  className="px-6 py-2 rounded-md font-medium transition-colors"
+                  style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+                >
+                  Botão de Exemplo
+                </button>
+              </div>
             </div>
           </CardContent>
         </Card>

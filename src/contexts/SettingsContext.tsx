@@ -11,6 +11,8 @@ interface EvaluationSettings {
   loginBackgroundUrl: string;
   headerBorderColor: string;
   progressBarColor: string;
+  buttonBgColor: string;
+  buttonTextColor: string;
 }
 
 interface SettingsContextType extends EvaluationSettings {
@@ -30,6 +32,8 @@ const defaultSettings: EvaluationSettings = {
   loginBackgroundUrl: '',
   headerBorderColor: '#b46ebe',
   progressBarColor: '#2e6682',
+  buttonBgColor: '#7B2D42',
+  buttonTextColor: '#FFFFFF',
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
