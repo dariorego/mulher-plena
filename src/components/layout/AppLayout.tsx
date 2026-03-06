@@ -200,9 +200,9 @@ export function AppLayout({
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="gap-2 hover:bg-[hsl(345,46%,33%)]/10">
+              <Button variant="ghost" className="gap-2 bg-[hsl(345,46%,33%)] text-white hover:bg-[hsl(345,46%,28%)] hover:text-white">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                  <AvatarFallback className="bg-white/20 text-white text-sm">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
