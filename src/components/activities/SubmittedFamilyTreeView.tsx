@@ -62,9 +62,9 @@ function NumberedNode({
   const color = LEVEL_COLORS[ancestor.level];
   
   const sizeClasses = {
-    sm: 'w-7 h-7 text-[10px]',
-    md: 'w-9 h-9 text-xs',
-    lg: 'w-11 h-11 text-sm',
+    sm: 'w-6 h-6 text-[9px] sm:w-7 sm:h-7 sm:text-[10px]',
+    md: 'w-8 h-8 text-[10px] sm:w-9 sm:h-9 sm:text-xs',
+    lg: 'w-10 h-10 text-xs sm:w-11 sm:h-11 sm:text-sm',
   };
 
   return (
@@ -185,7 +185,7 @@ export function SubmittedFamilyTreeView({ content }: SubmittedFamilyTreeViewProp
             className="absolute inset-0"
             style={{
               background: 'linear-gradient(180deg, #5D4037 0%, #3E2723 100%)',
-              clipPath: 'polygon(50% 0%, 3% 100%, 97% 100%)',
+              clipPath: 'polygon(50% 0%, 2% 100%, 98% 100%)',
             }}
           />
           <div 
@@ -193,15 +193,15 @@ export function SubmittedFamilyTreeView({ content }: SubmittedFamilyTreeViewProp
             className="relative overflow-visible"
             style={{
               background: 'linear-gradient(180deg, #2E7D32 0%, #1B5E20 40%, #0D4A0D 100%)',
-              padding: '40px 20px 50px 20px',
-              clipPath: 'polygon(50% 1%, 5% 99%, 95% 99%)',
+              padding: '35px 10px 45px 10px',
+              clipPath: 'polygon(50% 1%, 2% 99%, 98% 99%)',
               boxShadow: 'inset 0 0 40px rgba(0,0,0,0.3)',
             }}
           >
             <SubmittedConnectionLines containerRef={containerRef} nodeRefs={nodeRefs} ancestors={ancestors} />
 
-            <div className="relative flex flex-col items-center gap-4 sm:gap-5" style={{ zIndex: 2 }}>
-              <div className="text-amber-300 text-2xl sm:text-3xl -mt-2 drop-shadow-lg">⭐</div>
+            <div className="relative flex flex-col items-center gap-3 sm:gap-5" style={{ zIndex: 2 }}>
+              <div className="text-amber-300 text-2xl sm:text-3xl -mt-1 drop-shadow-lg">⭐</div>
 
               {/* Level 0 */}
               <div className="flex justify-center">
@@ -213,7 +213,7 @@ export function SubmittedFamilyTreeView({ content }: SubmittedFamilyTreeViewProp
               </div>
 
               {/* Level 1 */}
-              <div className="flex justify-center gap-6 sm:gap-10 mt-2">
+              <div className="flex justify-center gap-8 sm:gap-10 mt-1">
                 {getByLevel(1).map(a => (
                   <div key={a.id} ref={setNodeRef(a.id)}>
                     <NumberedNode number={getNumber(a.id)} ancestor={a} onClick={() => setSelected(a)} size="md" />
@@ -222,16 +222,16 @@ export function SubmittedFamilyTreeView({ content }: SubmittedFamilyTreeViewProp
               </div>
 
               {/* Level 2 */}
-              <div className="flex justify-center gap-3 sm:gap-5 mt-2">
+              <div className="flex justify-center gap-2 sm:gap-5 mt-1">
                 {getByLevel(2).map(a => (
                   <div key={a.id} ref={setNodeRef(a.id)}>
-                    <NumberedNode number={getNumber(a.id)} ancestor={a} onClick={() => setSelected(a)} size="md" />
+                    <NumberedNode number={getNumber(a.id)} ancestor={a} onClick={() => setSelected(a)} size="sm" />
                   </div>
                 ))}
               </div>
 
               {/* Level 3 */}
-              <div className="flex justify-center gap-1 sm:gap-2 mt-1">
+              <div className="flex justify-center gap-[3px] sm:gap-2 mt-1">
                 {getByLevel(3).map(a => (
                   <div key={a.id} ref={setNodeRef(a.id)}>
                     <NumberedNode number={getNumber(a.id)} ancestor={a} onClick={() => setSelected(a)} size="sm" />
