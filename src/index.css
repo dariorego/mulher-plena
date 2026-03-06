@@ -191,7 +191,7 @@
   }
 
   .dark {
-    --background: 345 47% 8%; /* Dark burgundy */
+    --background: 200 48% 8%; /* Dark blue */
     --foreground: 40 75% 95%;
 
     --card: 200 48% 12%;
