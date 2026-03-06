@@ -115,12 +115,6 @@ export default function Login() {
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Entrar
               </Button>
-              <p className="text-sm text-muted-foreground text-center">
-                Não tem uma conta?{' '}
-                <Link to="/registro" className="text-primary hover:underline">
-                  Cadastre-se
-                </Link>
-              </p>
               <Button variant="outline" className="w-full" asChild>
                 <Link to="/">Página Inicial</Link>
               </Button>
