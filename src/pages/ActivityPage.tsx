@@ -674,7 +674,7 @@ export default function ActivityPage() {
               {/* Actions */}
               <div className="flex items-center justify-between pt-2">
                 <Button
-                  variant="outline"
+                  variant="default"
                   onClick={() => station ? navigate(`/estacao/${station.id}`) : navigate(-1)}
                   className="gap-2"
                 >
