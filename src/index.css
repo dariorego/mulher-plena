@@ -354,3 +354,9 @@
   background: hsl(var(--border));
   margin: 0 0.25rem;
 }
+
+/* Custom button hover */
+.btn-custom-hover:hover {
+  background-color: var(--btn-hover-bg, #2D6582) !important;
+  color: var(--btn-hover-text, #ffffff) !important;
+}

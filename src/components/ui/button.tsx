@@ -42,10 +42,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
 
     let settingsStyle: React.CSSProperties | undefined;
+    let hoverClass = "";
     try {
       const { buttonBgColor, buttonTextColor } = useSettings();
       if (!variant || variant === "default") {
-        settingsStyle = { backgroundColor: buttonBgColor, color: buttonTextColor };
+        settingsStyle = {
+          backgroundColor: buttonBgColor,
+          color: buttonTextColor,
+          '--btn-hover-bg': '#2D6582',
+          '--btn-hover-text': '#ffffff',
+        } as React.CSSProperties;
+        hoverClass = "btn-custom-hover";
       }
     } catch {
       // Outside SettingsProvider, use default styles
@@ -53,7 +60,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, size, className }), hoverClass)}
         ref={ref}
         style={{ ...settingsStyle, ...style }}
         {...props}
