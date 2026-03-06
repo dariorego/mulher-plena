@@ -48,8 +48,8 @@ export default function LandingPage() {
     },
   });
 
-  const essenciais = journeys.filter((j) => j.order_index <= 2);
-  const outras = journeys.filter((j) => j.order_index > 2);
+  const essenciais = journeys.filter((j) => j.order_index <= 3);
+  const outras = journeys.filter((j) => j.order_index > 3);
 
   return (
     <div className="min-h-screen bg-background">
