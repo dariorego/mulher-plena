@@ -41,29 +41,29 @@ export default function LandingPage() {
       {/* Stations Grid */}
       <section className="container mx-auto px-6 py-12">
         <h2 className="text-2xl md:text-3xl font-cinzel font-bold text-primary mb-8 text-center">
-          Estações
+          Jornadas
         </h2>
 
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : stations.length === 0 ? (
+        ) : journeys.length === 0 ? (
           <p className="text-center text-muted-foreground">
-            Nenhuma estação disponível no momento.
+            Nenhuma jornada disponível no momento.
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {stations.map((station) => (
+            {journeys.map((journey) => (
               <Link
-                key={station.id}
+                key={journey.id}
                 to="/login"
                 className="group rounded-lg overflow-hidden border bg-card shadow-sm hover:shadow-lg transition-shadow"
               >
-                {station.card_image_url ? (
+                {journey.cover_image ? (
                   <img
-                    src={station.card_image_url}
-                    alt={station.title}
+                    src={journey.cover_image}
+                    alt={journey.title}
                     className="w-full h-auto object-contain"
                   />
                 ) : (
@@ -73,7 +73,7 @@ export default function LandingPage() {
                 )}
                 <div className="p-4">
                   <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-center">
-                    {station.title}
+                    {journey.title}
                   </h3>
                 </div>
               </Link>
