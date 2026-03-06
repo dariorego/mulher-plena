@@ -21,6 +21,7 @@ import { VisionBoardCanvas } from '@/components/activities/VisionBoardCanvas';
 import { ForumBoard } from '@/components/activities/ForumBoard';
 import { WordRoulette } from '@/components/activities/WordRoulette';
 import { FamilyTreeActivity } from '@/components/activities/FamilyTreeActivity';
+import { SubmittedFamilyTreeView } from '@/components/activities/SubmittedFamilyTreeView';
 import { TimelineActivity } from '@/components/activities/TimelineActivity';
 import { SubmittedTimelineView } from '@/components/activities/SubmittedTimelineView';
 import { TrafficLightActivity } from '@/components/activities/TrafficLightActivity';
@@ -1089,19 +1090,23 @@ export default function ActivityPage() {
                     <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sua Resposta</span>
                     <div className="flex-1 h-px bg-primary/20" />
                   </div>
-                  <div 
-                    className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed bg-muted/50 rounded-lg p-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_hr]:my-3"
-                    dangerouslySetInnerHTML={{ 
-                      __html: existingSubmission.content
-                        .replace(/### (.+)/g, '<h3>$1</h3>')
-                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/^- (.+)$/gm, '<li>$1</li>')
-                        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-                        .replace(/---/g, '<hr />')
-                        .replace(/\n\n/g, '<br /><br />')
-                        .replace(/\n/g, '<br />')
-                    }}
-                  />
+                  {isFamilyTreeActivity(activity.title) ? (
+                    <SubmittedFamilyTreeView content={existingSubmission.content} />
+                  ) : (
+                    <div 
+                      className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed bg-muted/50 rounded-lg p-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_hr]:my-3"
+                      dangerouslySetInnerHTML={{ 
+                        __html: existingSubmission.content
+                          .replace(/### (.+)/g, '<h3>$1</h3>')
+                          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/^- (.+)$/gm, '<li>$1</li>')
+                          .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                          .replace(/---/g, '<hr />')
+                          .replace(/\n\n/g, '<br /><br />')
+                          .replace(/\n/g, '<br />')
+                      }}
+                    />
+                  )}
                 </>
               )}
 

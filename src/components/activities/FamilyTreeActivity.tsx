@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-interface Ancestor {
+export interface Ancestor {
   id: number;
   level: number;
   relation: string;
@@ -25,7 +25,7 @@ interface FamilyTreeActivityProps {
 }
 
 // Tree structure: 15 positions (1 + 2 + 4 + 8)
-const createTreeStructure = (userName: string): Ancestor[] => [
+export const createTreeStructure = (userName: string): Ancestor[] => [
   // Nível 0 - Você (raiz)
   { id: 0, level: 0, relation: 'Você', name: userName, gender: null, parentIds: [1, 2] },
   
@@ -66,7 +66,7 @@ const LEVELS_INPUT = [
 ];
 
 // Tree node component
-function TreeNode({ 
+export function TreeNode({ 
   ancestor, 
   isHighlighted,
   isRoot = false,
@@ -110,7 +110,7 @@ function TreeNode({
 }
 
 // SVG connection lines between parent-child pairs
-function ConnectionLinesSVG({ 
+export function ConnectionLinesSVG({ 
   containerRef,
   nodeRefs,
   ancestors 
@@ -192,7 +192,7 @@ function ConnectionLinesSVG({
 }
 
 // Tree visualization component - Inverted pine tree shape
-function AncestralTreeVisualization({ 
+export function AncestralTreeVisualization({ 
   ancestors, 
   activeId 
 }: { 
@@ -322,7 +322,7 @@ function AncestralTreeVisualization({
 }
 
 // Tree trunk component
-function TreeTrunk() {
+export function TreeTrunk() {
   return (
     <div className="flex flex-col items-center -mt-1">
       {/* Trunk */}
