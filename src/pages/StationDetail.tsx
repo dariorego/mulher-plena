@@ -324,7 +324,7 @@ export default function StationDetail() {
                   <img
                     src={activityButtonImage}
                     alt="Acessar Atividade"
-                    className="h-[150px] w-auto rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                    className="h-[50px] w-auto rounded-lg shadow-md hover:shadow-lg transition-shadow"
                   />
                 </div>
               </div>
