@@ -548,7 +548,7 @@ export default function StationDetail() {
 
             {nextStation ? (
               <Link to={`/estacao/${nextStation.id}`}>
-                <Button variant="outline" className="border-primary/30 hover:bg-primary/5 h-auto py-3 px-4">
+                <Button variant="outline" className="border-primary/30 hover:!bg-[#2D6582] hover:!text-white h-auto py-3 px-4">
                   <div className="text-right">
                     <span className="text-xs text-muted-foreground block">Próxima Estação</span>
                     <span className="text-sm font-medium text-primary">
