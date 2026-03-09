@@ -532,11 +532,11 @@ export default function StationDetail() {
           <div className="flex justify-between items-center pt-6 mt-6 border-t border-primary/20">
             {previousStation ? (
               <Link to={`/estacao/${previousStation.id}`}>
-                <Button variant="outline" className="border-primary/30 hover:!bg-[#2D6582] hover:!text-white h-auto py-3 px-4">
-                  <ChevronLeft className="mr-2 h-5 w-5 text-primary" />
+                <Button variant="outline" className="group border-primary/30 hover:!bg-[#2D6582] hover:!text-white h-auto py-3 px-4">
+                  <ChevronLeft className="mr-2 h-5 w-5 text-primary group-hover:text-white" />
                   <div className="text-left">
-                    <span className="text-xs text-muted-foreground block">Estação Anterior</span>
-                    <span className="text-sm font-medium text-primary">
+                    <span className="text-xs text-muted-foreground block group-hover:text-white">Estação Anterior</span>
+                    <span className="text-sm font-medium text-primary group-hover:text-white">
                       Estação {currentIndex}
                     </span>
                   </div>
@@ -548,14 +548,14 @@ export default function StationDetail() {
 
             {nextStation ? (
               <Link to={`/estacao/${nextStation.id}`}>
-                <Button variant="outline" className="border-primary/30 hover:!bg-[#2D6582] hover:!text-white h-auto py-3 px-4">
+                <Button variant="outline" className="group border-primary/30 hover:!bg-[#2D6582] hover:!text-white h-auto py-3 px-4">
                   <div className="text-right">
-                    <span className="text-xs text-muted-foreground block">Próxima Estação</span>
-                    <span className="text-sm font-medium text-primary">
+                    <span className="text-xs text-muted-foreground block group-hover:text-white">Próxima Estação</span>
+                    <span className="text-sm font-medium text-primary group-hover:text-white">
                       Estação {currentIndex + 2}
                     </span>
                   </div>
-                  <ChevronRight className="ml-2 h-5 w-5 text-primary" />
+                  <ChevronRight className="ml-2 h-5 w-5 text-primary group-hover:text-white" />
                 </Button>
               </Link>
             ) : (
