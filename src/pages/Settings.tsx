@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle, AlertTriangle, Image, X, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Settings() {
   const { 
