@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EvaluationSettings {
   showScoreToStudents: boolean;
@@ -17,9 +18,8 @@ interface EvaluationSettings {
 
 interface SettingsContextType extends EvaluationSettings {
   updateSettings: (settings: Partial<EvaluationSettings>) => void;
+  isLoading: boolean;
 }
-
-const SETTINGS_KEY = 'evaluation-settings';
 
 const defaultSettings: EvaluationSettings = {
   showScoreToStudents: true,
@@ -36,31 +36,102 @@ const defaultSettings: EvaluationSettings = {
   buttonTextColor: '#FFFFFF',
 };
 
+// Maps frontend camelCase keys to DB snake_case columns
+const toDbRow = (s: Partial<EvaluationSettings>): Record<string, unknown> => {
+  const map: Record<string, string> = {
+    showScoreToStudents: 'show_score_to_students',
+    showFeedbackToStudents: 'show_feedback_to_students',
+    videoPercentage: 'video_percentage',
+    activityPercentage: 'activity_percentage',
+    supplementaryPercentage: 'supplementary_percentage',
+    podcastPercentage: 'podcast_percentage',
+    sensitiveContentMessage: 'sensitive_content_message',
+    loginBackgroundUrl: 'login_background_url',
+    headerBorderColor: 'header_border_color',
+    progressBarColor: 'progress_bar_color',
+    buttonBgColor: 'button_bg_color',
+    buttonTextColor: 'button_text_color',
+  };
+  const row: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(s)) {
+    const col = map[key];
+    if (col) row[col] = value;
+  }
+  return row;
+};
+
+const fromDbRow = (row: Record<string, unknown>): EvaluationSettings => ({
+  showScoreToStudents: row.show_score_to_students as boolean,
+  showFeedbackToStudents: row.show_feedback_to_students as boolean,
+  videoPercentage: row.video_percentage as number,
+  activityPercentage: row.activity_percentage as number,
+  supplementaryPercentage: row.supplementary_percentage as number,
+  podcastPercentage: row.podcast_percentage as number,
+  sensitiveContentMessage: row.sensitive_content_message as string,
+  loginBackgroundUrl: row.login_background_url as string,
+  headerBorderColor: row.header_border_color as string,
+  progressBarColor: row.progress_bar_color as string,
+  buttonBgColor: row.button_bg_color as string,
+  buttonTextColor: row.button_text_color as string,
+});
+
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<EvaluationSettings>(() => {
-    const saved = localStorage.getItem(SETTINGS_KEY);
-    if (saved) {
-      try {
-        return { ...defaultSettings, ...JSON.parse(saved) };
-      } catch {
-        return defaultSettings;
-      }
-    }
-    return defaultSettings;
-  });
+  const [settings, setSettings] = useState<EvaluationSettings>(defaultSettings);
+  const [settingsId, setSettingsId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Load settings from Supabase on mount
   useEffect(() => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  }, [settings]);
+    const fetchSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('system_settings')
+          .select('*')
+          .limit(1)
+          .single();
 
-  const updateSettings = (newSettings: Partial<EvaluationSettings>) => {
+        if (error) {
+          console.error('Error fetching settings:', error);
+          return;
+        }
+
+        if (data) {
+          setSettingsId(data.id);
+          setSettings(fromDbRow(data as Record<string, unknown>));
+        }
+      } catch (err) {
+        console.error('Error loading settings:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+  const updateSettings = useCallback((newSettings: Partial<EvaluationSettings>) => {
+    // Optimistic update
     setSettings(prev => ({ ...prev, ...newSettings }));
-  };
+
+    // Persist to Supabase
+    if (settingsId) {
+      const dbData = toDbRow(newSettings);
+      supabase
+        .from('system_settings')
+        .update({ ...dbData, updated_at: new Date().toISOString() })
+        .eq('id', settingsId)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error saving settings:', error);
+          }
+        });
+    }
+  }, [settingsId]);
 
   return (
-    <SettingsContext.Provider value={{ ...settings, updateSettings }}>
+    <SettingsContext.Provider value={{ ...settings, updateSettings, isLoading }}>
       {children}
     </SettingsContext.Provider>
   );
