@@ -564,6 +564,57 @@ export type Database = {
           },
         ]
       }
+      system_settings: {
+        Row: {
+          activity_percentage: number
+          button_bg_color: string
+          button_text_color: string
+          header_border_color: string
+          id: string
+          login_background_url: string
+          podcast_percentage: number
+          progress_bar_color: string
+          sensitive_content_message: string
+          show_feedback_to_students: boolean
+          show_score_to_students: boolean
+          supplementary_percentage: number
+          updated_at: string
+          video_percentage: number
+        }
+        Insert: {
+          activity_percentage?: number
+          button_bg_color?: string
+          button_text_color?: string
+          header_border_color?: string
+          id?: string
+          login_background_url?: string
+          podcast_percentage?: number
+          progress_bar_color?: string
+          sensitive_content_message?: string
+          show_feedback_to_students?: boolean
+          show_score_to_students?: boolean
+          supplementary_percentage?: number
+          updated_at?: string
+          video_percentage?: number
+        }
+        Update: {
+          activity_percentage?: number
+          button_bg_color?: string
+          button_text_color?: string
+          header_border_color?: string
+          id?: string
+          login_background_url?: string
+          podcast_percentage?: number
+          progress_bar_color?: string
+          sensitive_content_message?: string
+          show_feedback_to_students?: boolean
+          show_score_to_students?: boolean
+          supplementary_percentage?: number
+          updated_at?: string
+          video_percentage?: number
+        }
+        Relationships: []
+      }
       user_activity_logs: {
         Row: {
           action: string
