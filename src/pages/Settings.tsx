@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle, AlertTriangle, Image, X, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Settings() {
   const { 
@@ -80,7 +81,7 @@ export default function Settings() {
     }
   };
 
-  const handleLoginBgChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLoginBgChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -91,13 +92,25 @@ export default function Settings() {
       toast.error('A imagem deve ter no máximo 5MB.');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      updateSettings({ loginBackgroundUrl: dataUrl });
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `login-bg-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('landing-images')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('landing-images')
+        .getPublicUrl(fileName);
+
+      updateSettings({ loginBackgroundUrl: publicUrl });
       toast.success('Imagem de fundo do login atualizada!');
-    };
-    reader.readAsDataURL(file);
+    } catch (error: any) {
+      toast.error('Erro ao enviar imagem: ' + error.message);
+    }
   };
 
   const removeLoginBg = () => {
