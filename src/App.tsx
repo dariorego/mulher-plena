@@ -87,7 +87,7 @@ const App = () => (
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              <BrowserRouter>
+              <BrowserRouter basename="/plataforma">
                 <AppRoutes />
               </BrowserRouter>
             </TooltipProvider>

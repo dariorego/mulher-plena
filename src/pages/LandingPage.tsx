@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Journey } from "@/types";
 import logoSNI from "@/assets/logoSNI.png";
 
-const BANNER_URL = "https://byslxrvqzcrjgpoatyxt.supabase.co/storage/v1/object/public/landing-images/1766405025490-5vonvbp.png";
+const BANNER_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/landing-images/1766405025490-5vonvbp.png`;
 
 function JourneyCard({ journey }: { journey: Journey }) {
   return (
