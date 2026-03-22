@@ -29,6 +29,7 @@ import LandingPage from "./pages/LandingPage";
 import Settings from "./pages/Settings";
 import CalendarPage from "./pages/CalendarPage";
 import SupportPage from "./pages/SupportPage";
+import MessagesPage from "./pages/MessagesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -73,6 +74,7 @@ function AppRoutes() {
       <Route path="/configuracoes" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/calendario" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path="/suporte" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+      <Route path="/mensagens" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

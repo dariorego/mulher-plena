@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from '@/components/ui/dropdown-menu';
-import { Home, BookOpen, Trophy, Users, Settings, LogOut, ClipboardCheck, GraduationCap, Menu, X, Pencil, ChevronDown, ImageIcon, Calendar, HelpCircle, Activity } from 'lucide-react';
+import { Home, BookOpen, Trophy, Users, Settings, LogOut, ClipboardCheck, GraduationCap, Menu, X, Pencil, ChevronDown, ImageIcon, Calendar, HelpCircle, Activity, MessageCircle } from 'lucide-react';
 import logoSNI from '@/assets/logoSNI.png';
 interface AppLayoutProps {
   children: ReactNode;
@@ -43,6 +43,10 @@ const navItems: Record<string, NavEntry[]> = {
     label: 'Conquistas',
     icon: Trophy
   }, {
+    path: '/mensagens',
+    label: 'Fale com a Tutoria',
+    icon: MessageCircle
+  }, {
     path: '/suporte',
     label: 'Suporte',
     icon: HelpCircle
@@ -59,6 +63,10 @@ const navItems: Record<string, NavEntry[]> = {
     path: '/avaliacoes',
     label: 'Avaliações',
     icon: ClipboardCheck
+  }, {
+    path: '/mensagens',
+    label: 'Mensagens',
+    icon: MessageCircle
   }, {
     path: '/suporte',
     label: 'Suporte',
@@ -107,6 +115,10 @@ const navItems: Record<string, NavEntry[]> = {
       path: '/logs',
       label: 'Logs de Atividade',
       icon: Activity
+    }, {
+      path: '/mensagens',
+      label: 'Mensagens',
+      icon: MessageCircle
     }, {
       path: '/suporte',
       label: 'Suporte',
