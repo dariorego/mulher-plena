@@ -7,6 +7,7 @@ import { Shield, GraduationCap, UserCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { CsvJourneyImport } from '@/components/admin/CsvJourneyImport';
+import { CreateUserDialog } from '@/components/admin/CreateUserDialog';
 import { UserFilters } from '@/components/admin/UserFilters';
 import { UserRow, roleLabels, type UserWithRole } from '@/components/admin/UserRow';
 import type { UserRole } from '@/types';
@@ -106,7 +107,10 @@ export default function UsersPage() {
             <h1 className="text-3xl font-bold">Usuários</h1>
             <p className="text-muted-foreground">Gerencie os usuários da plataforma</p>
           </div>
-          <CsvJourneyImport />
+          <div className="flex items-center gap-2">
+            <CreateUserDialog onUserCreated={fetchUsers} />
+            <CsvJourneyImport />
+          </div>
         </div>
 
         {/* Cards de contagem */}
