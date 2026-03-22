@@ -116,6 +116,10 @@ const navItems: Record<string, NavEntry[]> = {
       label: 'Logs de Atividade',
       icon: Activity
     }, {
+      path: '/mensagens',
+      label: 'Mensagens',
+      icon: MessageCircle
+    }, {
       path: '/suporte',
       label: 'Suporte',
       icon: HelpCircle

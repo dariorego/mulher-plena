@@ -74,6 +74,7 @@ function AppRoutes() {
       <Route path="/configuracoes" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/calendario" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path="/suporte" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+      <Route path="/mensagens" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
