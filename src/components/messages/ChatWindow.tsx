@@ -26,9 +26,10 @@ interface ChatWindowProps {
   conversationSubject: string;
   conversationStatus: string;
   onStatusChange?: () => void;
+  onMessageSent?: () => void;
 }
 
-export function ChatWindow({ conversationId, conversationSubject, conversationStatus, onStatusChange }: ChatWindowProps) {
+export function ChatWindow({ conversationId, conversationSubject, conversationStatus, onStatusChange, onMessageSent }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -160,6 +161,7 @@ export function ChatWindow({ conversationId, conversationSubject, conversationSt
 
       setNewMessage('');
       setFile(null);
+      onMessageSent?.();
     } catch (error: any) {
       toast({ title: 'Erro ao enviar mensagem', description: error.message, variant: 'destructive' });
     } finally {
