@@ -129,6 +129,44 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          participant_id: string
+          status: Database["public"]["Enums"]["conversation_status"]
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          participant_id: string
+          status?: Database["public"]["Enums"]["conversation_status"]
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          participant_id?: string
+          status?: Database["public"]["Enums"]["conversation_status"]
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deletion_requests: {
         Row: {
           created_at: string
@@ -335,6 +373,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          attachment_url: string | null
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          sender_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sender_id: string
+        }
+        Update: {
+          attachment_url?: string | null
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -775,6 +851,7 @@ export type Database = {
     Enums: {
       activity_type: "quiz" | "upload" | "essay" | "gamified" | "forum"
       app_role: "admin" | "professor" | "aluno"
+      conversation_status: "open" | "closed"
       deletion_request_status: "pending" | "approved" | "rejected"
       support_ticket_status: "open" | "in_progress" | "resolved" | "closed"
       support_ticket_type: "bug" | "improvement"
@@ -907,6 +984,7 @@ export const Constants = {
     Enums: {
       activity_type: ["quiz", "upload", "essay", "gamified", "forum"],
       app_role: ["admin", "professor", "aluno"],
+      conversation_status: ["open", "closed"],
       deletion_request_status: ["pending", "approved", "rejected"],
       support_ticket_status: ["open", "in_progress", "resolved", "closed"],
       support_ticket_type: ["bug", "improvement"],
