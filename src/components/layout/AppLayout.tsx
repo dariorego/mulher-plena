@@ -64,6 +64,10 @@ const navItems: Record<string, NavEntry[]> = {
     label: 'Avaliações',
     icon: ClipboardCheck
   }, {
+    path: '/mensagens',
+    label: 'Mensagens',
+    icon: MessageCircle
+  }, {
     path: '/suporte',
     label: 'Suporte',
     icon: HelpCircle
