@@ -26,6 +26,7 @@ interface ChatWindowProps {
   conversationSubject: string;
   conversationStatus: string;
   onStatusChange?: () => void;
+  onMessageSent?: () => void;
 }
 
 export function ChatWindow({ conversationId, conversationSubject, conversationStatus, onStatusChange }: ChatWindowProps) {
