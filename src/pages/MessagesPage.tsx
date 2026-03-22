@@ -132,6 +132,7 @@ export default function MessagesPage() {
               conversationSubject={selected.subject}
               conversationStatus={selected.status}
               onStatusChange={fetchConversations}
+              onMessageSent={fetchConversations}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
