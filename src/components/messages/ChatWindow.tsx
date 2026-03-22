@@ -44,6 +44,22 @@ export function ChatWindow({ conversationId, conversationSubject, conversationSt
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const upsertMessage = (message: Message) => {
+    setMessages((prev) => {
+      const existingIndex = prev.findIndex((item) => item.id === message.id);
+
+      if (existingIndex >= 0) {
+        const next = [...prev];
+        next[existingIndex] = { ...next[existingIndex], ...message };
+        return next;
+      }
+
+      return [...prev, message].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+    });
+  };
+
   const fetchMessages = async () => {
     const { data, error } = await supabase
       .from('messages')
@@ -56,15 +72,16 @@ export function ChatWindow({ conversationId, conversationSubject, conversationSt
       return;
     }
 
-    // Enrich with sender names
-    const senderIds = [...new Set((data || []).map(m => m.sender_id))];
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, name')
-      .in('id', senderIds);
+    const senderIds = [...new Set((data || []).map((m) => m.sender_id))];
+    const { data: profiles } = senderIds.length
+      ? await supabase
+          .from('profiles')
+          .select('id, name')
+          .in('id', senderIds)
+      : { data: [] as Array<{ id: string; name: string }> };
 
-    const profileMap = new Map((profiles || []).map(p => [p.id, p.name]));
-    const enriched = (data || []).map(m => ({
+    const profileMap = new Map((profiles || []).map((p) => [p.id, p.name]));
+    const enriched = (data || []).map((m) => ({
       ...m,
       sender_name: profileMap.get(m.sender_id) || 'Usuário',
     }));
@@ -72,7 +89,6 @@ export function ChatWindow({ conversationId, conversationSubject, conversationSt
     setMessages(enriched);
     setLoading(false);
 
-    // Mark unread messages as read
     if (user) {
       await supabase
         .from('messages')
@@ -88,29 +104,33 @@ export function ChatWindow({ conversationId, conversationSubject, conversationSt
 
     const channel = supabase
       .channel(`messages:${conversationId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`,
-      }, async (payload) => {
-        const newMsg = payload.new as Message;
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('name')
-          .eq('id', newMsg.sender_id)
-          .single();
-        
-        setMessages(prev => [...prev, { ...newMsg, sender_name: profile?.name || 'Usuário' }]);
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        async (payload) => {
+          const newMsg = payload.new as Message;
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', newMsg.sender_id)
+            .single();
 
-        // Mark as read if it's not from current user
-        if (user && newMsg.sender_id !== user.id) {
-          await supabase
-            .from('messages')
-            .update({ is_read: true })
-            .eq('id', newMsg.id);
+          upsertMessage({
+            ...newMsg,
+            sender_name: profile?.name || (newMsg.sender_id === user?.id ? user?.name : 'Usuário'),
+          });
+          onMessageSent?.();
+
+          if (user && newMsg.sender_id !== user.id) {
+            await supabase.from('messages').update({ is_read: true }).eq('id', newMsg.id);
+          }
         }
-      })
+      )
       .subscribe();
 
     return () => {
@@ -144,19 +164,28 @@ export function ChatWindow({ conversationId, conversationSubject, conversationSt
         attachmentUrl = urlData.publicUrl;
       }
 
-      const { error } = await supabase.from('messages').insert({
-        conversation_id: conversationId,
-        sender_id: user.id,
-        content: newMessage.trim() || (file ? `📎 ${file.name}` : ''),
-        attachment_url: attachmentUrl,
-      });
+      const messageContent = newMessage.trim() || (file ? `📎 ${file.name}` : '');
+      const { data: insertedMessage, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: user.id,
+          content: messageContent,
+          attachment_url: attachmentUrl,
+        })
+        .select('*')
+        .single();
 
       if (error) throw error;
 
-      // Update last_message_at
+      upsertMessage({
+        ...insertedMessage,
+        sender_name: user.name,
+      });
+
       await supabase
         .from('conversations')
-        .update({ last_message_at: new Date().toISOString() })
+        .update({ last_message_at: insertedMessage.created_at })
         .eq('id', conversationId);
 
       setNewMessage('');
