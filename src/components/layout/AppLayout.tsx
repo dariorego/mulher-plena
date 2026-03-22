@@ -43,6 +43,10 @@ const navItems: Record<string, NavEntry[]> = {
     label: 'Conquistas',
     icon: Trophy
   }, {
+    path: '/mensagens',
+    label: 'Fale com a Tutoria',
+    icon: MessageCircle
+  }, {
     path: '/suporte',
     label: 'Suporte',
     icon: HelpCircle
