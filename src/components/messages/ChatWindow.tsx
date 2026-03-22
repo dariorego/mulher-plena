@@ -161,6 +161,7 @@ export function ChatWindow({ conversationId, conversationSubject, conversationSt
 
       setNewMessage('');
       setFile(null);
+      onMessageSent?.();
     } catch (error: any) {
       toast({ title: 'Erro ao enviar mensagem', description: error.message, variant: 'destructive' });
     } finally {
