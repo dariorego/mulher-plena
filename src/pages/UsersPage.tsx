@@ -7,6 +7,7 @@ import { Shield, GraduationCap, UserCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { CsvJourneyImport } from '@/components/admin/CsvJourneyImport';
+import { CreateUserDialog } from '@/components/admin/CreateUserDialog';
 import { UserFilters } from '@/components/admin/UserFilters';
 import { UserRow, roleLabels, type UserWithRole } from '@/components/admin/UserRow';
 import type { UserRole } from '@/types';
