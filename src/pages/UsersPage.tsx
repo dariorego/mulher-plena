@@ -107,7 +107,10 @@ export default function UsersPage() {
             <h1 className="text-3xl font-bold">Usuários</h1>
             <p className="text-muted-foreground">Gerencie os usuários da plataforma</p>
           </div>
-          <CsvJourneyImport />
+          <div className="flex items-center gap-2">
+            <CreateUserDialog onUserCreated={fetchUsers} />
+            <CsvJourneyImport />
+          </div>
         </div>
 
         {/* Cards de contagem */}
