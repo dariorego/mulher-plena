@@ -29,6 +29,7 @@ import LandingPage from "./pages/LandingPage";
 import Settings from "./pages/Settings";
 import CalendarPage from "./pages/CalendarPage";
 import SupportPage from "./pages/SupportPage";
+import MessagesPage from "./pages/MessagesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
