@@ -111,6 +111,7 @@ export default function MessagesPage() {
                 conversationSubject={selected.subject}
                 conversationStatus={selected.status}
                 onStatusChange={fetchConversations}
+                onMessageSent={fetchConversations}
               />
             </div>
           ) : (
