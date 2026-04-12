@@ -1,41 +1,26 @@
 
 
-## Plano: Toggle de Recompensas (Ativo/Inativo) nas Configurações
+## Plano: Refazer Atividade — Exclusão Direta ou Solicitação
 
-Adicionar um toggle na página de Configurações para ativar/desativar o sistema de recompensas (Conquistas). Quando inativo, o menu "Conquistas" e a rota serão ocultados.
+Alterar o componente `DeletionRequestButton` para ter dois comportamentos:
 
-### 1. Migração — Adicionar coluna `rewards_enabled` na tabela `system_settings`
+1. **Sem feedback** (`!submission.feedback`): Mostrar botão "Refazer Atividade" que exclui a submissão diretamente (com confirmação), sem precisar de aprovação.
+2. **Com feedback** (`submission.feedback` preenchido): Manter o fluxo atual de "Solicitar Refazer" com justificativa e aprovação do tutor/admin.
 
-```sql
-ALTER TABLE system_settings ADD COLUMN rewards_enabled boolean NOT NULL DEFAULT true;
-```
+### Mudança
 
-### 2. SettingsContext — Adicionar campo `rewardsEnabled`
+**Arquivo:** `src/components/activities/DeletionRequestButton.tsx`
 
-- Adicionar `rewardsEnabled: boolean` à interface `EvaluationSettings`
-- Mapear `rewardsEnabled` ↔ `rewards_enabled` no `toDbRow` e `fromDbRow`
-- Default: `true`
+- Adicionar prop `hasFeedback: boolean` ao componente
+- Se `hasFeedback === false`: renderizar botão "Refazer Atividade" com dialog de confirmação simples (sem campo de motivo). Ao confirmar, chamar `deleteSubmission` diretamente.
+- Se `hasFeedback === true`: manter o fluxo atual (botão "Solicitar Refazer" → dialog com motivo → `createDeletionRequest`).
 
-### 3. Página de Configurações — Novo card com toggle
+**Arquivo:** `src/pages/ActivityPage.tsx`
 
-Adicionar um card "Recompensas / Conquistas" com um `Switch` para ativar/desativar, similar aos toggles de nota/feedback já existentes.
+- Passar `hasFeedback={!!existingSubmission.feedback}` em todas as ocorrências de `<DeletionRequestButton>`.
 
-### 4. AppLayout — Ocultar menu "Conquistas" quando inativo
+### Visual
 
-- Importar `useSettings` no `AppLayout`
-- Filtrar o item `{ path: '/conquistas' }` do menu do aluno quando `rewardsEnabled === false`
-
-### 5. Rota `/conquistas` — Redirecionar quando inativo
-
-Na página `Achievements.tsx`, verificar `rewardsEnabled` e redirecionar para `/dashboard` se estiver desativado.
-
-### Arquivos
-
-| Arquivo | Ação |
-|---|---|
-| `supabase/migrations/` | Nova migração: coluna `rewards_enabled` |
-| `src/contexts/SettingsContext.tsx` | Adicionar campo `rewardsEnabled` |
-| `src/pages/Settings.tsx` | Novo card com toggle |
-| `src/components/layout/AppLayout.tsx` | Filtrar menu condicionalmente |
-| `src/pages/Achievements.tsx` | Redirect quando desativado |
+- Sem feedback: Botão "Refazer Atividade" → Dialog: "Tem certeza que deseja refazer? Sua resposta atual será excluída." → Confirmar/Cancelar
+- Com feedback: Botão "Solicitar Refazer" → Dialog atual com campo de motivo
 
