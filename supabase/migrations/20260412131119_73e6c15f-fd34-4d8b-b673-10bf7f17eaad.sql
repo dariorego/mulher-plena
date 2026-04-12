@@ -1,0 +1,1 @@
+ALTER TABLE system_settings ADD COLUMN rewards_enabled boolean NOT NULL DEFAULT true;
