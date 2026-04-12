@@ -71,7 +71,7 @@ export default function LandingPage() {
       <section className="container mx-auto px-6 py-12">
         <div className="rounded-2xl border-2 border-primary/20 bg-card shadow-md p-8 md:p-10">
           <h2 className="text-2xl md:text-3xl font-cinzel font-bold text-primary mb-8 text-center">
-            Jornadas Essenciais
+            Jornada Essencial
           </h2>
 
           {isLoading ? (
@@ -84,22 +84,6 @@ export default function LandingPage() {
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Card de Boas-vindas */}
-              <div className="group rounded-lg overflow-hidden border bg-card shadow-sm">
-                <img
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=60"
-                  alt="Seja bem-vinda"
-                  className="w-full h-auto object-contain"
-                />
-                <div className="p-4">
-                  <h3 className="font-semibold text-foreground text-center text-lg">
-                    Seja bem-vinda!
-                  </h3>
-                  <p className="text-sm text-muted-foreground text-center mt-2">
-                    Inicie sua jornada de transformação
-                  </p>
-                </div>
-              </div>
               {essenciais.map((journey) => (
                 <JourneyCard key={journey.id} journey={journey} />
               ))}
