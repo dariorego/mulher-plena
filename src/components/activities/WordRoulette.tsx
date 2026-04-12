@@ -171,16 +171,6 @@ export function WordRoulette({
             </svg>
           </div>
 
-          {/* Palavra Selecionada */}
-          {selectedWord && !isSpinning && <div className="animate-fade-in text-center space-y-3">
-              <p className="text-sm text-muted-foreground">Palavra sorteada:
-
-          </p>
-              <span className="px-6 py-3 bg-accent text-primary rounded-full text-xl font-cinzel font-bold shadow-lg">
-                {selectedWord}
-              </span>
-            </div>}
-
           {/* Botão Girar */}
           <Button onClick={spinRoulette} disabled={!canSpin || disabled} size="lg" className={cn("gap-2 px-10 py-6 text-lg transition-all", canSpin ? "bg-accent text-primary hover:bg-accent/90 shadow-lg hover:shadow-xl" : "opacity-50")}>
             {isSpinning ? <>
