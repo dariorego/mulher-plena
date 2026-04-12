@@ -111,22 +111,34 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     fetchSettings();
   }, []);
 
-  const updateSettings = useCallback((newSettings: Partial<EvaluationSettings>) => {
+  const updateSettings = useCallback(async (newSettings: Partial<EvaluationSettings>) => {
     // Optimistic update
     setSettings(prev => ({ ...prev, ...newSettings }));
 
     // Persist to Supabase
+    const dbData = toDbRow(newSettings);
     if (settingsId) {
-      const dbData = toDbRow(newSettings);
-      supabase
+      const { error } = await supabase
         .from('system_settings')
         .update({ ...dbData, updated_at: new Date().toISOString() })
-        .eq('id', settingsId)
-        .then(({ error }) => {
-          if (error) {
-            console.error('Error saving settings:', error);
-          }
-        });
+        .eq('id', settingsId);
+
+      if (error) {
+        console.error('Error saving settings:', error);
+      }
+    } else {
+      // No row exists yet, try to insert
+      const { data, error } = await supabase
+        .from('system_settings')
+        .insert(dbData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating settings:', error);
+      } else if (data) {
+        setSettingsId(data.id);
+      }
     }
   }, [settingsId]);
 
