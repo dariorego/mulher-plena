@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Journey } from "@/types";
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import logoSNI from "@/assets/logoSNI.png";
 
 const BANNER_URL = "https://byslxrvqzcrjgpoatyxt.supabase.co/storage/v1/object/public/landing-images/1766405025490-5vonvbp.png";
