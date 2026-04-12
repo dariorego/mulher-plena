@@ -11,11 +11,12 @@ import { toast } from 'sonner';
 
 interface DeletionRequestButtonProps {
   submissionId: string;
+  hasFeedback: boolean;
 }
 
-export function DeletionRequestButton({ submissionId }: DeletionRequestButtonProps) {
+export function DeletionRequestButton({ submissionId, hasFeedback }: DeletionRequestButtonProps) {
   const { user } = useAuth();
-  const { deletionRequests, createDeletionRequest } = useData();
+  const { deletionRequests, createDeletionRequest, deleteSubmission } = useData();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,7 +47,20 @@ export function DeletionRequestButton({ submissionId }: DeletionRequestButtonPro
     return null;
   }
 
-  const handleSubmit = async () => {
+  const handleDirectDelete = async () => {
+    setIsSubmitting(true);
+    try {
+      await deleteSubmission(submissionId);
+      toast.success('Submissão removida! Você pode reenviar agora.');
+      setOpen(false);
+    } catch {
+      toast.error('Erro ao remover submissão.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRequestRedo = async () => {
     if (!reason.trim()) {
       toast.error('Informe o motivo da solicitação.');
       return;
@@ -68,30 +82,42 @@ export function DeletionRequestButton({ submissionId }: DeletionRequestButtonPro
     <>
       <Button variant="default" size="sm" onClick={() => setOpen(true)} className="gap-1">
         <RotateCcw className="h-3.5 w-3.5" />
-        Solicitar Refazer
+        {hasFeedback ? 'Solicitar Refazer' : 'Refazer Atividade'}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Solicitar Refazer Atividade</DialogTitle>
+            <DialogTitle>
+              {hasFeedback ? 'Solicitar Refazer Atividade' : 'Refazer Atividade'}
+            </DialogTitle>
             <DialogDescription>
-              Sua solicitação será analisada por um(a) administrador(a) ou tutor(a). Se aprovada, sua resposta anterior será excluída e você poderá enviar novamente.
+              {hasFeedback
+                ? 'Sua solicitação será analisada por um(a) administrador(a) ou tutor(a). Se aprovada, sua resposta anterior será excluída e você poderá enviar novamente.'
+                : 'Tem certeza que deseja refazer esta atividade? Sua resposta atual será excluída permanentemente.'}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label>Motivo da solicitação</Label>
-            <Textarea
-              value={reason}
-              onChange={e => setReason(e.target.value)}
-              placeholder="Descreva por que deseja refazer esta atividade..."
-              rows={3}
-            />
-          </div>
+          {hasFeedback && (
+            <div className="space-y-2">
+              <Label>Motivo da solicitação</Label>
+              <Textarea
+                value={reason}
+                onChange={e => setReason(e.target.value)}
+                placeholder="Descreva por que deseja refazer esta atividade..."
+                rows={3}
+              />
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting || !reason.trim()}>
-              {isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}
-            </Button>
+            {hasFeedback ? (
+              <Button onClick={handleRequestRedo} disabled={isSubmitting || !reason.trim()}>
+                {isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}
+              </Button>
+            ) : (
+              <Button onClick={handleDirectDelete} disabled={isSubmitting} variant="destructive">
+                {isSubmitting ? 'Removendo...' : 'Confirmar e Refazer'}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
