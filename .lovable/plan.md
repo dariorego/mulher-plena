@@ -1,31 +1,44 @@
 
 
-## Ajustar largura do banner na Landing Page
+## Plano: Reestruturar Dashboard Admin/Professor
 
-Alinhar o banner superior ("Seja Bem-Vinda, Mulher Plena!") à mesma largura do card "Jornada Essencial" abaixo.
+Substituir os 4 cards individuais + bloco "Submissões Recentes" por 2 quadros agrupados para admin e professor.
 
-### Mudança no código
+### Layout
 
-Modificar a div do banner em `src/pages/LandingPage.tsx`:
+Dois cards lado a lado (grid 2 colunas), cada um com título e 4 linhas de dados:
 
-**De:**
-```tsx
-{/* Banner */}
-<div className="w-full">
-  <img src={BANNER_URL} alt="Banner" className="w-full h-auto object-contain" />
-</div>
-```
+**Quadro 1 — USUÁRIOS**
+- Total cadastrados (query real em `profiles`)
+- Participantes (role = 'aluno')
+- Tutores (role = 'professor')
+- Formadoras (role = 'admin')
 
-**Para:**
-```tsx
-{/* Banner */}
-<div className="container mx-auto px-6 pt-6">
-  <img src={BANNER_URL} alt="Banner" className="w-full h-auto object-contain rounded-2xl" />
-</div>
-```
+**Quadro 2 — JORNADAS**
+- Qde Jornadas (`journeys.length`)
+- Jornadas Ativas (`journeys.length` — todas são ativas por padrão)
+- Qde Estações (`stations.length`)
+- Qde Avaliações Pendentes (`submissions.filter(s => !s.evaluated_at).length`)
 
-Isso envolve o banner no mesmo container das jornadas, garantindo alinhamento de largura. O `rounded-2xl` foi adicionado para manter consistência visual com o card abaixo.
+### Dados reais de usuários
 
-### Arquivo editado
-- `src/pages/LandingPage.tsx` — ajuste no wrapper do banner
+Buscar contagens reais via queries ao Supabase:
+- `SELECT COUNT(*) FROM profiles` para total
+- `SELECT COUNT(*) FROM user_roles WHERE role = 'aluno'` para participantes
+- `SELECT COUNT(*) FROM user_roles WHERE role = 'professor'` para tutores
+- `SELECT COUNT(*) FROM user_roles WHERE role = 'admin'` para formadoras
+
+Usar `useEffect` + `useState` para carregar as contagens ao montar o componente.
+
+### Mudanças
+
+| Arquivo | Ação |
+|---|---|
+| `src/pages/Dashboard.tsx` | Substituir bloco admin (4 cards + Submissões Recentes) por 2 quadros agrupados com dados reais. Mesma mudança para professor. |
+
+### Visual
+
+Cada quadro será um `Card` com:
+- Header com título e ícone
+- 4 linhas internas com label à esquerda e valor à direita, separadas por bordas sutis
 
