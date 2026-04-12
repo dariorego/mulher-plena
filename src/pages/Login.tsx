@@ -121,6 +121,12 @@ export default function Login() {
             </CardFooter>
           </form>
         </Card>
+        
+        {/* Footer with copyright */}
+        <div className="mt-8 text-center text-white/80 text-sm">
+          <p>© Seicho-No-Ie Brasil. Todos os direitos reservados.</p>
+          <p className="mt-1 text-white/60">v.20260412</p>
+        </div>
       </div>
     </div>
   );
