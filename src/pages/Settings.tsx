@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useSettings } from '@/contexts/SettingsContext';
 import { Textarea } from '@/components/ui/textarea';
-import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle, AlertTriangle, Image, X, Palette } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, MessageSquare, BarChart3, Film, FileText, BookOpen, Headphones, CheckCircle, AlertCircle, AlertTriangle, Image, X, Palette, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,6 +26,7 @@ export default function Settings() {
     progressBarColor,
     buttonBgColor,
     buttonTextColor,
+    rewardsEnabled,
     updateSettings 
   } = useSettings();
 
