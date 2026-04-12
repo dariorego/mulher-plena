@@ -138,18 +138,130 @@ export default function Dashboard() {
             </>
           )}
 
-          {user.role === 'professor' && (
+          {(user.role === 'professor' || user.role === 'admin') && (
             <>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Avaliações Pendentes</CardTitle>
-                  <FileText className="h-4 w-4 text-muted-foreground" />
+              <Card className="md:col-span-2">
+                <CardHeader className="flex flex-row items-center gap-2 pb-4">
+                  <Users className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-lg">Usuários</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{professorPendingEvaluations}</div>
-                  <p className="text-xs text-muted-foreground">aguardando avaliação</p>
+                  <div className="divide-y divide-border">
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-muted-foreground">Total cadastrados</span>
+                      <span className="text-lg font-bold">{userCounts.total}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-muted-foreground">Participantes</span>
+                      <span className="text-lg font-bold">{userCounts.alunos}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-muted-foreground">Tutores</span>
+                      <span className="text-lg font-bold">{userCounts.professores}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-muted-foreground">Formadoras</span>
+                      <span className="text-lg font-bold">{userCounts.admins}</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
+              <Card className="md:col-span-2">
+                <CardHeader className="flex flex-row items-center gap-2 pb-4">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-lg">Jornadas</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="divide-y divide-border">
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-muted-foreground">Qde Jornadas</span>
+                      <span className="text-lg font-bold">{journeys.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-muted-foreground">Jornadas Ativas</span>
+                      <span className="text-lg font-bold">{journeys.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-muted-foreground">Qde Estações</span>
+                      <span className="text-lg font-bold">{stations.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-muted-foreground">Avaliações Pendentes</span>
+                      <span className="text-lg font-bold">{pendingEvaluations}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+
+        {/* Upcoming Events + Journey Progress (Students) */}
+        {user.role === 'aluno' && (
+          <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Suas Jornadas</h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                {[...journeys].sort((a, b) => a.order_index - b.order_index).map((journey) => {
+                  const progress = getJourneyProgress(user.id, journey.id);
+                  const unlocked = isJourneyUnlocked(user.id, journey.id);
+
+                  const card = (
+                    <Card className={`overflow-hidden transition-shadow cursor-pointer ${unlocked ? 'hover:shadow-lg' : 'opacity-50 grayscale'}`}>
+                      <div className="bg-muted relative">
+                        <img
+                          src={journey.cover_image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800'}
+                          alt={journey.title}
+                          className="w-full h-auto object-contain"
+                        />
+                        {!unlocked && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <Lock className="h-8 w-8 text-white drop-shadow-lg" />
+                          </div>
+                        )}
+                      </div>
+                      <CardContent className="pt-4">
+                        <h3 className="font-semibold text-lg mb-3">{journey.title}</h3>
+                        {unlocked ? (
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Progresso</span>
+                              <span className="font-medium">{progress}%</span>
+                            </div>
+                            <Progress value={progress} className="h-2" indicatorColor={progressBarColor} />
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            {getJourneyLockReason(user.id, journey.id) === 'prerequisites'
+                              ? 'As Jornadas 1, 2 e 3 são pré-requisitos obrigatórios.'
+                              : 'Esta jornada ainda não foi liberada.'}
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+
+                  if (!unlocked) {
+                    return (
+                      <div key={journey.id} className="cursor-not-allowed">
+                        {card}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <Link key={journey.id} to={`/jornadas/${journey.id}`}>
+                      {card}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <UpcomingEvents events={scheduledEvents.filter(e => !e.journey_id)} maxEvents={5} />
+            </div>
+          </div>
+        )}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total de Jornadas</CardTitle>
