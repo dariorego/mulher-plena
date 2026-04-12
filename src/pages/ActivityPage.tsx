@@ -398,7 +398,7 @@ export default function ActivityPage() {
               {/* Allow student to refresh status after admin clears submission */}
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -443,7 +443,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -485,7 +485,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -527,7 +527,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -568,7 +568,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -610,7 +610,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -676,7 +676,7 @@ export default function ActivityPage() {
                 </Button>
                 {user.role === 'aluno' && (
                   <div className="flex items-center gap-2">
-                    <DeletionRequestButton submissionId={existingSubmission.id} />
+                    <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                     <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                       {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                     </Button>
@@ -719,7 +719,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -761,7 +761,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -803,7 +803,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -842,7 +842,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -887,7 +887,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -926,7 +926,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
@@ -1113,7 +1113,7 @@ export default function ActivityPage() {
 
               {user.role === 'aluno' && (
                 <div className="flex justify-end gap-2">
-                  <DeletionRequestButton submissionId={existingSubmission.id} />
+                  <DeletionRequestButton submissionId={existingSubmission.id} hasFeedback={!!existingSubmission.feedback} />
                   <Button variant="default" size="sm" onClick={handleRefreshStatus} disabled={isRefreshing}>
                     {isRefreshing ? 'Atualizando...' : 'Atualizar status'}
                   </Button>
