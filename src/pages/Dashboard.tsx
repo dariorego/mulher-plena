@@ -4,18 +4,34 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { BookOpen, Trophy, Target, TrendingUp, Users, Lock } from 'lucide-react';
+import { BookOpen, Trophy, Target, TrendingUp, Users, Lock, Clock, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { UpcomingEvents } from '@/components/calendar/UpcomingEvents';
 import { useActivityLogger } from '@/hooks/useActivityLogger';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+interface RecentAccess {
+  user_id: string;
+  user_name: string;
+  created_at: string;
+}
+
+interface AccessRanking {
+  user_id: string;
+  user_name: string;
+  access_count: number;
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { journeys, stations, activities, submissions, userBadges, badges, scheduledEvents, getJourneyProgress, getUserStats, refreshData, isJourneyUnlocked, getJourneyLockReason } = useData();
   const { progressBarColor, rewardsEnabled } = useSettings();
   const [userCounts, setUserCounts] = useState({ total: 0, alunos: 0, professores: 0, admins: 0 });
+  const [recentAccesses, setRecentAccesses] = useState<RecentAccess[]>([]);
+  const [accessRanking, setAccessRanking] = useState<AccessRanking[]>([]);
   const { logAction } = useActivityLogger();
 
   useEffect(() => {
@@ -40,6 +56,66 @@ export default function Dashboard() {
       });
     };
     fetchUserCounts();
+  }, [user?.role]);
+
+  useEffect(() => {
+    const fetchAccessData = async () => {
+      if (user?.role !== 'admin' && user?.role !== 'professor') return;
+
+      // Últimos 10 acessos
+      const { data: recentLogs } = await supabase
+        .from('user_activity_logs')
+        .select('user_id, created_at')
+        .eq('action', 'login')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (recentLogs && recentLogs.length > 0) {
+        const userIds = [...new Set(recentLogs.map(l => l.user_id))];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, name')
+          .in('id', userIds);
+
+        const profileMap = new Map(profiles?.map(p => [p.id, p.name]) || []);
+        setRecentAccesses(recentLogs.map(l => ({
+          user_id: l.user_id,
+          user_name: profileMap.get(l.user_id) || 'Usuário',
+          created_at: l.created_at,
+        })));
+      }
+
+      // Ranking de acessos - buscar todos os logins e agrupar no client
+      const { data: allLogins } = await supabase
+        .from('user_activity_logs')
+        .select('user_id')
+        .eq('action', 'login');
+
+      if (allLogins && allLogins.length > 0) {
+        const countMap = new Map<string, number>();
+        allLogins.forEach(l => {
+          countMap.set(l.user_id, (countMap.get(l.user_id) || 0) + 1);
+        });
+
+        const sortedEntries = [...countMap.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10);
+
+        const rankUserIds = sortedEntries.map(e => e[0]);
+        const { data: rankProfiles } = await supabase
+          .from('profiles')
+          .select('id, name')
+          .in('id', rankUserIds);
+
+        const rankProfileMap = new Map(rankProfiles?.map(p => [p.id, p.name]) || []);
+        setAccessRanking(sortedEntries.map(([uid, count]) => ({
+          user_id: uid,
+          user_name: rankProfileMap.get(uid) || 'Usuário',
+          access_count: count,
+        })));
+      }
+    };
+    fetchAccessData();
   }, [user?.role]);
 
   if (!user) return null;
@@ -168,6 +244,59 @@ export default function Dashboard() {
             </>
           )}
         </div>
+
+        {/* Access panels for admin/professor */}
+        {(user.role === 'professor' || user.role === 'admin') && (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="md:col-span-1">
+              <CardHeader className="flex flex-row items-center gap-2 pb-4">
+                <Clock className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg">Últimos Acessos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {recentAccesses.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhum acesso registrado.</p>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {recentAccesses.map((access, idx) => (
+                      <div key={idx} className="flex justify-between items-center py-3">
+                        <span className="text-sm text-muted-foreground truncate max-w-[60%]">{access.user_name}</span>
+                        <span className="text-sm font-medium text-right">
+                          {format(new Date(access.created_at), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            <Card className="md:col-span-1">
+              <CardHeader className="flex flex-row items-center gap-2 pb-4">
+                <Award className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg">Ranking de Acessos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {accessRanking.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhum acesso registrado.</p>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {accessRanking.map((entry, idx) => (
+                      <div key={entry.user_id} className="flex justify-between items-center py-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={`text-sm font-bold w-6 text-center ${idx < 3 ? 'text-primary' : 'text-muted-foreground'}`}>
+                            {idx + 1}º
+                          </span>
+                          <span className="text-sm text-muted-foreground truncate">{entry.user_name}</span>
+                        </div>
+                        <span className="text-lg font-bold">{entry.access_count}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Upcoming Events + Journey Progress (Students) */}
         {user.role === 'aluno' && (
