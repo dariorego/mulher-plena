@@ -71,7 +71,7 @@ export default function LandingPage() {
       <section className="container mx-auto px-6 py-12">
         <div className="rounded-2xl border-2 border-primary/20 bg-card shadow-md p-8 md:p-10">
           <h2 className="text-2xl md:text-3xl font-cinzel font-bold text-primary mb-8 text-center">
-            Jornada Essencial
+            Jornadas Essenciais
           </h2>
 
           {isLoading ? (

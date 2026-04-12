@@ -129,6 +129,33 @@ export type Database = {
         }
         Relationships: []
       }
+      compra_jornada: {
+        Row: {
+          cpf: string | null
+          created_at: string
+          email: string | null
+          id: number
+          jornada: number | null
+          liberado: boolean | null
+        }
+        Insert: {
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: number
+          jornada?: number | null
+          liberado?: boolean | null
+        }
+        Update: {
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: number
+          jornada?: number | null
+          liberado?: boolean | null
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
