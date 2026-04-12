@@ -16,6 +16,7 @@ export default function Dashboard() {
   const { journeys, stations, activities, submissions, userBadges, badges, scheduledEvents, getJourneyProgress, getUserStats, refreshData, isJourneyUnlocked, getJourneyLockReason } = useData();
   const { progressBarColor } = useSettings();
   const [profiles, setProfiles] = useState<Record<string, string>>({});
+  const [userCounts, setUserCounts] = useState({ total: 0, alunos: 0, professores: 0, admins: 0 });
   const { logAction } = useActivityLogger();
 
   // Sincroniza dados do banco ao abrir o Dashboard
@@ -23,6 +24,26 @@ export default function Dashboard() {
     refreshData();
     logAction('view_dashboard', 'platform');
   }, [refreshData]);
+
+  // Fetch user counts for admin/professor dashboard
+  useEffect(() => {
+    const fetchUserCounts = async () => {
+      if (user?.role !== 'admin' && user?.role !== 'professor') return;
+      const [totalRes, alunosRes, professoresRes, adminsRes] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role', 'aluno'),
+        supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role', 'professor'),
+        supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role', 'admin'),
+      ]);
+      setUserCounts({
+        total: totalRes.count ?? 0,
+        alunos: alunosRes.count ?? 0,
+        professores: professoresRes.count ?? 0,
+        admins: adminsRes.count ?? 0,
+      });
+    };
+    fetchUserCounts();
+  }, [user?.role]);
 
   // Fetch profiles for participant names
   useEffect(() => {
