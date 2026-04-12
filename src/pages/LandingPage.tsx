@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Journey } from "@/types";
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import logoSNI from "@/assets/logoSNI.png";
 
 const BANNER_URL = "https://byslxrvqzcrjgpoatyxt.supabase.co/storage/v1/object/public/landing-images/1766405025490-5vonvbp.png";
@@ -35,6 +38,15 @@ function JourneyCard({ journey }: { journey: Journey }) {
 }
 
 export default function LandingPage() {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formattedDate = format(now, "EEEE, dd 'de' MMMM 'de' yyyy - HH:mm", { locale: ptBR });
+
   const { data: journeys = [], isLoading } = useQuery({
     queryKey: ["landing-journeys"],
     queryFn: async () => {
@@ -67,7 +79,16 @@ export default function LandingPage() {
         />
       </div>
 
-      {/* Jornada Essencial Highlight */}
+      {/* Date & Login Bar */}
+      <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+        <span className="text-sm md:text-base text-muted-foreground capitalize">
+          {formattedDate}
+        </span>
+        <Button asChild size="sm" className="rounded-full font-semibold px-6">
+          <Link to="/login">Entrar</Link>
+        </Button>
+      </div>
+
       <section className="container mx-auto px-6 py-12">
         <div className="rounded-2xl border-2 border-primary/20 bg-card shadow-md p-8 md:p-10">
           <h2 className="text-2xl md:text-3xl font-cinzel font-bold text-primary mb-8 text-center">
