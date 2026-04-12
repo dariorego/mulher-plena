@@ -1,44 +1,41 @@
 
 
-## Plano: Reestruturar Dashboard Admin/Professor
+## Plano: Toggle de Recompensas (Ativo/Inativo) nas Configurações
 
-Substituir os 4 cards individuais + bloco "Submissões Recentes" por 2 quadros agrupados para admin e professor.
+Adicionar um toggle na página de Configurações para ativar/desativar o sistema de recompensas (Conquistas). Quando inativo, o menu "Conquistas" e a rota serão ocultados.
 
-### Layout
+### 1. Migração — Adicionar coluna `rewards_enabled` na tabela `system_settings`
 
-Dois cards lado a lado (grid 2 colunas), cada um com título e 4 linhas de dados:
+```sql
+ALTER TABLE system_settings ADD COLUMN rewards_enabled boolean NOT NULL DEFAULT true;
+```
 
-**Quadro 1 — USUÁRIOS**
-- Total cadastrados (query real em `profiles`)
-- Participantes (role = 'aluno')
-- Tutores (role = 'professor')
-- Formadoras (role = 'admin')
+### 2. SettingsContext — Adicionar campo `rewardsEnabled`
 
-**Quadro 2 — JORNADAS**
-- Qde Jornadas (`journeys.length`)
-- Jornadas Ativas (`journeys.length` — todas são ativas por padrão)
-- Qde Estações (`stations.length`)
-- Qde Avaliações Pendentes (`submissions.filter(s => !s.evaluated_at).length`)
+- Adicionar `rewardsEnabled: boolean` à interface `EvaluationSettings`
+- Mapear `rewardsEnabled` ↔ `rewards_enabled` no `toDbRow` e `fromDbRow`
+- Default: `true`
 
-### Dados reais de usuários
+### 3. Página de Configurações — Novo card com toggle
 
-Buscar contagens reais via queries ao Supabase:
-- `SELECT COUNT(*) FROM profiles` para total
-- `SELECT COUNT(*) FROM user_roles WHERE role = 'aluno'` para participantes
-- `SELECT COUNT(*) FROM user_roles WHERE role = 'professor'` para tutores
-- `SELECT COUNT(*) FROM user_roles WHERE role = 'admin'` para formadoras
+Adicionar um card "Recompensas / Conquistas" com um `Switch` para ativar/desativar, similar aos toggles de nota/feedback já existentes.
 
-Usar `useEffect` + `useState` para carregar as contagens ao montar o componente.
+### 4. AppLayout — Ocultar menu "Conquistas" quando inativo
 
-### Mudanças
+- Importar `useSettings` no `AppLayout`
+- Filtrar o item `{ path: '/conquistas' }` do menu do aluno quando `rewardsEnabled === false`
+
+### 5. Rota `/conquistas` — Redirecionar quando inativo
+
+Na página `Achievements.tsx`, verificar `rewardsEnabled` e redirecionar para `/dashboard` se estiver desativado.
+
+### Arquivos
 
 | Arquivo | Ação |
 |---|---|
-| `src/pages/Dashboard.tsx` | Substituir bloco admin (4 cards + Submissões Recentes) por 2 quadros agrupados com dados reais. Mesma mudança para professor. |
-
-### Visual
-
-Cada quadro será um `Card` com:
-- Header com título e ícone
-- 4 linhas internas com label à esquerda e valor à direita, separadas por bordas sutis
+| `supabase/migrations/` | Nova migração: coluna `rewards_enabled` |
+| `src/contexts/SettingsContext.tsx` | Adicionar campo `rewardsEnabled` |
+| `src/pages/Settings.tsx` | Novo card com toggle |
+| `src/components/layout/AppLayout.tsx` | Filtrar menu condicionalmente |
+| `src/pages/Achievements.tsx` | Redirect quando desativado |
 
