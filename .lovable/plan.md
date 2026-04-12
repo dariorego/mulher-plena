@@ -1,33 +1,31 @@
 
 
-## Plano: Criar Usuário Manualmente na Página de Usuários
+## Ajustar largura do banner na Landing Page
 
-Adicionar um botão "Criar Usuário" ao lado do "Importar CSV" na página de Usuários, com um dialog para criação manual.
+Alinhar o banner superior ("Seja Bem-Vinda, Mulher Plena!") à mesma largura do card "Jornada Essencial" abaixo.
 
-### 1. Edge Function `create-user`
+### Mudança no código
 
-Criar uma edge function que usa o `SUPABASE_SERVICE_ROLE_KEY` para chamar `supabase.auth.admin.createUser()`, pois o client-side não pode criar usuários via admin API. A function receberá `email`, `password`, `name` e `role`.
+Modificar a div do banner em `src/pages/LandingPage.tsx`:
 
-O trigger `handle_new_user` já existente cuidará de criar automaticamente o registro em `profiles` e `user_roles` (com role padrão 'aluno'). Após a criação, se o role informado for diferente de 'aluno', a function faz um UPDATE no `user_roles`.
+**De:**
+```tsx
+{/* Banner */}
+<div className="w-full">
+  <img src={BANNER_URL} alt="Banner" className="w-full h-auto object-contain" />
+</div>
+```
 
-### 2. Componente `CreateUserDialog`
+**Para:**
+```tsx
+{/* Banner */}
+<div className="container mx-auto px-6 pt-6">
+  <img src={BANNER_URL} alt="Banner" className="w-full h-auto object-contain rounded-2xl" />
+</div>
+```
 
-Novo componente `src/components/admin/CreateUserDialog.tsx`:
-- Dialog com formulário: Nome, Email, Senha, Papel (select com Admin/Tutor/Participante)
-- Validação client-side (campos obrigatórios, email válido, senha mínima)
-- Chama a edge function via `supabase.functions.invoke('create-user', ...)`
-- Callback `onUserCreated` para atualizar a lista
+Isso envolve o banner no mesmo container das jornadas, garantindo alinhamento de largura. O `rounded-2xl` foi adicionado para manter consistência visual com o card abaixo.
 
-### 3. Integração na Página
-
-- Importar `CreateUserDialog` em `UsersPage.tsx`
-- Colocar o botão ao lado do "Importar CSV" no header
-
-### Arquivos
-
-| Arquivo | Ação |
-|---|---|
-| `supabase/functions/create-user/index.ts` | Criar edge function |
-| `src/components/admin/CreateUserDialog.tsx` | Criar componente |
-| `src/pages/UsersPage.tsx` | Adicionar botão + dialog |
+### Arquivo editado
+- `src/pages/LandingPage.tsx` — ajuste no wrapper do banner
 
