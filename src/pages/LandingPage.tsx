@@ -38,6 +38,15 @@ function JourneyCard({ journey }: { journey: Journey }) {
 }
 
 export default function LandingPage() {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formattedDate = format(now, "EEEE, dd 'de' MMMM 'de' yyyy - HH:mm", { locale: ptBR });
+
   const { data: journeys = [], isLoading } = useQuery({
     queryKey: ["landing-journeys"],
     queryFn: async () => {
