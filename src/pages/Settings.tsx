@@ -183,6 +183,40 @@ export default function Settings() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5" />
+              Recompensas / Conquistas
+            </CardTitle>
+            <CardDescription>
+              Controle a visibilidade do sistema de conquistas para os participantes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="flex items-start gap-3">
+                <Trophy className="h-5 w-5 text-primary mt-0.5" />
+                <div className="space-y-1">
+                  <Label htmlFor="rewards-enabled" className="text-base font-medium">
+                    Sistema de Conquistas
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Quando desativado, o menu e a página de conquistas ficam ocultos para todos os participantes
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="rewards-enabled"
+                checked={rewardsEnabled}
+                onCheckedChange={(checked) => {
+                  updateSettings({ rewardsEnabled: checked });
+                  toast.success(checked ? 'Sistema de conquistas ativado' : 'Sistema de conquistas desativado');
+                }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
               Percentual Conclusão Estações
             </CardTitle>
