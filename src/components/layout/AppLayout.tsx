@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { cn } from '@/lib/utils';
+// Note: rewardsEnabled from useSettings is used to filter nav items
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from '@/components/ui/dropdown-menu';
@@ -137,13 +138,16 @@ export function AppLayout({
     user,
     logout
   } = useAuth();
-  const { headerBorderColor } = useSettings();
+  const { headerBorderColor, rewardsEnabled } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
   if (!user) return null;
-  const userNavItems = navItems[user.role];
+  const userNavItems = navItems[user.role].filter(entry => {
+    if (!isNavGroup(entry) && entry.path === '/conquistas' && !rewardsEnabled) return false;
+    return true;
+  });
   const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   const handleLogout = () => {
     logout();

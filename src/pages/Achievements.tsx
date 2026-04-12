@@ -1,5 +1,8 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,8 +11,16 @@ import { Trophy, Lock } from 'lucide-react';
 export default function Achievements() {
   const { user } = useAuth();
   const { badges, userBadges } = useData();
+  const { rewardsEnabled } = useSettings();
+  const navigate = useNavigate();
 
-  if (!user) return null;
+  useEffect(() => {
+    if (!rewardsEnabled) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [rewardsEnabled, navigate]);
+
+  if (!user || !rewardsEnabled) return null;
 
   const earnedBadgeIds = userBadges
     .filter(ub => ub.user_id === user.id)
