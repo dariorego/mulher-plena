@@ -59,11 +59,11 @@ export default function LandingPage() {
       </div>
 
       {/* Banner */}
-      <div className="w-full">
+      <div className="container mx-auto px-6 pt-6">
         <img
           src={BANNER_URL}
           alt="Banner"
-          className="w-full h-auto object-contain"
+          className="w-full h-auto object-contain rounded-2xl"
         />
       </div>
 
