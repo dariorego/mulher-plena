@@ -677,6 +677,7 @@ export type Database = {
           login_background_url: string
           podcast_percentage: number
           progress_bar_color: string
+          rewards_enabled: boolean
           sensitive_content_message: string
           show_feedback_to_students: boolean
           show_score_to_students: boolean
@@ -693,6 +694,7 @@ export type Database = {
           login_background_url?: string
           podcast_percentage?: number
           progress_bar_color?: string
+          rewards_enabled?: boolean
           sensitive_content_message?: string
           show_feedback_to_students?: boolean
           show_score_to_students?: boolean
@@ -709,6 +711,7 @@ export type Database = {
           login_background_url?: string
           podcast_percentage?: number
           progress_bar_color?: string
+          rewards_enabled?: boolean
           sensitive_content_message?: string
           show_feedback_to_students?: boolean
           show_score_to_students?: boolean

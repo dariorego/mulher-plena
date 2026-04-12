@@ -14,6 +14,7 @@ interface EvaluationSettings {
   progressBarColor: string;
   buttonBgColor: string;
   buttonTextColor: string;
+  rewardsEnabled: boolean;
 }
 
 interface SettingsContextType extends EvaluationSettings {
@@ -34,6 +35,7 @@ const defaultSettings: EvaluationSettings = {
   progressBarColor: '#2e6682',
   buttonBgColor: '#2D6582',
   buttonTextColor: '#FFFFFF',
+  rewardsEnabled: true,
 };
 
 // Maps frontend camelCase keys to DB snake_case columns
@@ -51,6 +53,7 @@ const toDbRow = (s: Partial<EvaluationSettings>): Record<string, unknown> => {
     progressBarColor: 'progress_bar_color',
     buttonBgColor: 'button_bg_color',
     buttonTextColor: 'button_text_color',
+    rewardsEnabled: 'rewards_enabled',
   };
   const row: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(s)) {
@@ -73,6 +76,7 @@ const fromDbRow = (row: Record<string, unknown>): EvaluationSettings => ({
   progressBarColor: row.progress_bar_color as string,
   buttonBgColor: row.button_bg_color as string,
   buttonTextColor: row.button_text_color as string,
+  rewardsEnabled: row.rewards_enabled as boolean,
 });
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
