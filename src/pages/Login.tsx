@@ -20,7 +20,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { loginBackgroundUrl } = useSettings();
+  const { loginBackgroundUrl, isLoading: settingsLoading } = useSettings();
   const backgroundImage = loginBackgroundUrl || bgLogin;
 
   const handleSubmit = async (e: React.FormEvent) => {
