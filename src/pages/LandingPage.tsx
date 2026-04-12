@@ -79,7 +79,16 @@ export default function LandingPage() {
         />
       </div>
 
-      {/* Jornada Essencial Highlight */}
+      {/* Date & Login Bar */}
+      <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+        <span className="text-sm md:text-base text-muted-foreground capitalize">
+          {formattedDate}
+        </span>
+        <Button asChild size="sm" className="rounded-full font-semibold px-6">
+          <Link to="/login">Entrar</Link>
+        </Button>
+      </div>
+
       <section className="container mx-auto px-6 py-12">
         <div className="rounded-2xl border-2 border-primary/20 bg-card shadow-md p-8 md:p-10">
           <h2 className="text-2xl md:text-3xl font-cinzel font-bold text-primary mb-8 text-center">
